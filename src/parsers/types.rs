@@ -1,4 +1,4 @@
-use crate::reader::File;
+use crate::reader::types::File;
 
 pub struct Statement {
     pub date: String,
@@ -8,8 +8,22 @@ pub struct Statement {
     pub balance: f64,
 }
 
+pub enum BankId {
+    HdfcInd,
+    IcicInd,
+}
+
+impl BankId {
+    pub fn to_string(&self) -> String {
+        match self {
+            BankId::HdfcInd => "hdfcind".to_string(),
+            BankId::IcicInd => "icicind".to_string(),
+        }
+    }
+}
+
 pub struct Parser {
-    pub id: String,
+    pub id: BankId,
     pub identify: fn(&File) -> bool,
     pub parse: fn(&File) -> Vec<Statement>,
 }

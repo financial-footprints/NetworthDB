@@ -1,12 +1,12 @@
 #[cfg(test)]
 mod tests {
     use crate::parsers::sources::hdfcind::get_parser;
-    use crate::reader::File;
+    use crate::reader::types::{File, FileType};
 
     #[test]
     fn test_identify_valid_file() {
         let file = File {
-            file_type: "xls".to_string(),
+            file_type: FileType::Xls,
             data: vec![
                 vec!["HDFC BANK Ltd.".to_string()],
                 vec!["Some other data".to_string()],
@@ -20,7 +20,7 @@ mod tests {
     #[test]
     fn test_identify_invalid_file_type() {
         let file = File {
-            file_type: "pdf".to_string(),
+            file_type: FileType::Pdf,
             data: vec![
                 vec!["HDFC BANK Ltd.".to_string()],
                 vec!["Some other data".to_string()],
@@ -34,7 +34,7 @@ mod tests {
     #[test]
     fn test_identify_invalid_file_content() {
         let file = File {
-            file_type: "xls".to_string(),
+            file_type: FileType::Xls,
             data: vec![
                 vec!["Some other bank".to_string()],
                 vec!["Some other data".to_string()],
@@ -48,7 +48,7 @@ mod tests {
     #[test]
     fn test_parse_valid_file() {
         let file = File {
-            file_type: "xls".to_string(),
+            file_type: FileType::Xls,
             data: vec![
                 vec![
                     "Date".to_string(),
@@ -103,7 +103,7 @@ mod tests {
     #[should_panic(expected = "error.parser.hdfcind.start_of_data_not_found")]
     fn test_parse_missing_data_start() {
         let file = File {
-            file_type: "xls".to_string(),
+            file_type: FileType::Xls,
             data: vec![vec!["Some other data".to_string()]],
         };
 
@@ -115,7 +115,7 @@ mod tests {
     #[should_panic(expected = "error.parser.hdfcind.end_of_data_not_found")]
     fn test_parse_missing_data_end() {
         let file = File {
-            file_type: "xls".to_string(),
+            file_type: FileType::Xls,
             data: vec![
                 vec![
                     "Date".to_string(),

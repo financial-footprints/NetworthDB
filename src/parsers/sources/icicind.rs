@@ -1,9 +1,9 @@
-use super::{Parser, Statement};
-use crate::reader::File;
+use super::{BankId, Parser, Statement};
+use crate::reader::types::{File, FileType};
 
 pub fn get_parser() -> Parser {
     fn identify(file: &File) -> bool {
-        if file.file_type != "xls" {
+        if !matches!(file.file_type, FileType::Xls) {
             return false;
         }
 
@@ -24,7 +24,7 @@ pub fn get_parser() -> Parser {
     }
 
     Parser {
-        id: "icicind".to_string(),
+        id: BankId::IcicInd,
         identify,
         parse,
     }

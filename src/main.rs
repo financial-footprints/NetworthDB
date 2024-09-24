@@ -4,7 +4,7 @@ mod reader;
 use std::{env, fs};
 
 use parsers::types::{Parser, Statement};
-use reader::File;
+use reader::types::File;
 
 fn process_bank_data() -> Vec<String> {
     dotenv::dotenv().ok();
@@ -43,8 +43,8 @@ fn main() {
             );
         }
 
-        println!("File Type: {}", file.file_type);
-        println!("Parser: {}", parser.id);
+        println!("File Type: {}", file.file_type.to_string());
+        println!("Parser: {}", parser.id.to_string());
     }
 }
 

@@ -1,8 +1,9 @@
-use super::types::{Parser, Statement};
+use super::types::{BankId, Parser, Statement};
 
 mod hdfcind;
 mod hdfcind_test;
 mod icicind;
+mod icicind_test;
 
 pub fn get_all_parsers() -> Vec<Parser> {
     let mut parsers = Vec::new();

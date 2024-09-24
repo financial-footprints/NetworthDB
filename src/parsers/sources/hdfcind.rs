@@ -1,21 +1,19 @@
-use super::{Parser, Statement};
-use crate::reader::File;
+use super::{BankId, Parser, Statement};
+use crate::reader::types::{File, FileType};
 
 pub fn get_parser() -> Parser {
     fn identify(file: &File) -> bool {
-        if file.file_type != "xls" {
-            return false;
-        }
-
-        if let Some(first_row) = file.data.first() {
-            if let Some(first_cell) = first_row.first() {
-                if first_cell.contains("HDFC BANK Ltd.") {
-                    return true;
+        if matches!(file.file_type, FileType::Xls) {
+            if let Some(first_row) = file.data.first() {
+                if let Some(first_cell) = first_row.first() {
+                    if first_cell.contains("HDFC BANK Ltd.") {
+                        return true;
+                    }
                 }
             }
         }
 
-        false
+        return false;
     }
 
     fn parse(file: &File) -> Vec<Statement> {
@@ -60,11 +58,11 @@ pub fn get_parser() -> Parser {
             });
         }
 
-        return statements;
+        statements
     }
 
     Parser {
-        id: "hdfcind".to_string(),
+        id: BankId::HdfcInd,
         identify,
         parse,
     }
