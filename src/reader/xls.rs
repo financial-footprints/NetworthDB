@@ -1,6 +1,6 @@
 use calamine::{open_workbook, Reader, Xls};
 
-pub(crate) fn read_xls(file_path: &str) -> Vec<Vec<String>> {
+pub(crate) fn read_xls(file_path: &str, _: &str) -> Vec<Vec<String>> {
     let mut workbook: Xls<_> =
         open_workbook(file_path).expect("error.reader.read_xls.cannot_open_file");
     let mut data: Vec<Vec<String>> = Vec::new();
