@@ -1,7 +1,8 @@
 {
   "recommendations": [
+    "vadimcn.vscode-lldb",
     "rust-lang.rust-analyzer",
     "editorconfig.editorconfig",
-    "vadimcn.vscode-lldb"
+    "tamasfe.even-better-toml"
   ]
 }

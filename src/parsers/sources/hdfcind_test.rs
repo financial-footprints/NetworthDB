@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod tests {
+    #[cfg(test)]
     mod xls {
         use crate::parsers::sources::hdfcind::get_parser;
         use crate::reader::types::{File, FileData, FileType};
@@ -131,6 +132,7 @@ mod tests {
         }
     }
 
+    #[cfg(test)]
     mod pdf {
         use crate::parsers::sources::hdfcind::get_parser;
         use crate::reader::types::{File, FileData, FileType};
