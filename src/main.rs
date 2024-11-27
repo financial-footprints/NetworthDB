@@ -11,9 +11,10 @@ fn main() {
 
     for statement in parsed_data {
         println!(
-            "Date: {}, Description: {}, Withdrawal: {}, Deposit: {}, Balance: {}",
+            "Date: {}, Description: {}, Ref No: {}, Withdrawal: {}, Deposit: {}, Balance: {}",
             statement.date,
             statement.description,
+            statement.ref_no,
             statement.withdrawal,
             statement.deposit,
             statement.balance

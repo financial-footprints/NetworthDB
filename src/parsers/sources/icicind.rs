@@ -7,15 +7,7 @@ pub fn get_parser() -> Parser {
             return false;
         }
 
-        if let Some(first_row) = file.data.first() {
-            if let Some(first_cell) = first_row.first() {
-                if first_cell.contains("ICICI") {
-                    return true;
-                }
-            }
-        }
-
-        false
+        return false;
     }
 
     fn parse(file: &File) -> Vec<Statement> {

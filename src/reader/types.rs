@@ -6,13 +6,19 @@ pub enum FileType {
 impl FileType {
     pub fn to_string(&self) -> String {
         match self {
-            FileType::Xls => "xls".to_string(),
-            FileType::Pdf => "pdf".to_string(),
+            FileType::Xls => String::from("xls"),
+            FileType::Pdf => String::from("pdf"),
         }
     }
 }
 
 pub struct File {
     pub file_type: FileType,
-    pub data: Vec<Vec<String>>,
+    pub data: FileData,
+}
+
+#[derive(Debug)]
+pub enum FileData {
+    Text(String),
+    Table(Vec<Vec<String>>),
 }

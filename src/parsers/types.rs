@@ -3,6 +3,7 @@ use crate::reader::types::File;
 pub struct Statement {
     pub date: String,
     pub description: String,
+    pub ref_no: String,
     pub withdrawal: f64,
     pub deposit: f64,
     pub balance: f64,
