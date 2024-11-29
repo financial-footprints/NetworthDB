@@ -6,7 +6,11 @@ publish = false
 
 [lib]
 name = "migration"
-path = "src/lib.rs"
+path = "lib.rs"
+
+[[bin]]
+name = "migration"
+path = "main.rs"
 
 [dependencies]
 async-std = { version = "1", features = ["attributes", "tokio1"] }

@@ -1,8 +1,8 @@
 mod sources;
-pub mod types;
+pub(crate) mod types;
 
-use crate::parsers::types::Parser;
-use crate::reader::types::File;
+use crate::readers::parsers::types::Parser;
+use crate::readers::types::File;
 
 pub(crate) fn get_parser(file: &File) -> Parser {
     let parsers = sources::get_all_parsers();

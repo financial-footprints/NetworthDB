@@ -1,5 +1,7 @@
-use super::{BankId, Parser, Statement};
-use crate::reader::types::{File, FileType};
+use crate::readers::{
+    parsers::types::{BankId, Parser, Statement},
+    types::{File, FileType},
+};
 
 pub fn get_parser() -> Parser {
     fn identify(file: &File) -> bool {
@@ -10,9 +12,8 @@ pub fn get_parser() -> Parser {
         return false;
     }
 
-    fn parse(file: &File) -> Vec<Statement> {
-        let _ = file;
-        return Vec::new();
+    fn parse(_: &File) -> Statement {
+        todo!()
     }
 
     Parser {

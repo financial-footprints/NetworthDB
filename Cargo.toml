@@ -10,5 +10,24 @@ lazy_static = "1.5.0"
 lopdf = { version = "0.34.0", features = ["pom", "pom_parser"] }
 regex = "1.11.1"
 sea-orm = { version = "1.1.1", features = ["sqlx-sqlite", "sqlx-postgres", "runtime-tokio-rustls"] }
-tokio = "1.41.1"
+tokio = { version = "1.41.1", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1.40"
+uuid = { version = "1.11.0", features = ["v4"] }
+
+[package.metadata.commands]
+# seaORM
+# Entity Generation
+orm-entity = "sea-orm-cli generate entity -o src/models/entity"
+orm-reapply = """
+    sea-orm-cli migrate down -d src/models/migrations && \
+    sea-orm-cli migrate up -d src/models/migrations
+"""
+
+# Database Migrations
+migrate = "sea-orm-cli migrate -d src/models/migrations"
+migrate-up = "sea-orm-cli migrate up -d src/models/migrations"
+migrate-down = "sea-orm-cli migrate down -d src/models/migrations"
+migrate-status = "sea-orm-cli migrate status -d src/models/migrations"
+migrate-fresh = "sea-orm-cli migrate fresh -d src/models/migrations"
+migrate-reset = "sea-orm-cli migrate reset -d src/models/migrations"
+migrate-init = "sea-orm-cli migrate init -d src/models/migrations"

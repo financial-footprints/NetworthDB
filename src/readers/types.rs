@@ -1,5 +1,6 @@
 pub enum FileType {
     Xls,
+    Xlsx,
     Pdf,
 }
 
@@ -7,6 +8,7 @@ impl FileType {
     pub fn to_string(&self) -> String {
         match self {
             FileType::Xls => String::from("xls"),
+            FileType::Xlsx => String::from("xls"),
             FileType::Pdf => String::from("pdf"),
         }
     }
