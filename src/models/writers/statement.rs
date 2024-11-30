@@ -1,3 +1,5 @@
+//! Manipulate Statement Object
+
 use crate::{
     models::entity::{imports, staged_transactions},
     readers::parsers::types::Statement,
@@ -6,7 +8,14 @@ use sea_orm::{
     prelude::Decimal, sqlx::types::chrono::Utc, ActiveValue::Set, DatabaseConnection, EntityTrait,
 };
 use uuid::Uuid;
-
+/// Put statement object in database
+///
+/// # Arguments
+/// * `db` - Database connection handle
+/// * `statement` - Statement object containing account and transaction data
+///
+/// # Returns
+/// * `Uuid` - ID of the created import staging record
 pub async fn set_stage_statement(db: &DatabaseConnection, statement: &Statement) -> Uuid {
     // Create transaction staging record
     let staging = imports::ActiveModel {

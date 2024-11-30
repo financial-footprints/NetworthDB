@@ -1,3 +1,5 @@
+//! Modifications to Sea-ORM generated files
+
 use sea_orm::entity::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum, DeriveIden)]

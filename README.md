@@ -14,13 +14,20 @@ cargo test
 cargo run
 ```
 
+4. (Optional) To use cargo commands:
+
+```bash
+cargo install cargo-commander
+# Later: cargo cmd <command>
+```
+
 ## License
 
 NetworthDB is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE).
 
 In short,
 1. The software is provided without any limitations for personal & noncommercial purposes.
-2. For commercial purposes, please [contact me](mailto:ajay39in+networthdb@gmail.com).
+2. For commercial purposes, please [contact me](mailto:ajay39in+financialfootprints@gmail.com).
 
 ### Contribution License Agreements
 

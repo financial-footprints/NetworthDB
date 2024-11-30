@@ -7,7 +7,7 @@ use sea_orm::EntityTrait;
 async fn main() {
     let config = config::get_config().await;
     let (file, parser, statement) =
-        networth_db::readers::get_file_content(&config.file_path, &config.file_secret);
+        networth_db::readers::get_statement_from_file(&config.file_path, &config.file_secret);
 
     println!("Statement Details:");
     println!("Account Number: {}", &statement.account_number);
@@ -28,7 +28,7 @@ async fn main() {
 
     println!("File Type: {}", file.file_type.to_string());
     println!("Parser: {}", parser.id.to_string());
-    networth_db::writers::statement::set_stage_statement(&config.db, &statement).await;
+    networth_db::models::writers::statement::set_stage_statement(&config.db, &statement).await;
     let imports = networth_db::models::entity::imports::Entity::find()
         .all(&config.db)
         .await;
