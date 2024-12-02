@@ -1,15 +1,15 @@
 [package]
-name = "migration"
+name = "networth_db_migrations"
 version = "0.1.0"
 edition = "2021"
 publish = false
 
 [lib]
-name = "migration"
+name = "networth_db_migrations"
 path = "lib.rs"
 
 [[bin]]
-name = "migration"
+name = "networth_db_migrations"
 path = "main.rs"
 
 [dependencies]

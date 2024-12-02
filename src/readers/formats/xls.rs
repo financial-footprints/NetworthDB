@@ -1,8 +1,11 @@
-use calamine::{open_workbook, Reader, Xls};
+use calamine::{Reader, Xls};
 
-pub(crate) fn read_xls(file_path: &str, _: &str) -> Vec<Vec<String>> {
-    let mut workbook: Xls<_> =
-        open_workbook(file_path).expect("error.reader.read_xls.cannot_open_file");
+pub(crate) fn read_xls_content(file_content: Vec<u8>) -> Result<Vec<Vec<String>>, String> {
+    let cursor = std::io::Cursor::new(file_content);
+    let mut workbook: Xls<_> = match Xls::new(cursor) {
+        Ok(wb) => wb,
+        Err(_) => return Err("error.reader.read_xls.cannot_open_file".to_string()),
+    };
     let mut data: Vec<Vec<String>> = Vec::new();
     for sheet in workbook.sheet_names().to_owned() {
         if let Ok(range) = workbook.worksheet_range(&sheet) {
@@ -13,5 +16,5 @@ pub(crate) fn read_xls(file_path: &str, _: &str) -> Vec<Vec<String>> {
         }
     }
 
-    return data;
+    Ok(data)
 }

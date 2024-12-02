@@ -6,8 +6,12 @@ use sea_orm::EntityTrait;
 #[tokio::main]
 async fn main() {
     let config = config::get_config().await;
-    let (file, parser, statement) =
-        networth_db::readers::get_statement_from_file(&config.file_path, &config.file_secret);
+    let statement =
+        match networth_db::readers::get_statement_from_file(&config.file_path, &config.file_secret)
+        {
+            Ok(result) => result,
+            Err(error) => panic!("{}", error),
+        };
 
     println!("Statement Details:");
     println!("Account Number: {}", &statement.account_number);
@@ -26,9 +30,12 @@ async fn main() {
         );
     }
 
-    println!("File Type: {}", file.file_type.to_string());
-    println!("Parser: {}", parser.id.to_string());
-    networth_db::models::writers::statement::set_stage_statement(&config.db, &statement).await;
+    match networth_db::models::writers::statement::set_stage_statement(&config.db, &statement).await
+    {
+        Ok(_) => (),
+        Err(error) => panic!("{}", error),
+    };
+
     let imports = networth_db::models::entity::imports::Entity::find()
         .all(&config.db)
         .await;

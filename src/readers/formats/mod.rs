@@ -2,27 +2,34 @@ mod pdf;
 mod xls;
 
 use crate::readers::types::{File, FileData, FileType};
-use pdf::read_pdf;
-use xls::read_xls;
+use pdf::read_pdf_content;
+use xls::read_xls_content;
 
-pub(super) fn read_file(file_path: &str, file_secret: &str) -> File {
-    let file_extension = std::path::Path::new(file_path)
-        .extension()
-        .and_then(std::ffi::OsStr::to_str);
+pub(super) fn load_file_content(file_path: &str) -> Result<Vec<u8>, String> {
+    std::fs::read(file_path)
+        .map_err(|_| "error.reader.formats.load_file_content.cannot_open_file".to_string())
+}
 
-    if file_extension == Some("xls") || file_extension == Some("xlsx") {
-        return File {
+pub(super) fn read_file_content(file_content: Vec<u8>, file_secret: &str) -> Result<File, String> {
+    let file_type = infer::get(&file_content)
+        .map(|t| t.extension())
+        .or_else(|| None);
+
+    if file_type == Some("xls") || file_type == Some("xlsx") {
+        let table_data = read_xls_content(file_content)?;
+        return Ok(File {
             file_type: FileType::Xls,
-            data: FileData::Table(read_xls(file_path, file_secret)),
-        };
+            data: FileData::Table(table_data),
+        });
     }
 
-    if file_extension == Some("pdf") {
-        return File {
+    if file_type == Some("pdf") {
+        let text_data = read_pdf_content(file_content, file_secret)?;
+        return Ok(File {
             file_type: FileType::Pdf,
-            data: FileData::Text(read_pdf(file_path, file_secret)),
-        };
+            data: FileData::Text(text_data),
+        });
     }
 
-    panic!("error.reader.read_file.unsupported_file_type");
+    Err("error.reader.read_file.unsupported_file_type".to_string())
 }

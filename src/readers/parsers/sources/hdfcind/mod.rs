@@ -4,24 +4,26 @@ use sea_orm::prelude::Decimal;
 use crate::{
     models::custom_entity::account::AccountType,
     readers::{
-        parsers::types::{BankId, Parser, Statement, Transaction},
+        parsers::types::{Parser, Statement, Transaction},
         types::{File, FileData, FileType},
     },
     utils,
 };
 
 pub fn get_parser() -> Parser {
-    fn identify(file: &File) -> bool {
+    fn identify(file: &File) -> Result<bool, String> {
         let data = &file.data;
 
         match data {
             FileData::Table(data) => {
-                if let Some(first_row) = data.first() {
-                    if let Some(first_cell) = first_row.first() {
-                        if first_cell.contains("HDFC BANK Ltd.") {
-                            return true;
-                        }
-                    }
+                let is_xls = matches!(file.file_type, FileType::Xls);
+                let first_cell = data.first().and_then(|row| row.first());
+                let contains_hdfc = first_cell
+                    .map(|cell| cell.contains("HDFC BANK Ltd."))
+                    .unwrap_or(false);
+
+                if is_xls && contains_hdfc {
+                    return Ok(true);
                 }
             }
             FileData::Text(data) => {
@@ -29,34 +31,26 @@ pub fn get_parser() -> Parser {
                     && data.contains("Statementofaccount")
                     && data.contains("HDFCBANKLIMITED")
                 {
-                    return true;
+                    return Ok(true);
                 }
             }
         }
 
-        return false;
+        return Ok(false);
     }
 
-    fn parse(file: &File) -> Statement {
+    fn parse(file: &File) -> Result<Statement, String> {
         let data = &file.data;
         match data {
-            FileData::Table(data) => {
-                return parse_xls(data);
-            }
-            FileData::Text(data) => {
-                return parse_pdf(data);
-            }
+            FileData::Table(data) => parse_xls(data),
+            FileData::Text(data) => parse_pdf(data),
         }
     }
 
-    Parser {
-        id: BankId::HdfcInd,
-        identify,
-        parse,
-    }
+    Parser { identify, parse }
 }
 
-fn parse_xls(table: &Vec<Vec<String>>) -> Statement {
+fn parse_xls(table: &Vec<Vec<String>>) -> Result<Statement, String> {
     let mut account_number = String::new();
     let current_time = utils::datetime::get_current_datetime();
     let mut statement_date = current_time;
@@ -90,17 +84,17 @@ fn parse_xls(table: &Vec<Vec<String>>) -> Statement {
         }
     }
 
-    let transactions = parse_trnx_xls(table);
+    let transactions = parse_trnx_xls(table)?;
 
-    return Statement {
+    Ok(Statement {
         transactions,
         account_number,
         account_type,
         date: statement_date,
-    };
+    })
 }
 
-fn parse_trnx_xls(table: &Vec<Vec<String>>) -> Vec<Transaction> {
+fn parse_trnx_xls(table: &Vec<Vec<String>>) -> Result<Vec<Transaction>, String> {
     let mut transactions = Vec::new();
 
     let data_start_index = table
@@ -116,13 +110,13 @@ fn parse_trnx_xls(table: &Vec<Vec<String>>) -> Vec<Transaction> {
                 "Closing Balance",
             ]
         })
-        .expect("error.parser.hdfcind.start_of_data_not_found")
+        .ok_or("error.parser.hdfcind.start_of_data_not_found")?
         + 2;
 
     let data_end_index = table[data_start_index..]
         .iter()
         .position(|row| row == &["", "", "", "", "", "", ""])
-        .expect("error.parser.hdfcind.end_of_data_not_found")
+        .ok_or("error.parser.hdfcind.end_of_data_not_found")?
         + data_start_index;
 
     for row in &table[data_start_index..data_end_index] {
@@ -143,10 +137,10 @@ fn parse_trnx_xls(table: &Vec<Vec<String>>) -> Vec<Transaction> {
         });
     }
 
-    return transactions;
+    Ok(transactions)
 }
 
-fn parse_pdf(data: &str) -> Statement {
+fn parse_pdf(data: &str) -> Result<Statement, String> {
     let account_type = if data.contains("Statementofaccount") {
         AccountType::SavingsAccount
     } else {
@@ -154,7 +148,7 @@ fn parse_pdf(data: &str) -> Statement {
     };
 
     let account_number = Regex::new(r"AccountNo:(\d+)")
-        .expect("error.parser.hdfcind.regex_creation_failed_7")
+        .map_err(|_| "error.parser.hdfcind.regex_creation_failed_7")?
         .captures(&data)
         .and_then(|cap| cap.get(1))
         .map(|m| m.as_str().to_string())
@@ -162,39 +156,39 @@ fn parse_pdf(data: &str) -> Statement {
 
     let date = {
         Regex::new(r"StatementFrom:.*?To:(\d{2}/\d{2}/\d{4})")
-            .expect("error.parser.hdfcind.regex_creation_failed_6")
+            .map_err(|_| "error.parser.hdfcind.regex_creation_failed_6")?
             .captures(&data)
             .and_then(|cap| cap.get(1))
             .map(|m| utils::datetime::date_str_to_datetime(m.as_str()))
             .unwrap_or_else(|| utils::datetime::get_current_datetime())
     };
 
-    let transactions = parse_trnx_pdf(&data);
+    let transactions = parse_trnx_pdf(&data)?;
 
-    return Statement {
+    Ok(Statement {
         transactions,
         account_number,
         account_type,
         date,
-    };
+    })
 }
 
-fn parse_trnx_pdf(source: &str) -> Vec<Transaction> {
+fn parse_trnx_pdf(source: &str) -> Result<Vec<Transaction>, String> {
     let mut data = source.to_string();
 
     // Remove all the sections not a part of the statement
     data = Regex::new(r"(?ms)PageNo.*?Mumbai400013")
-        .expect("error.parser.hdfcind.regex_creation_failed_1")
+        .map_err(|_| "error.parser.hdfcind.regex_creation_failed_1")?
         .replace_all(&data, "")
         .to_string();
 
     data = Regex::new(r"(?ms)STATEMENTSUMMARY.*")
-        .expect("error.parser.hdfcind.regex_creation_failed_2")
+        .map_err(|_| "error.parser.hdfcind.regex_creation_failed_2")?
         .replace_all(&data, "")
         .to_string();
 
     data = Regex::new(r"(?ms)\nDate.*ClosingBalance ")
-        .expect("error.parser.hdfcind.regex_creation_failed_3")
+        .map_err(|_| "error.parser.hdfcind.regex_creation_failed_3")?
         .replace_all(&data, "")
         .to_string();
 
@@ -203,9 +197,9 @@ fn parse_trnx_pdf(source: &str) -> Vec<Transaction> {
 
     // The statement is split into two lines
     let line1 = Regex::new(r"(?ms)\d{2}/\d{2}/\d{2}.*?\d{2}/\d{2}/\d{2}")
-        .expect("error.parser.hdfcind.regex_creation_failed_4");
+        .map_err(|_| "error.parser.hdfcind.regex_creation_failed_4")?;
     let line2 = Regex::new(r"(?s).*?(\d{2}/\d{2}/\d{2})")
-        .expect("error.parser.hdfcind.regex_creation_failed_5");
+        .map_err(|_| "error.parser.hdfcind.regex_creation_failed_5")?;
 
     while !data.is_empty() {
         let mut description = String::new();
@@ -216,7 +210,7 @@ fn parse_trnx_pdf(source: &str) -> Vec<Transaction> {
         // Capture transaction's 1st line
         let capture1 = line1
             .find(&data)
-            .expect("error.parser.hdfcind.line1_not_found");
+            .ok_or("error.parser.hdfcind.line1_not_found")?;
 
         let parts1: Vec<&str> = capture1
             .as_str()
@@ -281,7 +275,7 @@ fn parse_trnx_pdf(source: &str) -> Vec<Transaction> {
         });
     }
 
-    return statements;
+    Ok(statements)
 }
 
 #[cfg(test)]

@@ -1,24 +1,20 @@
 use crate::readers::{
-    parsers::types::{BankId, Parser, Statement},
+    parsers::types::{Parser, Statement},
     types::{File, FileType},
 };
 
 pub fn get_parser() -> Parser {
-    fn identify(file: &File) -> bool {
+    fn identify(file: &File) -> Result<bool, String> {
         if !matches!(file.file_type, FileType::Xls) {
-            return false;
+            return Ok(false);
         }
 
-        return false;
+        return Ok(false);
     }
 
-    fn parse(_: &File) -> Statement {
+    fn parse(_: &File) -> Result<Statement, String> {
         todo!()
     }
 
-    Parser {
-        id: BankId::IcicInd,
-        identify,
-        parse,
-    }
+    Parser { identify, parse }
 }

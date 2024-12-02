@@ -4,10 +4,7 @@ mod formats;
 pub(crate) mod parsers;
 mod types;
 
-use crate::readers::{
-    parsers::types::{Parser, Statement},
-    types::File,
-};
+use crate::readers::parsers::types::Statement;
 
 /// Reads and parses a financial file (PDF, XLS, etc.)
 ///
@@ -16,17 +13,40 @@ use crate::readers::{
 /// * `file_secret` - Password/secret needed to decrypt the file (if encrypted); empty string if not encrypted
 ///
 /// # Returns
-/// A tuple containing:
-/// * The raw file content as a `File` enum
-/// * The parser used to interpret the file
-/// * The parsed statement data
+/// The parsed statement data
+///
+/// # Errors
+/// Returns an error if:
+/// * The file cannot be read
+/// * The file format is unsupported
+/// * The file cannot be parsed
 pub fn get_statement_from_file(
     file_path: &String,
     file_secret: &String,
-) -> (File, Parser, Statement) {
-    let file = formats::read_file(file_path, file_secret);
-    let parser = parsers::get_parser(&file);
+) -> Result<Statement, String> {
+    let file_content = formats::load_file_content(file_path)?;
+    get_statement_from_file_content(file_content, file_secret)
+}
 
-    let parsed_data = parser.parse(&file);
-    return (file, parser, parsed_data);
+/// Reads and parses a financial file (PDF, XLS, etc.) from raw file content
+///
+/// # Arguments
+/// * `file_content` - Raw bytes of the file content
+/// * `file_secret` - Password/secret needed to decrypt the file (if encrypted); empty string if not encrypted
+///
+/// # Returns
+/// The parsed statement data
+///
+/// # Errors
+/// Returns an error if:
+/// * The file format is unsupported
+/// * The file cannot be parsed
+pub fn get_statement_from_file_content(
+    file_content: Vec<u8>,
+    file_secret: &String,
+) -> Result<Statement, String> {
+    let file = formats::read_file_content(file_content, file_secret)?;
+    let parser = parsers::get_parser(&file)?;
+    let parsed_data = parser.parse(&file)?;
+    Ok(parsed_data)
 }

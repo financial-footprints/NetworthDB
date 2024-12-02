@@ -34,7 +34,7 @@ mod xls {
         };
 
         let parser = get_parser();
-        assert!(parser.identify(&file));
+        assert!(parser.identify(&file).unwrap());
     }
 
     #[test]
@@ -48,7 +48,7 @@ mod xls {
         };
 
         let parser = get_parser();
-        assert!(!parser.identify(&file));
+        assert!(!parser.identify(&file).unwrap());
     }
 
     #[test]
@@ -92,7 +92,7 @@ mod xls {
         };
 
         let parser = get_parser();
-        let statements = parser.parse(&file);
+        let statements = parser.parse(&file).unwrap();
 
         assert_eq!(statements.account_number, "123456789");
         assert_eq!(
@@ -159,7 +159,7 @@ mod xls {
         };
 
         let parser = get_parser();
-        let statements = parser.parse(&file);
+        let statements = parser.parse(&file).unwrap();
 
         assert_eq!(statements.account_number, "");
         assert_eq!(
@@ -170,7 +170,6 @@ mod xls {
     }
 
     #[test]
-    #[should_panic(expected = "error.parser.hdfcind.start_of_data_not_found")]
     fn test_parse_missing_data_start() {
         let file = File {
             file_type: FileType::Xls,
@@ -178,11 +177,13 @@ mod xls {
         };
 
         let parser = get_parser();
-        parser.parse(&file);
+        assert_eq!(
+            parser.parse(&file).unwrap_err(),
+            "error.parser.hdfcind.start_of_data_not_found"
+        );
     }
 
     #[test]
-    #[should_panic(expected = "error.parser.hdfcind.end_of_data_not_found")]
     fn test_parse_missing_data_end() {
         let file = File {
             file_type: FileType::Xls,
@@ -210,7 +211,10 @@ mod xls {
         };
 
         let parser = get_parser();
-        parser.parse(&file);
+        assert_eq!(
+            parser.parse(&file).unwrap_err(),
+            "error.parser.hdfcind.end_of_data_not_found"
+        );
     }
 }
 
@@ -239,7 +243,7 @@ mod pdf {
         };
 
         let parser = get_parser();
-        assert!(parser.identify(&file));
+        assert!(parser.identify(&file).unwrap());
     }
 
     #[test]
@@ -250,7 +254,7 @@ mod pdf {
         };
 
         let parser = get_parser();
-        assert!(!parser.identify(&file));
+        assert!(!parser.identify(&file).unwrap());
     }
 
     #[test]
@@ -261,7 +265,7 @@ mod pdf {
         };
 
         let parser = get_parser();
-        let statements = parser.parse(&file);
+        let statements = parser.parse(&file).unwrap();
 
         assert_eq!(statements.account_number, "123456789");
         assert_eq!(statements.account_type, AccountType::SavingsAccount);
@@ -317,7 +321,7 @@ mod pdf {
             };
 
         let parser = get_parser();
-        let statements = parser.parse(&file);
+        let statements = parser.parse(&file).unwrap();
 
         assert_eq!(statements.account_number, "");
         assert_eq!(statements.account_type, AccountType::Unknown);
@@ -328,7 +332,6 @@ mod pdf {
     }
 
     #[test]
-    #[should_panic(expected = "error.parser.hdfcind.line1_not_found")]
     fn test_parse_missing_data_start() {
         let file = File {
                 file_type: FileType::Pdf,
@@ -336,6 +339,9 @@ mod pdf {
             };
 
         let parser = get_parser();
-        parser.parse(&file);
+        assert_eq!(
+            parser.parse(&file).unwrap_err(),
+            "error.parser.hdfcind.line1_not_found"
+        );
     }
 }

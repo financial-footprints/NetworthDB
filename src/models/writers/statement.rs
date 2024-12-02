@@ -8,6 +8,7 @@ use sea_orm::{
     prelude::Decimal, sqlx::types::chrono::Utc, ActiveValue::Set, DatabaseConnection, EntityTrait,
 };
 use uuid::Uuid;
+
 /// Put statement object in database
 ///
 /// # Arguments
@@ -15,8 +16,11 @@ use uuid::Uuid;
 /// * `statement` - Statement object containing account and transaction data
 ///
 /// # Returns
-/// * `Uuid` - ID of the created import staging record
-pub async fn set_stage_statement(db: &DatabaseConnection, statement: &Statement) -> Uuid {
+/// * `Result<Uuid, sea_orm::DbErr>` - ID of the created import staging record or error
+pub async fn set_stage_statement(
+    db: &DatabaseConnection,
+    statement: &Statement,
+) -> Result<Uuid, sea_orm::DbErr> {
     // Create transaction staging record
     let staging = imports::ActiveModel {
         id: Set(Uuid::new_v4()),
@@ -29,12 +33,7 @@ pub async fn set_stage_statement(db: &DatabaseConnection, statement: &Statement)
     let staging_id = imports::Entity::insert(staging)
         .exec(db)
         .await
-        .map_err(|err| {
-            tracing::error!("error.writers.statement.stage_statement.imports: {}", err);
-            err
-        })
-        .expect("error.writers.statement.stage_statement.imports")
-        .last_insert_id;
+        .map(|res| res.last_insert_id)?;
 
     // Create transaction staged records
     let staged_transactions: Vec<staged_transactions::ActiveModel> = statement
@@ -58,15 +57,7 @@ pub async fn set_stage_statement(db: &DatabaseConnection, statement: &Statement)
 
     staged_transactions::Entity::insert_many(staged_transactions)
         .exec(db)
-        .await
-        .map_err(|err| {
-            tracing::error!(
-                "error.writers.statement.stage_statement.staged_transactions: {}",
-                err
-            );
-            err
-        })
-        .expect("error.writers.statement.stage_statement.staged_transactions");
+        .await?;
 
-    return staging_id;
+    Ok(staging_id)
 }
