@@ -4,5 +4,6 @@ pub mod prelude;
 
 pub mod accounts;
 pub mod imports;
+pub mod sea_orm_active_enums;
 pub mod staged_transactions;
 pub mod transactions;

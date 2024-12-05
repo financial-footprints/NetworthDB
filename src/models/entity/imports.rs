@@ -9,8 +9,8 @@ pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
     pub account_number: String,
-    pub import_date: DateTimeUtc,
-    pub source_file_date: DateTimeUtc,
+    pub import_date: DateTime,
+    pub source_file_date: DateTime,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

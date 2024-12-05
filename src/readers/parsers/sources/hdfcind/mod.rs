@@ -2,7 +2,7 @@ use regex::Regex;
 use sea_orm::prelude::Decimal;
 
 use crate::{
-    models::custom_entity::account::AccountType,
+    models::entity::sea_orm_active_enums::AccountType,
     readers::{
         parsers::types::{Parser, Statement, Transaction},
         types::{File, FileData, FileType},

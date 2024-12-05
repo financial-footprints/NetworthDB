@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: networthdb
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "6432:5432"
+    networks:
+      database:
+        ipv4_address: 10.41.3.3
+
+If you need to create a new network, uncomment the following lines:
+networks:
+  database:
+    name: database
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.41.3.0/24
+          gateway: 10.41.3.1

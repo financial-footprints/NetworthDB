@@ -2,7 +2,6 @@
 //! interact the SQL tables
 
 use networth_db_migrations::{MigrationTrait, MigratorTrait};
-pub mod custom_entity;
 pub mod entity;
 pub mod writers;
 

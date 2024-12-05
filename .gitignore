@@ -11,3 +11,7 @@
 
 # Database
 *.sqlite
+
+# Docker
+compose.local.yml
+ 

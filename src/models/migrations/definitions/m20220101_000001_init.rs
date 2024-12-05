@@ -16,9 +16,9 @@ impl MigrationTrait for Migration {
         let db = manager.get_connection();
         let schema = db.get_database_backend();
         let uuid_generator = match schema {
-            DbBackend::Sqlite => Expr::cust("(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6))))"),
+            DbBackend::Sqlite => Expr::cust("lower(hex(randomblob(16)))"),
             DbBackend::Postgres => Expr::cust("gen_random_uuid()"),
-            DbBackend::MySql => Expr::cust("UUID()")
+            DbBackend::MySql => Expr::cust("UUID()"),
         };
 
         match schema {
@@ -44,7 +44,12 @@ impl MigrationTrait for Migration {
                             .default(uuid_generator.clone())
                             .primary_key(),
                     )
-                    .col(timestamp(Accounts::LastUpdated).not_null())
+                    .col(
+                        timestamp(Accounts::UpdatedAt)
+                            .default(Expr::current_timestamp())
+                            .not_null(),
+                    )
+                    .col(timestamp(Accounts::AutoUpdatedAt))
                     .col(string(Accounts::AccountNumber).not_null())
                     .col(
                         ColumnDef::new(Accounts::Type)
@@ -54,6 +59,59 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
+
+        // Create trigger to update UpdatedAt timestamp
+        match schema {
+            DbBackend::Postgres => {
+                manager
+                    .get_connection()
+                    .execute_unprepared(
+                        r#"
+                        CREATE OR REPLACE FUNCTION auto_change_updated_at()
+                        RETURNS TRIGGER AS $$
+                        BEGIN
+                            NEW.updated_at = CURRENT_TIMESTAMP;
+                            RETURN NEW;
+                        END;
+                        $$ language 'plpgsql';
+
+                        CREATE TRIGGER accounts_auto_change_updated_at
+                            BEFORE UPDATE ON accounts
+                            FOR EACH ROW
+                            EXECUTE FUNCTION auto_change_updated_at();
+                        "#,
+                    )
+                    .await?;
+            }
+            DbBackend::MySql => {
+                manager
+                    .get_connection()
+                    .execute_unprepared(
+                        r#"
+                        CREATE TRIGGER accounts_auto_change_updated_at
+                            BEFORE UPDATE ON accounts
+                            FOR EACH ROW
+                            SET NEW.updated_at = CURRENT_TIMESTAMP;
+                        "#,
+                    )
+                    .await?;
+            }
+            DbBackend::Sqlite => {
+                manager
+                    .get_connection()
+                    .execute_unprepared(
+                        r#"
+                        CREATE TRIGGER accounts_auto_change_updated_at
+                            AFTER UPDATE ON accounts
+                            BEGIN
+                                UPDATE accounts SET updated_at = CURRENT_TIMESTAMP
+                                WHERE id = NEW.id;
+                            END;
+                        "#,
+                    )
+                    .await?;
+            }
+        }
 
         // Create Transactions table
         manager
@@ -110,7 +168,7 @@ impl MigrationTrait for Migration {
                             .default(uuid_generator.clone())
                             .primary_key(),
                     )
-                    .col(string(Imports::AccountNumber).not_null())
+                    .col(string(Imports::AccountNumber))
                     .col(timestamp(Imports::ImportDate).not_null())
                     .col(timestamp(Imports::SourceFileDate).not_null())
                     .to_owned(),
@@ -187,7 +245,8 @@ enum Accounts {
     Table,
     Id,
     AccountNumber,
-    LastUpdated,
+    UpdatedAt,
+    AutoUpdatedAt,
     Type,
 }
 
@@ -202,6 +261,8 @@ pub enum AccountType {
     CreditCard,
     #[sea_orm(string_value = "fixed_deposit")]
     FixedDeposit,
+    #[sea_orm(string_value = "unknown")]
+    Unknown,
 }
 
 #[derive(DeriveIden)]

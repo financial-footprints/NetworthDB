@@ -8,7 +8,7 @@ use std::convert::TryInto;
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    pub date: DateTimeUtc,
+    pub date: DateTime,
     pub amount: Decimal,
     pub balance: Decimal,
     pub account_id: Uuid,

@@ -4,9 +4,7 @@ use crate::{
     models::entity::{imports, staged_transactions},
     readers::parsers::types::Statement,
 };
-use sea_orm::{
-    prelude::Decimal, sqlx::types::chrono::Utc, ActiveValue::Set, DatabaseConnection, EntityTrait,
-};
+use sea_orm::{prelude::Decimal, ActiveValue::Set, DatabaseConnection, EntityTrait};
 use uuid::Uuid;
 
 /// Put statement object in database
@@ -25,8 +23,8 @@ pub async fn set_stage_statement(
     let staging = imports::ActiveModel {
         id: Set(Uuid::new_v4()),
         account_number: Set(statement.account_number.clone()),
-        import_date: Set(Utc::now()),
-        source_file_date: Set(statement.date),
+        import_date: Set(statement.date.naive_utc()),
+        source_file_date: Set(statement.date.naive_utc()),
         ..Default::default()
     };
 
