@@ -31,5 +31,8 @@ pub(super) fn read_file_content(file_content: Vec<u8>, file_secret: &str) -> Res
         });
     }
 
-    Err("error.reader.read_file.unsupported_file_type".to_string())
+    Err(format!(
+        "error.reader.read_file.unsupported_file_type: {:?}",
+        file_type
+    ))
 }

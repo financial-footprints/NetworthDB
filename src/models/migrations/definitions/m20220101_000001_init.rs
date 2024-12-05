@@ -49,7 +49,7 @@ impl MigrationTrait for Migration {
                             .default(Expr::current_timestamp())
                             .not_null(),
                     )
-                    .col(timestamp(Accounts::AutoUpdatedAt))
+                    .col(timestamp_null(Accounts::AutoUpdatedAt))
                     .col(string(Accounts::AccountNumber).not_null())
                     .col(
                         ColumnDef::new(Accounts::Type)

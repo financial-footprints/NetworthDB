@@ -10,7 +10,7 @@ pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
     pub updated_at: DateTime,
-    pub auto_updated_at: DateTime,
+    pub auto_updated_at: Option<DateTime>,
     pub account_number: String,
     pub r#type: AccountType,
 }

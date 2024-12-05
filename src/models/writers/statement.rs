@@ -5,7 +5,7 @@ use crate::{
     readers::parsers::types::Statement,
     utils::datetime::get_current_naive_datetime,
 };
-use sea_orm::{prelude::Decimal, ActiveValue::Set, DatabaseConnection, EntityTrait};
+use sea_orm::{entity::*, prelude::Decimal, ActiveValue::Set, DatabaseConnection};
 use uuid::Uuid;
 
 /// Put statement object in database
@@ -31,8 +31,8 @@ pub async fn set_stage_statement(
 
     let staging_id = imports::Entity::insert(staging)
         .exec(db)
-        .await
-        .map(|res| res.last_insert_id)?;
+        .await?
+        .last_insert_id;
 
     // Create transaction staged records
     let staged_transactions: Vec<staged_transactions::ActiveModel> = statement
