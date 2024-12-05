@@ -1,10 +1,10 @@
 [package]
 name = "networth_db"
 version = "0.1.0"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-calamine = "0.25.0"
+calamine = "0.26.1"
 dotenvy = "0.15.7"
 infer = "0.16.0"
 lopdf = { version = "0.34.0", features = ["pom", "pom_parser"] }
@@ -14,6 +14,7 @@ tokio = { version = "1.41.1", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1.40"
 uuid = { version = "1.11.0", features = ["v4"] }
 networth_db_migrations = { path = "./src/models/migrations" }
+serde = "1.0.215"
 
 [dev-dependencies]
 cargo-commander = "2.0.15"
@@ -21,7 +22,7 @@ cargo-commander = "2.0.15"
 [package.metadata.commands]
 # seaORM
 # Entity Generation
-orm-entity = "sea-orm-cli generate entity -o src/models/entity"
+orm-entity = "sea-orm-cli generate entity --with-serde both -o src/models/entity"
 orm-reapply = """
     sea-orm-cli migrate down -d src/models/migrations && \
     sea-orm-cli migrate up -d src/models/migrations

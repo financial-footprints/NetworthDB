@@ -11,6 +11,10 @@ pub fn get_current_datetime() -> DateTimeUtc {
     Utc::now()
 }
 
+pub fn get_current_naive_datetime() -> sea_orm::prelude::DateTime {
+    Utc::now().naive_utc()
+}
+
 /// Converts a date string in format "DD/MM/YYYY" to a UTC datetime
 ///
 /// # Arguments

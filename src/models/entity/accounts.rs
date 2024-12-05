@@ -2,9 +2,9 @@
 
 use super::sea_orm_active_enums::AccountType;
 use sea_orm::entity::prelude::*;
-use std::convert::TryInto;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "accounts")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]

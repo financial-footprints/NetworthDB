@@ -3,6 +3,7 @@
 use crate::{
     models::entity::{imports, staged_transactions},
     readers::parsers::types::Statement,
+    utils::datetime::get_current_naive_datetime,
 };
 use sea_orm::{prelude::Decimal, ActiveValue::Set, DatabaseConnection, EntityTrait};
 use uuid::Uuid;
@@ -23,7 +24,7 @@ pub async fn set_stage_statement(
     let staging = imports::ActiveModel {
         id: Set(Uuid::new_v4()),
         account_number: Set(statement.account_number.clone()),
-        import_date: Set(statement.date.naive_utc()),
+        import_date: Set(get_current_naive_datetime()),
         source_file_date: Set(statement.date.naive_utc()),
         ..Default::default()
     };
