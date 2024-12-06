@@ -4,33 +4,34 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
-#[sea_orm(table_name = "staged_transactions")]
+#[sea_orm(table_name = "transactions")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    pub staging_id: Uuid,
-    pub date: DateTime,
+    pub account_id: Uuid,
     pub amount: Decimal,
     pub balance: Decimal,
-    pub ref_no: String,
+    pub date: DateTime,
     pub description: String,
+    pub ref_no: String,
+    pub sequence_number: i64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::imports::Entity",
-        from = "Column::StagingId",
-        to = "super::imports::Column::Id",
+        belongs_to = "super::accounts::Entity",
+        from = "Column::AccountId",
+        to = "super::accounts::Column::Id",
         on_update = "Cascade",
         on_delete = "Cascade"
     )]
-    Imports,
+    Accounts,
 }
 
-impl Related<super::imports::Entity> for Entity {
+impl Related<super::accounts::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Imports.def()
+        Relation::Accounts.def()
     }
 }
 

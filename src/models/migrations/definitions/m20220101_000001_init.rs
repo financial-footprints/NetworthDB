@@ -49,8 +49,12 @@ impl MigrationTrait for Migration {
                             .default(Expr::current_timestamp())
                             .not_null(),
                     )
-                    .col(timestamp_null(Accounts::AutoUpdatedAt))
                     .col(string(Accounts::AccountNumber).not_null())
+                    .col(
+                        big_integer(Accounts::MaxSequenceNumber)
+                            .default(0)
+                            .not_null(),
+                    )
                     .col(
                         ColumnDef::new(Accounts::Type)
                             .custom(AccountType::name())
@@ -124,12 +128,13 @@ impl MigrationTrait for Migration {
                             .default(uuid_generator.clone())
                             .primary_key(),
                     )
-                    .col(timestamp(Transactions::Date).not_null())
+                    .col(uuid(Transactions::AccountId).not_null())
                     .col(decimal(Transactions::Amount).not_null())
                     .col(decimal(Transactions::Balance).not_null())
-                    .col(uuid(Transactions::AccountId).not_null())
-                    .col(string(Transactions::RefNo).not_null())
+                    .col(timestamp(Transactions::Date).not_null())
                     .col(string(Transactions::Description).not_null())
+                    .col(string(Transactions::RefNo).not_null())
+                    .col(big_integer(Transactions::SequenceNumber).not_null())
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_transaction_account")
@@ -138,11 +143,85 @@ impl MigrationTrait for Migration {
                             .on_delete(ForeignKeyAction::Cascade)
                             .on_update(ForeignKeyAction::Cascade),
                     )
+                    .index(
+                        Index::create()
+                            .name("uniq_accountid_sequencenumber")
+                            .table(Transactions::Table)
+                            .col(Transactions::AccountId)
+                            .col(Transactions::SequenceNumber)
+                            .unique(),
+                    )
                     .to_owned(),
             )
             .await?;
 
-        match db.get_database_backend() {
+        // Create trigger to update max_sequence_number
+        match schema {
+            DbBackend::Postgres => {
+                manager
+                    .get_connection()
+                    .execute_unprepared(
+                        r#"
+                        CREATE OR REPLACE FUNCTION update_max_sequence_number()
+                        RETURNS TRIGGER AS $$
+                        BEGIN
+                            UPDATE accounts
+                            SET max_sequence_number = NEW.sequence_number
+                            WHERE id = NEW.account_id
+                            AND max_sequence_number < NEW.sequence_number;
+                            RETURN NEW;
+                        END;
+                        $$ language 'plpgsql';
+
+                        CREATE TRIGGER update_max_sequence_number_trigger
+                            AFTER INSERT OR UPDATE ON transactions
+                            FOR EACH ROW
+                            EXECUTE FUNCTION update_max_sequence_number();
+                        "#,
+                    )
+                    .await?;
+            }
+            DbBackend::MySql => {
+                manager
+                    .get_connection()
+                    .execute_unprepared(
+                        r#"
+                        CREATE TRIGGER update_max_sequence_number_trigger
+                            AFTER INSERT OR UPDATE ON transactions
+                            FOR EACH ROW
+                            BEGIN
+                                UPDATE accounts
+                                SET max_sequence_number = NEW.sequence_number
+                                WHERE id = NEW.account_id
+                                AND max_sequence_number < NEW.sequence_number;
+                                RETURN NEW;
+                            END;
+                        "#,
+                    )
+                    .await?;
+            }
+            DbBackend::Sqlite => {
+                manager
+                    .get_connection()
+                    .execute_unprepared(
+                        r#"
+                        CREATE TRIGGER update_max_sequence_number_trigger
+                            AFTER INSERT OR UPDATE ON transactions
+                            BEGIN
+                                UPDATE accounts
+                                SET max_sequence_number = NEW.sequence_number
+                                WHERE id = NEW.account_id
+                                AND max_sequence_number < NEW.sequence_number;
+                                RETURN NEW;
+                            END;
+                        "#,
+                    )
+                    .await?;
+            }
+        }
+
+        // Create index on date
+        match schema {
             DbBackend::Sqlite => {}
             DbBackend::MySql | DbBackend::Postgres => {
                 manager
@@ -186,16 +265,25 @@ impl MigrationTrait for Migration {
                             .default(uuid_generator.clone())
                             .primary_key(),
                     )
-                    .col(uuid(StagedTransactions::StagingId).not_null())
+                    .col(uuid(StagedTransactions::ImportId).not_null())
                     .col(date_time(StagedTransactions::Date).not_null())
                     .col(decimal(StagedTransactions::Amount).not_null())
                     .col(decimal(StagedTransactions::Balance).not_null())
                     .col(string(StagedTransactions::RefNo).not_null())
                     .col(string(StagedTransactions::Description).not_null())
+                    .col(big_integer(StagedTransactions::SequenceNumber).not_null())
+                    .index(
+                        Index::create()
+                            .name("uniq_stagingid_sequencenumber")
+                            .table(StagedTransactions::Table)
+                            .col(StagedTransactions::ImportId)
+                            .col(StagedTransactions::SequenceNumber)
+                            .unique(),
+                    )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_staged_staging")
-                            .from(StagedTransactions::Table, StagedTransactions::StagingId)
+                            .from(StagedTransactions::Table, StagedTransactions::ImportId)
                             .to(Imports::Table, Imports::Id)
                             .on_delete(ForeignKeyAction::Cascade)
                             .on_update(ForeignKeyAction::Cascade),
@@ -236,6 +324,23 @@ impl MigrationTrait for Migration {
             DbBackend::MySql | DbBackend::Sqlite => {}
         }
 
+        // Drop trigger
+        match schema {
+            DbBackend::Postgres => {
+                manager
+                    .get_connection()
+                    .execute_unprepared(r#"DROP FUNCTION update_max_sequence_number();"#)
+                    .await?;
+
+                manager
+                    .get_connection()
+                    .execute_unprepared(r#"DROP FUNCTION auto_change_updated_at();"#)
+                    .await?;
+            }
+            DbBackend::MySql => {}
+            DbBackend::Sqlite => {}
+        }
+
         Ok(())
     }
 }
@@ -246,7 +351,7 @@ enum Accounts {
     Id,
     AccountNumber,
     UpdatedAt,
-    AutoUpdatedAt,
+    MaxSequenceNumber,
     Type,
 }
 
@@ -270,6 +375,7 @@ enum Transactions {
     Table,
     Id,
     AccountId,
+    SequenceNumber,
     Date,
     Description,
     RefNo,
@@ -290,7 +396,8 @@ enum Imports {
 enum StagedTransactions {
     Table,
     Id,
-    StagingId,
+    ImportId,
+    SequenceNumber,
     Date,
     Description,
     RefNo,

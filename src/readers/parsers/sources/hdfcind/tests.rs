@@ -13,7 +13,7 @@ pub fn _today_date_str(date: DateTimeUtc) -> String {
 #[cfg(test)]
 mod xls {
     use crate::{
-        models::entity::sea_orm_active_enums::AccountType,
+        models::entities::sea_orm_active_enums::AccountType,
         readers::{
             parsers::sources::hdfcind::{get_parser, tests::_today_date_str},
             types::{File, FileData, FileType},
@@ -221,7 +221,7 @@ mod xls {
 #[cfg(test)]
 mod pdf {
     use crate::{
-        models::entity::sea_orm_active_enums::AccountType,
+        models::entities::sea_orm_active_enums::AccountType,
         readers::{
             parsers::sources::hdfcind::{get_parser, tests::_today_date_str},
             types::{File, FileData, FileType},

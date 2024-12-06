@@ -22,7 +22,7 @@ cargo-commander = "2.0.15"
 [package.metadata.commands]
 # seaORM
 # Entity Generation
-orm-entity = "sea-orm-cli generate entity --with-serde both -o src/models/entity"
+orm-entity = "sea-orm-cli generate entity --with-serde both -o src/models/entities"
 orm-reapply = """
     sea-orm-cli migrate down -d src/models/migrations && \
     sea-orm-cli migrate up -d src/models/migrations

@@ -1,4 +1,4 @@
-use crate::{models::entity::sea_orm_active_enums::AccountType, readers::types::File};
+use crate::{models::entities::sea_orm_active_enums::AccountType, readers::types::File};
 use sea_orm::prelude::{DateTimeUtc, Decimal};
 
 #[derive(Debug)]

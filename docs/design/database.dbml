@@ -1,0 +1,78 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+enum account_type {
+  None
+}
+
+Table "accounts" {
+  "id" uuid [not null, default: `gen_random_uuid()`]
+  "updated_at" timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  "auto_updated_at" timestamp
+  "account_number" "character varying" [not null]
+  "max_sequence_number" integer [not null, default: 0]
+  "type" account_type [not null]
+  "auto_change_updated_at" TRIGGER
+
+  Indexes {
+    id [pk, name: "accounts_pkey"]
+  }
+}
+
+Table "imports" {
+  "id" uuid [not null, default: `gen_random_uuid()`]
+  "account_number" "character varying" [not null]
+  "import_date" timestamp [not null]
+  "source_file_date" timestamp [not null]
+
+  Indexes {
+    id [pk, name: "imports_pkey"]
+  }
+}
+
+Table "seaql_migrations" {
+  "version" "character varying" [not null]
+  "applied_at" bigint [not null]
+
+  Indexes {
+    version [pk, name: "seaql_migrations_pkey"]
+  }
+}
+
+Table "staged_transactions" {
+  "id" uuid [not null, default: `gen_random_uuid()`]
+  "import_id" uuid [not null]
+  "date" timestamp [not null]
+  "amount" numeric [not null]
+  "balance" numeric [not null]
+  "ref_no" "character varying" [not null]
+  "description" "character varying" [not null]
+  "sequence_number" integer [not null]
+
+  Indexes {
+    id [pk, name: "staged_transactions_pkey"]
+    (import_id, sequence_number) [unique, name: "uniq_stagingid_sequencenumber"]
+  }
+}
+
+Table "transactions" {
+  "id" uuid [not null, default: `gen_random_uuid()`]
+  "account_id" uuid [not null]
+  "amount" numeric [not null]
+  "balance" numeric [not null]
+  "date" timestamp [not null]
+  "description" "character varying" [not null]
+  "ref_no" "character varying" [not null]
+  "sequence_number" integer [not null]
+  "update_max_sequence_number" TRIGGER
+
+  Indexes {
+    id [pk, name: "transactions_pkey"]
+    (account_id, sequence_number) [unique, name: "uniq_accountid_sequencenumber"]
+  }
+}
+
+Ref "fk_staged_staging":"imports"."id" < "staged_transactions"."import_id" [update: cascade, delete: cascade]
+
+Ref "fk_transaction_account":"accounts"."id" < "transactions"."account_id" [update: cascade, delete: cascade]
+

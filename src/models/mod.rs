@@ -2,10 +2,11 @@
 //! interact the SQL tables
 
 use networth_db_migrations::{MigrationTrait, MigratorTrait};
-pub mod entity;
-pub mod writers;
+pub mod entities;
+pub mod helpers;
+pub mod manage;
 
-/// Returns a vector of all database migrations defined in the NetworthDB's migration
+/// Returns a list of all database migrations defined in the NetworthDB's migration
 ///
 /// This function provides access to the migrations defined in the migration crate's
 /// Migrator implementation. These migrations handle database schema changes and
@@ -13,7 +14,7 @@ pub mod writers;
 ///
 /// # Returns
 ///
-/// * `Vec<Box<dyn MigrationTrait>>` - A vector of boxed migrations that implement
+/// * `Vec<Box<dyn MigrationTrait>>` - A list of boxed migrations that implement
 ///   the MigrationTrait
 pub fn migrations() -> Vec<Box<dyn MigrationTrait>> {
     networth_db_migrations::Migrator::migrations()

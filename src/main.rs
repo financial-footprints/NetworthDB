@@ -30,13 +30,12 @@ async fn main() {
         );
     }
 
-    match networth_db::models::writers::statement::set_stage_statement(&config.db, &statement).await
-    {
+    match networth_db::models::manage::imports::create_import(&config.db, &statement).await {
         Ok(_) => (),
         Err(error) => panic!("{}", error),
     };
 
-    let imports = networth_db::models::entity::imports::Entity::find()
+    let imports = networth_db::models::entities::imports::Entity::find()
         .all(&config.db)
         .await;
 
