@@ -1,6 +1,9 @@
+use super::{
+    staged_transactions::txn_create_staged_transaction, transactions::txn_create_transaction,
+};
 use crate::{
     models::{
-        entities::{imports, staged_transactions, transactions},
+        entities::{imports, transactions},
         helpers::{
             imports::*,
             staged_transactions::{
@@ -8,11 +11,7 @@ use crate::{
             },
             *,
         },
-        manage::{
-            accounts::get_max_sequence,
-            staged_transactions::{create_staged_transactions, get_staged_transactions},
-            transactions::create_transactions,
-        },
+        manage::{accounts::get_max_sequence, staged_transactions::get_staged_transactions},
     },
     readers::parsers::types::Statement,
     utils::datetime::get_current_naive_datetime,
@@ -45,29 +44,26 @@ pub async fn create_import(db: &DatabaseConnection, statement: &Statement) -> Re
         .last_insert_id;
 
     let mut sequence_number = 0;
-    let staged_transactions: Vec<staged_transactions::ActiveModel> = statement
-        .transactions
-        .iter()
-        .map(|transaction| {
-            let amount = if transaction.deposit > Decimal::ZERO {
-                transaction.deposit
-            } else {
-                -transaction.withdrawal
-            };
-            sequence_number += 1;
-            build_staged_transaction(
-                amount,
-                import_id,
-                transaction.date.naive_utc(),
-                transaction.balance,
-                sequence_number,
-                transaction.ref_no.clone(),
-                transaction.description.clone(),
-            )
-        })
-        .collect();
-
-    create_staged_transactions(db, staged_transactions).await?;
+    let txn = db.begin().await?;
+    for transaction in statement.transactions.iter() {
+        let amount = if transaction.deposit > Decimal::ZERO {
+            transaction.deposit
+        } else {
+            -transaction.withdrawal
+        };
+        sequence_number += 1;
+        let staged_transaction = build_staged_transaction(
+            amount,
+            import_id,
+            transaction.date.naive_utc(),
+            transaction.balance,
+            sequence_number,
+            transaction.ref_no.clone(),
+            transaction.description.clone(),
+        );
+        txn_create_staged_transaction(&txn, &staged_transaction).await?;
+    }
+    txn.commit().await?;
     Ok(import_id)
 }
 
@@ -177,25 +173,30 @@ pub async fn approve_import(
     };
 
     // 3. Promote staged_transactions to transaction with seq_id to maxSequenceId + seq_id of staged Transaction
-    let mut new_transactions: Vec<transactions::ActiveModel> = Vec::new();
-    for staged_transaction in staged_transactions {
-        let new_sequence_number = max_sequence_number + staged_transaction.sequence_number;
-        let new_transaction = transactions::ActiveModel {
-            id: Set(Uuid::new_v4()),
-            account_id: Set(account_id),
-            date: Set(staged_transaction.date),
-            amount: Set(staged_transaction.amount),
-            balance: Set(staged_transaction.balance),
-            ref_no: Set(staged_transaction.ref_no.clone()),
-            description: Set(staged_transaction.description.clone()),
-            sequence_number: Set(new_sequence_number),
-            ..Default::default()
-        };
-        new_transactions.push(new_transaction);
-    }
+    let mut new_transactions: Vec<transactions::ActiveModel> = staged_transactions
+        .into_iter()
+        .map(|staged_transaction| {
+            let new_sequence_number = max_sequence_number + staged_transaction.sequence_number;
+            transactions::ActiveModel {
+                id: Set(Uuid::new_v4()),
+                account_id: Set(account_id),
+                date: Set(staged_transaction.date),
+                amount: Set(staged_transaction.amount),
+                balance: Set(staged_transaction.balance),
+                ref_no: Set(staged_transaction.ref_no.clone()),
+                description: Set(staged_transaction.description.clone()),
+                sequence_number: Set(new_sequence_number),
+                ..Default::default()
+            }
+        })
+        .collect();
 
     // 4. Add transactions to the account's records
-    create_transactions(db, new_transactions).await?;
+    let txn = db.begin().await?;
+    for transaction in new_transactions.iter_mut() {
+        txn_create_transaction(&txn, transaction).await?;
+    }
+    txn.commit().await?;
 
     // 5. Delete the import by id
     delete_import(db, id).await?;

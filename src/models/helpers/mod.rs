@@ -12,6 +12,8 @@ pub enum SortDirection {
 
 pub enum NumberFilterType {
     GreaterThan,
+    EqualOrGreaterThan,
+    EqualOrLessThan,
     LessThan,
     Equal,
 }
@@ -44,6 +46,8 @@ where
             NumberFilterType::GreaterThan => query.filter(column.gt(value.into())),
             NumberFilterType::LessThan => query.filter(column.lt(value.into())),
             NumberFilterType::Equal => query.filter(column.eq(value.into())),
+            NumberFilterType::EqualOrGreaterThan => query.filter(column.gte(value.into())),
+            NumberFilterType::EqualOrLessThan => query.filter(column.lte(value.into())),
         };
     }
     query

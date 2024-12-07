@@ -6,32 +6,78 @@ use crate::models::{
         NumberFilterType, SortDirection,
     },
 };
-use prelude::{DateTime, Decimal, Expr};
-use sea_orm::{entity::*, query::*, DatabaseConnection};
+use prelude::{DateTime, Decimal};
+use sea_orm::{entity::*, query::*, DatabaseConnection, DatabaseTransaction, DeleteResult};
 use uuid::Uuid;
 
-/// Insert multiple transactions into the database
+/// Insert a transaction into the database
 ///
 /// # Arguments
 /// * `db` - Database connection handle
-/// * `transactions` - List of  transaction objects to be inserted
+/// * `transaction` - Transaction object to be inserted
 ///
 /// # Returns
-/// * `Result<Vec<Uuid>, sea_orm::DbErr>` - List of  UUIDs of the created transactions or error
-pub async fn create_transactions(
+/// * `Result<Uuid, sea_orm::DbErr>` - UUID of the created transaction or error
+pub async fn create_transaction(
     db: &DatabaseConnection,
-    transactions: Vec<transactions::ActiveModel>,
-) -> Result<Vec<Uuid>, sea_orm::DbErr> {
-    let mut inserted_ids: Vec<Uuid> = Vec::new();
-    for transaction in transactions.iter() {
-        inserted_ids.push(transaction.id.clone().unwrap());
+    transaction: transactions::ActiveModel,
+) -> Result<transactions::Model, sea_orm::DbErr> {
+    let txn = db.begin().await?;
+    let inserted_transaction_id = txn_create_transaction(&txn, &transaction).await?;
+    txn.commit().await?;
+
+    let inserted_transaction = get_transaction(
+        db,
+        TransactionsQueryOptions {
+            filter: Some(TransactionFilter {
+                id: Some(inserted_transaction_id),
+                ..Default::default()
+            }),
+            ..Default::default()
+        },
+    )
+    .await?
+    .ok_or(sea_orm::DbErr::RecordNotFound(
+        "error.staged_transactions.create_staged_transaction.not_found".to_string(),
+    ))?;
+
+    Ok(inserted_transaction)
+}
+
+pub(super) async fn txn_create_transaction(
+    txn: &DatabaseTransaction,
+    transaction: &transactions::ActiveModel,
+) -> Result<Uuid, sea_orm::DbErr> {
+    let mut dependent_transactions = recalculate_balance(
+        txn,
+        transaction.account_id.clone().unwrap(),
+        transaction.sequence_number.clone().unwrap() - 1,
+        transaction.balance.clone().unwrap(),
+    )
+    .await?;
+
+    let mut curr_sequence_number = transaction.sequence_number.clone().unwrap();
+    for dependant in dependent_transactions.iter_mut() {
+        let dependant_seq_number = dependant.sequence_number.clone().unwrap();
+        // This means there is a gap in the sequence numbers, so we
+        // don't need to add +1 to remaining transactions
+        if dependant_seq_number != curr_sequence_number {
+            break;
+        }
+        dependant.sequence_number = Set(dependant_seq_number + 1);
+        curr_sequence_number += 1;
     }
 
-    transactions::Entity::insert_many(transactions)
-        .exec(db)
-        .await?;
+    for dependant in dependent_transactions.iter_mut().rev() {
+        dependant.clone().update(txn).await?;
+    }
 
-    Ok(inserted_ids)
+    let inserted_transaction_id = transactions::Entity::insert(transaction.clone())
+        .exec(txn)
+        .await?
+        .last_insert_id;
+
+    Ok(inserted_transaction_id)
 }
 
 /// Update a transaction
@@ -67,6 +113,14 @@ pub async fn update_transaction(
         ))?
         .into();
 
+    let mut lowest_sequence_number = transaction.sequence_number.clone().unwrap();
+    if let Some(sequence_number) = sequence_number {
+        transaction.sequence_number = Set(sequence_number);
+        if sequence_number < lowest_sequence_number {
+            lowest_sequence_number = sequence_number;
+        }
+    }
+
     if let Some(account_id) = account_id {
         transaction.account_id = Set(account_id);
     }
@@ -86,22 +140,54 @@ pub async fn update_transaction(
     if let Some(description) = description {
         transaction.description = Set(description);
     }
-    if let Some(sequence_number) = sequence_number {
-        transaction.sequence_number = Set(sequence_number);
-    }
 
-    let mut dependent_transactions = match balance {
-        Some(_) => recalculate_balance(db, &transaction).await?,
-        None => Vec::new(),
-    };
-
-    // Update all dependent transactions in an atomic transaction
     let txn = db.begin().await?;
-    for transaction in dependent_transactions.iter_mut() {
-        transaction.clone().update(&txn).await?;
+    txn_delete_transaction(&txn, &transaction).await?;
+    let updated_transaction_id = txn_create_transaction(&txn, &transaction).await?;
+    // Rebalance from the smallest available affected sequence number
+    if sequence_number.is_some() {
+        let query = build_query(TransactionsQueryOptions {
+            filter: Some(TransactionFilter {
+                account_id: Some(transaction.account_id.clone().unwrap()),
+                sequence_number: Some((
+                    NumberFilterType::EqualOrGreaterThan,
+                    lowest_sequence_number,
+                )),
+                ..Default::default()
+            }),
+            ..Default::default()
+        });
+        let next_transaction = query.one(db).await?;
+        if let Some(next_transaction) = next_transaction {
+            let mut dependent_transactions = recalculate_balance(
+                &txn,
+                next_transaction.account_id,
+                lowest_sequence_number,
+                next_transaction.balance,
+            )
+            .await?;
+            for transaction in dependent_transactions.iter_mut() {
+                transaction.clone().update(&txn).await?;
+            }
+        }
     }
-    let updated_transaction = transaction.update(&txn).await?;
+
     txn.commit().await?;
+
+    let updated_transaction = get_transaction(
+        db,
+        TransactionsQueryOptions {
+            filter: Some(TransactionFilter {
+                id: Some(updated_transaction_id),
+                ..Default::default()
+            }),
+            ..Default::default()
+        },
+    )
+    .await?
+    .ok_or(sea_orm::DbErr::RecordNotFound(
+        "error.transactions.update_transaction.not_found".to_string(),
+    ))?;
 
     Ok(updated_transaction)
 }
@@ -113,31 +199,49 @@ pub async fn update_transaction(
 /// * `id` - UUID of the transaction record to delete
 ///
 /// # Returns
-/// * `Result<(), sea_orm::DbErr>` - The result of the delete operation or error
-pub async fn delete_transaction(db: &DatabaseConnection, id: Uuid) -> Result<(), sea_orm::DbErr> {
-    let transaction = transactions::Entity::find_by_id(id).one(db).await?.ok_or(
-        sea_orm::DbErr::RecordNotFound(
-            "error.transactions.delete_transaction_by_id.not_found".to_string(),
-        ),
-    )?;
+/// * `Result<DeleteResult, sea_orm::DbErr>` - The result of the delete operation or error
+pub async fn delete_transaction(
+    db: &DatabaseConnection,
+    id: Uuid,
+) -> Result<DeleteResult, sea_orm::DbErr> {
+    let transaction = transactions::Entity::find_by_id(id)
+        .one(db)
+        .await?
+        .ok_or_else(|| {
+            sea_orm::DbErr::RecordNotFound(
+                "error.transactions.delete_transaction_by_id.not_found".to_string(),
+            )
+        })?;
 
-    let sequence_number = transaction.sequence_number;
-    let account_id = transaction.account_id;
+    let txn = db.begin().await?;
+    let deleted_transaction =
+        txn_delete_transaction(&txn, &transaction.into_active_model()).await?;
+    txn.commit().await?;
 
-    transactions::Entity::delete_by_id(id).exec(db).await?;
+    Ok(deleted_transaction)
+}
 
-    // Reduce the sequence number for all transactions with sequence number more than the deleted transaction
-    transactions::Entity::update_many()
-        .col_expr(
-            transactions::Column::SequenceNumber,
-            Expr::col(transactions::Column::SequenceNumber).sub(1),
-        )
-        .filter(transactions::Column::SequenceNumber.gt(sequence_number))
-        .filter(transactions::Column::AccountId.eq(account_id))
-        .exec(db)
+pub(super) async fn txn_delete_transaction(
+    txn: &DatabaseTransaction,
+    transaction: &transactions::ActiveModel,
+) -> Result<DeleteResult, sea_orm::DbErr> {
+    let mut dependent_transactions = recalculate_balance(
+        txn,
+        transaction.account_id.clone().unwrap(),
+        transaction.sequence_number.clone().unwrap(),
+        transaction.balance.clone().unwrap() - transaction.amount.clone().unwrap(),
+    )
+    .await?;
+
+    for transaction in dependent_transactions.iter_mut() {
+        transaction.clone().update(txn).await?;
+    }
+
+    let deleted_transaction = transactions::Entity::delete_by_id(transaction.id.clone().unwrap())
+        .exec(txn)
         .await?;
 
-    Ok(())
+    Ok(deleted_transaction)
 }
 
 /// Get all transactions with filters, sorting, and pagination
@@ -230,35 +334,32 @@ fn build_query(options: TransactionsQueryOptions) -> Select<transactions::Entity
 }
 
 async fn recalculate_balance(
-    db: &DatabaseConnection,
-    starting_transaction: &transactions::ActiveModel,
+    txn: &DatabaseTransaction,
+    account_id: Uuid,
+    sequence_number: i64,
+    mut current_balance: Decimal,
 ) -> Result<Vec<transactions::ActiveModel>, sea_orm::DbErr> {
-    let account_id = starting_transaction.account_id.clone().unwrap();
-    let sequence_number = starting_transaction.sequence_number.clone().unwrap();
-
     // Get all transactions with sequence number higher than the given transaction
-    let mut transactions = get_transactions(
-        db,
-        TransactionsQueryOptions {
-            filter: Some(TransactionFilter {
-                account_id: Some(account_id),
-                sequence_number: Some((NumberFilterType::GreaterThan, sequence_number)),
-                ..Default::default()
-            }),
-            sort: Some(TransactionSort {
-                column: transactions::Column::SequenceNumber,
-                direction: SortDirection::Asc,
-            }),
+    let query = build_query(TransactionsQueryOptions {
+        filter: Some(TransactionFilter {
+            account_id: Some(account_id),
+            sequence_number: Some((NumberFilterType::GreaterThan, sequence_number)),
             ..Default::default()
-        },
-    )
-    .await?
-    .into_iter()
-    .map(|transaction| transaction.into_active_model())
-    .collect::<Vec<transactions::ActiveModel>>();
+        }),
+        sort: Some(TransactionSort {
+            column: transactions::Column::SequenceNumber,
+            direction: SortDirection::Asc,
+        }),
+        ..Default::default()
+    });
+    let mut transactions = query
+        .all(txn)
+        .await?
+        .into_iter()
+        .map(|transaction| transaction.into_active_model())
+        .collect::<Vec<transactions::ActiveModel>>();
 
     // Recalculate balance for each transaction
-    let mut current_balance = starting_transaction.balance.clone().unwrap();
     for transaction in transactions.iter_mut() {
         current_balance += transaction.amount.as_ref();
         transaction.balance = Set(current_balance);
