@@ -2,9 +2,10 @@ use crate::models::{
     entities::staged_transactions,
     helpers::{staged_transactions::*, *},
 };
-use prelude::{DateTime, Expr};
+use prelude::DateTime;
 use sea_orm::{
-    entity::*, prelude::Decimal, query::*, ActiveValue::Set, DatabaseConnection, DeleteResult,
+    entity::*, prelude::Decimal, query::*, ActiveValue::Set, ConnectionTrait, DatabaseConnection,
+    DeleteResult,
 };
 use uuid::Uuid;
 
@@ -21,13 +22,50 @@ pub async fn create_staged_transactions(
     transactions: Vec<staged_transactions::ActiveModel>,
 ) -> Result<Vec<Uuid>, sea_orm::DbErr> {
     let mut inserted_ids: Vec<Uuid> = Vec::new();
+    if transactions.is_empty() {
+        return Err(sea_orm::DbErr::Custom(
+            "error.staged_transactions.create_staged_transactions.no_transactions".to_string(),
+        ));
+    }
+
+    let first_import_id = transactions[0].import_id.clone().unwrap();
+    for transaction in &transactions {
+        if transaction.import_id.clone().unwrap() != first_import_id {
+            return Err(sea_orm::DbErr::Custom(
+                "error.staged_transactions.create_staged_transactions.different_import_ids"
+                    .to_string(),
+            ));
+        }
+    }
+
     for transaction in transactions.iter() {
         inserted_ids.push(transaction.id.clone().unwrap());
     }
 
+    let min_sequence_transaction = transactions
+        .iter()
+        .min_by_key(|transaction| transaction.sequence_number.clone().unwrap())
+        .unwrap()
+        .clone();
+
+    let txn = db.begin().await?;
     staged_transactions::Entity::insert_many(transactions)
-        .exec(db)
+        .exec(&txn)
         .await?;
+
+    let mut dependent_transactions = recalculate_balance(
+        &txn,
+        first_import_id,
+        min_sequence_transaction.sequence_number.unwrap(),
+        min_sequence_transaction.balance.unwrap(),
+    )
+    .await?;
+
+    for transaction in dependent_transactions.iter_mut() {
+        transaction.clone().update(&txn).await?;
+    }
+
+    txn.commit().await?;
 
     Ok(inserted_ids)
 }
@@ -90,7 +128,15 @@ pub async fn update_staged_transaction(
     }
 
     let mut dependent_transactions = match balance {
-        Some(_) => recalculate_balance(db, &transaction).await?,
+        Some(_) => {
+            recalculate_balance(
+                db,
+                transaction.import_id.clone().unwrap(),
+                transaction.sequence_number.clone().unwrap(),
+                transaction.balance.clone().unwrap(),
+            )
+            .await?
+        }
         None => Vec::new(),
     };
 
@@ -124,23 +170,26 @@ pub async fn delete_staged_transaction(
             "error.staged_transactions.delete_staged_transaction_by_id.not_found".to_string(),
         ))?;
 
-    let sequence_number = transaction.sequence_number;
-    let import_id = transaction.import_id;
+    let mut dependent_transactions = recalculate_balance(
+        db,
+        transaction.import_id,
+        transaction.sequence_number,
+        transaction.balance,
+    )
+    .await?;
 
+    for transaction in dependent_transactions.iter_mut() {
+        transaction.sequence_number = Set(transaction.sequence_number.clone().unwrap() - 1);
+    }
+
+    let txn = db.begin().await?;
+    for transaction in dependent_transactions.iter_mut() {
+        transaction.clone().update(&txn).await?;
+    }
     let deleted_transaction = staged_transactions::Entity::delete_by_id(id)
-        .exec(db)
+        .exec(&txn)
         .await?;
-
-    // Reduce the sequence number for all staged transactions with sequence number more than the deleted transaction
-    staged_transactions::Entity::update_many()
-        .col_expr(
-            staged_transactions::Column::SequenceNumber,
-            Expr::col(staged_transactions::Column::SequenceNumber).sub(1),
-        )
-        .filter(staged_transactions::Column::SequenceNumber.gt(sequence_number))
-        .filter(staged_transactions::Column::ImportId.eq(import_id))
-        .exec(db)
-        .await?;
+    txn.commit().await?;
 
     Ok(deleted_transaction)
 }
@@ -153,10 +202,13 @@ pub async fn delete_staged_transaction(
 ///
 /// # Returns
 /// * `Result<Vec<staged_transactions::Model>, sea_orm::DbErr>` - List of staged transaction records or error
-pub async fn get_staged_transactions(
-    db: &DatabaseConnection,
+pub async fn get_staged_transactions<T>(
+    db: &T,
     options: StagedTransactionsQueryOptions,
-) -> Result<Vec<staged_transactions::Model>, sea_orm::DbErr> {
+) -> Result<Vec<staged_transactions::Model>, sea_orm::DbErr>
+where
+    T: ConnectionTrait,
+{
     let query = build_query(options);
     let transactions_list = query.all(db).await?;
     Ok(transactions_list)
@@ -235,13 +287,16 @@ fn build_query(options: StagedTransactionsQueryOptions) -> Select<staged_transac
     return query;
 }
 
-async fn recalculate_balance(
-    db: &DatabaseConnection,
-    starting_transaction: &staged_transactions::ActiveModel,
-) -> Result<Vec<staged_transactions::ActiveModel>, sea_orm::DbErr> {
-    let import_id = starting_transaction.import_id.clone().unwrap();
-    let sequence_number = starting_transaction.sequence_number.clone().unwrap();
-
+/// Recalculate the balance for all staged transactions with a higher sequence number
+async fn recalculate_balance<T>(
+    db: &T,
+    import_id: Uuid,
+    sequence_number: i64,
+    mut current_balance: Decimal,
+) -> Result<Vec<staged_transactions::ActiveModel>, sea_orm::DbErr>
+where
+    T: ConnectionTrait,
+{
     // Get all transactions with sequence number higher than the given transaction
     let mut transactions = get_staged_transactions(
         db,
@@ -264,7 +319,6 @@ async fn recalculate_balance(
     .collect::<Vec<staged_transactions::ActiveModel>>();
 
     // Recalculate balance for each transaction
-    let mut current_balance = starting_transaction.balance.clone().unwrap();
     for transaction in transactions.iter_mut() {
         current_balance += transaction.amount.as_ref();
         transaction.balance = Set(current_balance);
