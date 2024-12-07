@@ -1,7 +1,13 @@
 use crate::{
     models::{
         entities::{imports, staged_transactions, transactions},
-        helpers::staged_transactions::{build_staged_transaction, StagedTransactionFilter},
+        helpers::{
+            imports::*,
+            staged_transactions::{
+                build_staged_transaction, StagedTransactionFilter, StagedTransactionsQueryOptions,
+            },
+            *,
+        },
         manage::{
             accounts::get_max_sequence,
             staged_transactions::{create_staged_transactions, get_staged_transactions},
@@ -118,39 +124,6 @@ pub async fn delete_import(db: &DatabaseConnection, id: Uuid) -> Result<DeleteRe
     Ok(delete_result)
 }
 
-/// Get imports with pagination
-///
-/// This function retrieves a list of imports from the database with pagination support.
-///
-/// # Arguments
-///
-/// * `db` - Database connection handle
-/// * `limit` - The maximum number of imports to retrieve
-/// * `offset` - The number of imports to skip before starting to collect the result set
-///
-/// # Returns
-///
-/// * `Result<Vec<imports::Model>, DbErr>` - A vector of import models or an error
-pub async fn get_imports(
-    db: &DatabaseConnection,
-    limit: u64,
-    offset: u64,
-) -> Result<Vec<imports::Model>, DbErr> {
-    let imports = imports::Entity::find()
-        .limit(limit)
-        .offset(offset)
-        .all(db)
-        .await?;
-    Ok(imports)
-}
-
-pub async fn get_import(
-    db: &DatabaseConnection,
-    id: Uuid,
-) -> Result<Option<imports::Model>, DbErr> {
-    imports::Entity::find_by_id(id).one(db).await
-}
-
 /// Approve an import by ID
 ///
 /// This function promotes staged transactions associated with a given import ID to actual transactions
@@ -182,8 +155,11 @@ pub async fn approve_import(
     // 1. Get all the staged transactions for this import
     let staged_transactions = get_staged_transactions(
         db,
-        StagedTransactionFilter {
-            import_id: Some(id),
+        StagedTransactionsQueryOptions {
+            filter: Some(StagedTransactionFilter {
+                import_id: Some(id),
+                ..Default::default()
+            }),
             ..Default::default()
         },
     )
@@ -225,4 +201,89 @@ pub async fn approve_import(
     delete_import(db, id).await?;
 
     Ok(())
+}
+
+/// Get imports with query options
+///
+/// This function retrieves a list of imports from the database with filtering, sorting and pagination support.
+///
+/// # Arguments
+///
+/// * `db` - Database connection handle
+/// * `options` - Query options including filters, sort, limit and offset
+///
+/// # Returns
+///
+/// * `Result<Vec<imports::Model>, DbErr>` - A vector of import models or an error
+pub async fn get_imports(
+    db: &DatabaseConnection,
+    options: ImportsQueryOptions,
+) -> Result<Vec<imports::Model>, DbErr> {
+    let query = build_query(options);
+    let imports = query.all(db).await?;
+    Ok(imports)
+}
+
+/// Get an import based on the provided filter
+///
+/// # Arguments
+///
+/// * `db` - Database connection handle
+/// * `options` - ImportsQueryOptions struct containing filter parameters
+///
+/// # Returns
+///
+/// * `Result<Option<imports::Model>, DbErr>` - The import record or error
+pub async fn get_import(
+    db: &DatabaseConnection,
+    options: ImportsQueryOptions,
+) -> Result<Option<imports::Model>, DbErr> {
+    if let Some(filter) = &options.filter {
+        if let Some(id) = &filter.id {
+            return imports::Entity::find_by_id(id.clone()).one(db).await;
+        }
+    }
+
+    let query = build_query(options);
+    let import = query.one(db).await?;
+    Ok(import)
+}
+
+fn build_query(options: ImportsQueryOptions) -> Select<imports::Entity> {
+    let mut query = imports::Entity::find();
+
+    if let Some(filter) = options.filter {
+        if let Some(id) = filter.id {
+            query = query.filter(imports::Column::Id.eq(id));
+        }
+
+        if let Some(account_number) = filter.account_number {
+            query =
+                apply_string_filter(query, Some(account_number), imports::Column::AccountNumber);
+        }
+
+        query = apply_date_filter(query, filter.import_date, imports::Column::ImportDate);
+        query = apply_date_filter(
+            query,
+            filter.source_file_date,
+            imports::Column::SourceFileDate,
+        );
+    }
+
+    if let Some(limit) = options.limit {
+        query = query.limit(limit);
+    }
+
+    if let Some(offset) = options.offset {
+        query = query.offset(offset);
+    }
+
+    if let Some(sort) = options.sort {
+        match sort.direction {
+            SortDirection::Asc => query = query.order_by_asc(sort.column),
+            SortDirection::Desc => query = query.order_by_desc(sort.column),
+        }
+    }
+
+    query
 }

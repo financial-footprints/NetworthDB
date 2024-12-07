@@ -3,6 +3,8 @@ use prelude::DateTime;
 use sea_orm::{entity::*, prelude::Decimal, ActiveValue::Set};
 use uuid::Uuid;
 
+use super::{DateFilterType, NumberFilterType, StringFilterType};
+
 /// Build a new staged transaction ActiveModel
 ///
 /// # Arguments
@@ -49,15 +51,18 @@ pub struct StagedTransactionSort {
 pub struct StagedTransactionFilter {
     pub id: Option<Uuid>,
     pub import_id: Option<Uuid>,
-    pub limit: Option<u64>,
-    pub offset: Option<u64>,
-    pub sequence_number: Option<(SequenceFilterType, u64)>,
-    pub sort: Option<StagedTransactionSort>,
+    pub sequence_number: Option<(NumberFilterType, i64)>,
+    pub date: Option<(DateFilterType, DateTime)>,
+    pub amount: Option<(NumberFilterType, Decimal)>,
+    pub balance: Option<(NumberFilterType, Decimal)>,
+    pub ref_no: Option<(StringFilterType, String)>,
+    pub description: Option<(StringFilterType, String)>,
 }
 
-/// Enum to specify the type of sequence number filter
-pub enum SequenceFilterType {
-    GreaterThan,
-    LessThan,
-    Equal,
+#[derive(Default)]
+pub struct StagedTransactionsQueryOptions {
+    pub filter: Option<StagedTransactionFilter>,
+    pub sort: Option<StagedTransactionSort>,
+    pub limit: Option<u64>,
+    pub offset: Option<u64>,
 }

@@ -1,4 +1,5 @@
 use crate::models::entities::{accounts, sea_orm_active_enums::AccountType};
+use crate::models::helpers::{accounts::*, apply_string_filter, SortDirection};
 
 use sea_orm::{entity::*, query::*, DatabaseConnection, DbErr, DeleteResult, Set};
 use uuid::Uuid;
@@ -27,11 +28,20 @@ pub async fn create_account(
     };
 
     let result = accounts::Entity::insert(account).exec(db).await?;
-    get_account(db, result.last_insert_id)
-        .await?
-        .ok_or(DbErr::RecordNotFound(
-            "error.fiscal_accounts.create_account.could_not_find".to_string(),
-        ))
+    get_account(
+        db,
+        AccountsQueryOptions {
+            filter: Some(AccountFilter {
+                id: Some(result.last_insert_id),
+                ..Default::default()
+            }),
+            ..Default::default()
+        },
+    )
+    .await?
+    .ok_or(DbErr::RecordNotFound(
+        "error.fiscal_accounts.create_account.could_not_find".to_string(),
+    ))
 }
 
 /// Update an account's type and/or account number
@@ -93,47 +103,6 @@ pub async fn delete_account(db: &DatabaseConnection, id: Uuid) -> Result<DeleteR
     Ok(delete_result)
 }
 
-/// Get all accounts with limit and offset
-///
-/// # Arguments
-///
-/// * `db` - Database connection
-/// * `limit` - The maximum number of accounts to return
-/// * `offset` - The number of accounts to skip before starting to collect the result set
-///
-/// # Returns
-///
-/// * `Result<Vec<accounts::Model>, DbErr>` - A vector of accounts on success, or a database error on failure
-pub async fn get_accounts(
-    db: &DatabaseConnection,
-    limit: u64,
-    offset: u64,
-) -> Result<Vec<accounts::Model>, DbErr> {
-    let accounts = accounts::Entity::find()
-        .limit(limit)
-        .offset(offset)
-        .all(db)
-        .await?;
-    Ok(accounts)
-}
-
-/// Get an account by ID
-///
-/// # Arguments
-///
-/// * `db` - Database connection
-/// * `id` - UUID of the account to get
-///
-/// # Returns
-///
-/// * `Result<Option<accounts::Model>, DbErr>` - The account on success, or a database error on failure
-pub async fn get_account(
-    db: &DatabaseConnection,
-    id: Uuid,
-) -> Result<Option<accounts::Model>, DbErr> {
-    accounts::Entity::find_by_id(id).one(db).await
-}
-
 pub(crate) async fn get_max_sequence(
     db: &DatabaseConnection,
     account_id: Uuid,
@@ -146,4 +115,95 @@ pub(crate) async fn get_max_sequence(
         ))?;
 
     Ok(account.max_sequence_number)
+}
+
+/// Get all accounts based on the provided query options
+///
+/// # Arguments
+///
+/// * `db` - Database connection handle
+/// * `options` - AccountsQueryOptions struct containing filter, sort, limit, and offset parameters
+///
+/// # Returns
+///
+/// * `Result<Vec<accounts::Model>, DbErr>` - List of account records or error
+pub async fn get_accounts(
+    db: &DatabaseConnection,
+    options: AccountsQueryOptions,
+) -> Result<Vec<accounts::Model>, DbErr> {
+    let query = build_query(options);
+    let accounts_list = query.all(db).await?;
+    Ok(accounts_list)
+}
+
+/// Get an account based on the provided filter
+///
+/// # Arguments
+///
+/// * `db` - Database connection handle
+/// * `options` - AccountsQueryOptions struct containing filter parameters
+///
+/// # Returns
+///
+/// * `Result<Option<accounts::Model>, DbErr>` - The account record or error
+pub async fn get_account(
+    db: &DatabaseConnection,
+    options: AccountsQueryOptions,
+) -> Result<Option<accounts::Model>, DbErr> {
+    if let Some(filter) = &options.filter {
+        if let Some(id) = &filter.id {
+            return accounts::Entity::find_by_id(id.clone()).one(db).await;
+        }
+    }
+
+    let query = build_query(options);
+    let account = query.one(db).await?;
+    Ok(account)
+}
+
+// Helps in Building queries
+// by adding all the provided filters, sort, limit and offset
+fn build_query(options: AccountsQueryOptions) -> Select<accounts::Entity> {
+    let mut query = accounts::Entity::find();
+
+    // Apply filters if present
+    if let Some(filter) = options.filter {
+        if let Some(id) = filter.id {
+            query = query.filter(accounts::Column::Id.eq(id));
+        }
+
+        if let Some((filter_type, value)) = filter.account_number {
+            query = apply_string_filter(
+                query,
+                Some((filter_type, value)),
+                accounts::Column::AccountNumber,
+            );
+        }
+
+        if let Some(account_type) = filter.r#type {
+            query = query.filter(accounts::Column::Type.eq(account_type));
+        }
+    }
+
+    // Apply sorting if present
+    if let Some(sort) = options.sort {
+        query = query.order_by(
+            sort.column,
+            match sort.direction {
+                SortDirection::Asc => Order::Asc,
+                SortDirection::Desc => Order::Desc,
+            },
+        );
+    }
+
+    // Apply pagination if present
+    if let Some(limit) = options.limit {
+        query = query.limit(limit);
+    }
+
+    if let Some(offset) = options.offset {
+        query = query.offset(offset);
+    }
+
+    query
 }
