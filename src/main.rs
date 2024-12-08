@@ -1,4 +1,7 @@
-use networth_db;
+use networth_db::{
+    self,
+    models::{entities::sea_orm_active_enums::AccountType, manage::accounts::create_account},
+};
 mod config;
 
 use sea_orm::EntityTrait;
@@ -14,7 +17,6 @@ async fn main() {
         };
 
     println!("Statement Details:");
-    println!("Account Number: {}", &statement.account_number);
     println!("Account Type: {:?}", &statement.account_type);
     println!("Statement Date: {}", &statement.date);
     println!("\nTransactions:");
@@ -30,7 +32,13 @@ async fn main() {
         );
     }
 
-    match networth_db::models::manage::imports::create_import(&config.db, &statement).await {
+    let account = create_account(&config.db, "1234567890", &AccountType::CheckingAccount)
+        .await
+        .unwrap();
+
+    match networth_db::models::manage::imports::create_import(&config.db, &statement, &account.id)
+        .await
+    {
         Ok(_) => (),
         Err(error) => panic!("{}", error),
     };
@@ -44,8 +52,8 @@ async fn main() {
         Ok(imports) => {
             for import in imports {
                 println!(
-                    "Id: {}, Account: {}, File At: {}, Created At: {}",
-                    import.id, import.account_number, import.source_file_date, import.import_date
+                    "Id: {}, File At: {}, Created At: {}",
+                    import.id, import.source_file_date, import.import_date
                 );
             }
         }

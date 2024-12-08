@@ -93,7 +93,6 @@ mod xls {
         let parser = get_parser();
         let statements = parser.parse(&file).unwrap();
 
-        assert_eq!(statements.account_number, "123456789");
         assert_eq!(
             statements.date,
             utils::datetime::date_str_to_datetime(&"02/01/2021")
@@ -151,7 +150,6 @@ mod xls {
         let parser = get_parser();
         let statements = parser.parse(&file).unwrap();
 
-        assert_eq!(statements.account_number, "");
         assert_eq!(
             _today_date_str(statements.date),
             _today_date_str(Utc::now())
@@ -256,7 +254,6 @@ mod pdf {
         let parser = get_parser();
         let statements = parser.parse(&file).unwrap();
 
-        assert_eq!(statements.account_number, "123456789");
         assert_eq!(statements.account_type, AccountType::SavingsAccount);
         assert_eq!(statements.date.to_string(), "1910-03-31 00:00:00 UTC");
 
@@ -312,7 +309,6 @@ mod pdf {
         let parser = get_parser();
         let statements = parser.parse(&file).unwrap();
 
-        assert_eq!(statements.account_number, "");
         assert_eq!(statements.account_type, AccountType::Unknown);
         assert_eq!(
             _today_date_str(statements.date),

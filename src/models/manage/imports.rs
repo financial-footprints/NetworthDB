@@ -1,5 +1,7 @@
 use super::{
-    staged_transactions::txn_create_staged_transaction, transactions::txn_create_transaction,
+    accounts::{get_account, get_max_sequence},
+    staged_transactions::txn_create_staged_transaction,
+    transactions::txn_create_transaction,
 };
 use crate::{
     models::{
@@ -11,12 +13,13 @@ use crate::{
             },
             *,
         },
-        manage::{accounts::get_max_sequence, staged_transactions::get_staged_transactions},
+        manage::staged_transactions::get_staged_transactions,
     },
     readers::parsers::types::Statement,
     utils::datetime::get_current_naive_datetime,
 };
 
+use accounts::{AccountFilter, AccountsQueryOptions};
 use sea_orm::{entity::*, query::*, ActiveValue::Set, DatabaseConnection, DbErr, DeleteResult};
 use uuid::Uuid;
 
@@ -28,11 +31,15 @@ use uuid::Uuid;
 ///
 /// # Returns
 /// * `Result<Uuid, DbErr>` - ID of the created import staging record or error
-pub async fn create_import(db: &DatabaseConnection, statement: &Statement) -> Result<Uuid, DbErr> {
+pub async fn create_import(
+    db: &DatabaseConnection,
+    statement: &Statement,
+    account_id: &Uuid,
+) -> Result<Uuid, DbErr> {
     // Create transaction staging record
     let import = imports::ActiveModel {
         id: Set(Uuid::new_v4()),
-        account_number: Set(statement.account_number.clone()),
+        account_id: Set(account_id.clone()),
         import_date: Set(get_current_naive_datetime()),
         source_file_date: Set(statement.date.naive_utc()),
         ..Default::default()
@@ -43,7 +50,15 @@ pub async fn create_import(db: &DatabaseConnection, statement: &Statement) -> Re
         .await?
         .last_insert_id;
 
-    let mut sequence_number = 0;
+    let mut sequence_number = match get_max_sequence(db, account_id).await {
+        Ok(seq) => seq,
+        Err(DbErr::RecordNotFound(_)) => {
+            return Err(DbErr::RecordNotFound(
+                "error.import.account_not_found".to_string(),
+            ));
+        }
+        Err(e) => return Err(e),
+    };
     let txn = db.begin().await?;
     for transaction in statement.transactions.iter() {
         let amount = if transaction.deposit > 0.0 {
@@ -73,7 +88,7 @@ pub async fn create_import(db: &DatabaseConnection, statement: &Statement) -> Re
 ///
 /// * `db` - Database connection handle
 /// * `id` - UUID of the import to update
-/// * `account_number` - Optional new account number
+/// * `account_id` - Optional new account ID
 ///
 /// # Returns
 ///
@@ -81,7 +96,7 @@ pub async fn create_import(db: &DatabaseConnection, statement: &Statement) -> Re
 pub async fn update_import(
     db: &DatabaseConnection,
     id: Uuid,
-    account_number: Option<String>,
+    account_id: Option<Uuid>,
 ) -> Result<imports::Model, DbErr> {
     let mut import: imports::ActiveModel = imports::Entity::find_by_id(id)
         .one(db)
@@ -91,8 +106,26 @@ pub async fn update_import(
         ))?
         .into();
 
-    if let Some(new_account_number) = account_number {
-        import.account_number = Set(new_account_number);
+    if let Some(new_account_id) = account_id {
+        let account = get_account(
+            db,
+            AccountsQueryOptions {
+                filter: Some(AccountFilter {
+                    id: Some(new_account_id),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+        )
+        .await?;
+
+        if account.is_none() {
+            return Err(DbErr::RecordNotFound(
+                "error.imports.update_import.account_not_found".to_string(),
+            ));
+        }
+
+        import.account_id = Set(new_account_id);
     }
 
     import.update(db).await
@@ -161,44 +194,30 @@ pub async fn approve_import(
     )
     .await?;
 
-    // 2. Get the maxSequenceNumber for the account_id
-    let max_sequence_number = match get_max_sequence(db, account_id).await {
-        Ok(seq) => seq,
-        Err(DbErr::RecordNotFound(_)) => {
-            return Err(DbErr::RecordNotFound(
-                "error.import.account_not_found".to_string(),
-            ));
-        }
-        Err(e) => return Err(e),
-    };
-
-    // 3. Promote staged_transactions to transaction with seq_id to maxSequenceId + seq_id of staged Transaction
+    // 2. Promote staged_transactions to transaction with seq_id to maxSequenceId + seq_id of staged Transaction
     let mut new_transactions: Vec<transactions::ActiveModel> = staged_transactions
         .into_iter()
-        .map(|staged_transaction| {
-            let new_sequence_number = max_sequence_number + staged_transaction.sequence_number;
-            transactions::ActiveModel {
-                id: Set(Uuid::new_v4()),
-                account_id: Set(account_id),
-                date: Set(staged_transaction.date),
-                amount: Set(staged_transaction.amount),
-                balance: Set(staged_transaction.balance),
-                ref_no: Set(staged_transaction.ref_no.clone()),
-                description: Set(staged_transaction.description.clone()),
-                sequence_number: Set(new_sequence_number),
-                ..Default::default()
-            }
+        .map(|staged_transaction| transactions::ActiveModel {
+            id: Set(Uuid::new_v4()),
+            account_id: Set(account_id),
+            date: Set(staged_transaction.date),
+            amount: Set(staged_transaction.amount),
+            balance: Set(staged_transaction.balance),
+            ref_no: Set(staged_transaction.ref_no.clone()),
+            description: Set(staged_transaction.description.clone()),
+            sequence_number: Set(staged_transaction.sequence_number),
+            ..Default::default()
         })
         .collect();
 
-    // 4. Add transactions to the account's records
+    // 3. Add transactions to the account's records
     let txn = db.begin().await?;
     for transaction in new_transactions.iter_mut() {
         txn_create_transaction(&txn, transaction).await?;
     }
     txn.commit().await?;
 
-    // 5. Delete the import by id
+    // 4. Delete the import by id
     delete_import(db, id).await?;
 
     Ok(())
@@ -258,9 +277,8 @@ fn build_query(options: ImportsQueryOptions) -> Select<imports::Entity> {
             query = query.filter(imports::Column::Id.eq(id));
         }
 
-        if let Some(account_number) = filter.account_number {
-            query =
-                apply_string_filter(query, Some(account_number), imports::Column::AccountNumber);
+        if let Some(account_id) = filter.account_id {
+            query = query.filter(imports::Column::AccountId.eq(account_id));
         }
 
         query = apply_date_filter(query, filter.import_date, imports::Column::ImportDate);

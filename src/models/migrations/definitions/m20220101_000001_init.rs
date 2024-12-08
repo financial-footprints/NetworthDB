@@ -137,7 +137,7 @@ impl MigrationTrait for Migration {
                     .col(big_integer(Transactions::SequenceNumber).not_null())
                     .foreign_key(
                         ForeignKey::create()
-                            .name("fk_transaction_account")
+                            .name("fk_txn_account_id")
                             .from(Transactions::Table, Transactions::AccountId)
                             .to(Accounts::Table, Accounts::Id)
                             .on_delete(ForeignKeyAction::Cascade)
@@ -292,9 +292,17 @@ impl MigrationTrait for Migration {
                             .default(uuid_generator.clone())
                             .primary_key(),
                     )
-                    .col(string(Imports::AccountNumber))
+                    .col(uuid(Imports::AccountId).not_null())
                     .col(timestamp(Imports::ImportDate).not_null())
                     .col(timestamp(Imports::SourceFileDate).not_null())
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk_import_account_id")
+                            .from(Imports::Table, Imports::AccountId)
+                            .to(Accounts::Table, Accounts::Id)
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade),
+                    )
                     .to_owned(),
             )
             .await?;
@@ -327,7 +335,7 @@ impl MigrationTrait for Migration {
                     )
                     .foreign_key(
                         ForeignKey::create()
-                            .name("fk_staged_staging")
+                            .name("fk_staged_txn_import_id")
                             .from(StagedTransactions::Table, StagedTransactions::ImportId)
                             .to(Imports::Table, Imports::Id)
                             .on_delete(ForeignKeyAction::Cascade)
@@ -434,7 +442,7 @@ enum Imports {
     Id,
     ImportDate,
     SourceFileDate,
-    AccountNumber,
+    AccountId,
 }
 
 #[derive(DeriveIden)]

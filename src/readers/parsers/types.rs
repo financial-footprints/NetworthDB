@@ -3,7 +3,6 @@ use sea_orm::prelude::DateTimeUtc;
 
 #[derive(Debug)]
 pub struct Statement {
-    pub account_number: String,
     pub account_type: AccountType,
     pub date: DateTimeUtc,
     pub transactions: Vec<Transaction>,

@@ -105,9 +105,9 @@ pub async fn delete_account(db: &DatabaseConnection, id: Uuid) -> Result<DeleteR
 
 pub(crate) async fn get_max_sequence(
     db: &DatabaseConnection,
-    account_id: Uuid,
+    account_id: &Uuid,
 ) -> Result<i64, DbErr> {
-    let account = accounts::Entity::find_by_id(account_id)
+    let account = accounts::Entity::find_by_id(account_id.clone())
         .one(db)
         .await?
         .ok_or(DbErr::RecordNotFound(

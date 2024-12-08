@@ -16,18 +16,9 @@ uuid = { version = "1.11.0", features = ["v4"] }
 networth_db_migrations = { path = "./src/models/migrations" }
 serde = "1.0.215"
 
-[dev-dependencies]
-cargo-commander = "2.0.15"
-
 [package.metadata.commands]
-# seaORM
-# Entity Generation
+# SeaORM
 orm-entity = "sea-orm-cli generate entity --with-serde both -o src/models/entities"
-orm-reapply = """
-    sea-orm-cli migrate down -d src/models/migrations && \
-    sea-orm-cli migrate up -d src/models/migrations
-"""
-
 # Database Migrations
 migrate = "sea-orm-cli migrate -d src/models/migrations"
 migrate-up = "sea-orm-cli migrate up -d src/models/migrations"
@@ -36,3 +27,7 @@ migrate-status = "sea-orm-cli migrate status -d src/models/migrations"
 migrate-fresh = "sea-orm-cli migrate fresh -d src/models/migrations"
 migrate-reset = "sea-orm-cli migrate reset -d src/models/migrations"
 migrate-init = "sea-orm-cli migrate init -d src/models/migrations"
+migrate-reapply = """
+    sea-orm-cli migrate down -d src/models/migrations && \
+    sea-orm-cli migrate up -d src/models/migrations
+"""

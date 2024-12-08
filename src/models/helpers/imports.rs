@@ -3,7 +3,7 @@ use sea_orm::{prelude::DateTime, Order};
 use serde::Deserialize;
 use uuid::Uuid;
 
-use super::{DateFilterType, StringFilterType};
+use super::DateFilterType;
 
 pub struct ImportSort {
     pub column: imports::Column,
@@ -34,7 +34,7 @@ impl<'de> Deserialize<'de> for ImportSort {
 
         let column = match helper.column.as_deref() {
             Some("id") => imports::Column::Id,
-            Some("account_number") => imports::Column::AccountNumber,
+            Some("account_id") => imports::Column::AccountId,
             Some("import_date") => imports::Column::ImportDate,
             Some("source_file_date") => imports::Column::SourceFileDate,
             None => imports::Column::ImportDate,
@@ -55,7 +55,7 @@ impl<'de> Deserialize<'de> for ImportSort {
 #[derive(Default, Deserialize)]
 pub struct ImportFilter {
     pub id: Option<Uuid>,
-    pub account_number: Option<(StringFilterType, String)>,
+    pub account_id: Option<Uuid>,
     pub import_date: Option<(DateFilterType, DateTime)>,
     pub source_file_date: Option<(DateFilterType, DateTime)>,
 }

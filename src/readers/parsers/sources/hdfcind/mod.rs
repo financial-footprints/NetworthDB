@@ -87,7 +87,6 @@ fn parse_xls(table: &Vec<Vec<String>>) -> Result<Statement, String> {
 
     Ok(Statement {
         transactions,
-        account_number,
         account_type,
         date: statement_date,
     })
@@ -146,13 +145,6 @@ fn parse_pdf(data: &str) -> Result<Statement, String> {
         AccountType::Unknown
     };
 
-    let account_number = Regex::new(r"AccountNo:(\d+)")
-        .map_err(|_| "error.parser.hdfcind.regex_creation_failed_7")?
-        .captures(&data)
-        .and_then(|cap| cap.get(1))
-        .map(|m| m.as_str().to_string())
-        .unwrap_or_else(String::new);
-
     let date = {
         Regex::new(r"StatementFrom:.*?To:(\d{2}/\d{2}/\d{4})")
             .map_err(|_| "error.parser.hdfcind.regex_creation_failed_6")?
@@ -166,7 +158,6 @@ fn parse_pdf(data: &str) -> Result<Statement, String> {
 
     Ok(Statement {
         transactions,
-        account_number,
         account_type,
         date,
     })

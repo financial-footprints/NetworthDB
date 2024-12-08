@@ -8,9 +8,8 @@ enum account_type {
 Table "accounts" {
   "id" uuid [not null, default: `gen_random_uuid()`]
   "updated_at" timestamp [not null, default: `CURRENT_TIMESTAMP`]
-  "auto_updated_at" timestamp
   "account_number" "character varying" [not null]
-  "max_sequence_number" integer [not null, default: 0]
+  "max_sequence_number" bigint [not null, default: 0]
   "type" account_type [not null]
   "auto_change_updated_at" TRIGGER
 
@@ -21,7 +20,7 @@ Table "accounts" {
 
 Table "imports" {
   "id" uuid [not null, default: `gen_random_uuid()`]
-  "account_number" "character varying" [not null]
+  "account_id" uuid [not null]
   "import_date" timestamp [not null]
   "source_file_date" timestamp [not null]
 
@@ -43,11 +42,11 @@ Table "staged_transactions" {
   "id" uuid [not null, default: `gen_random_uuid()`]
   "import_id" uuid [not null]
   "date" timestamp [not null]
-  "amount" numeric [not null]
-  "balance" numeric [not null]
+  "amount" real [not null]
+  "balance" real [not null]
   "ref_no" "character varying" [not null]
   "description" "character varying" [not null]
-  "sequence_number" integer [not null]
+  "sequence_number" bigint [not null]
 
   Indexes {
     id [pk, name: "staged_transactions_pkey"]
@@ -58,12 +57,12 @@ Table "staged_transactions" {
 Table "transactions" {
   "id" uuid [not null, default: `gen_random_uuid()`]
   "account_id" uuid [not null]
-  "amount" numeric [not null]
-  "balance" numeric [not null]
+  "amount" real [not null]
+  "balance" real [not null]
   "date" timestamp [not null]
   "description" "character varying" [not null]
   "ref_no" "character varying" [not null]
-  "sequence_number" integer [not null]
+  "sequence_number" bigint [not null]
   "update_max_sequence_number" TRIGGER
   "update_max_sequence_number_on_delete" TRIGGER
 
@@ -73,7 +72,8 @@ Table "transactions" {
   }
 }
 
-Ref "fk_staged_staging":"imports"."id" < "staged_transactions"."import_id" [update: cascade, delete: cascade]
+Ref "fk_import_account_id":"accounts"."id" < "imports"."account_id" [update: cascade, delete: cascade]
 
-Ref "fk_transaction_account":"accounts"."id" < "transactions"."account_id" [update: cascade, delete: cascade]
+Ref "fk_staged_txn_import_id":"imports"."id" < "staged_transactions"."import_id" [update: cascade, delete: cascade]
 
+Ref "fk_txn_account_id":"accounts"."id" < "transactions"."account_id" [update: cascade, delete: cascade]
