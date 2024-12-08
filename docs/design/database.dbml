@@ -65,6 +65,7 @@ Table "transactions" {
   "ref_no" "character varying" [not null]
   "sequence_number" integer [not null]
   "update_max_sequence_number" TRIGGER
+  "update_max_sequence_number_on_delete" TRIGGER
 
   Indexes {
     id [pk, name: "transactions_pkey"]

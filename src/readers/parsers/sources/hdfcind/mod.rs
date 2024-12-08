@@ -1,5 +1,4 @@
 use regex::Regex;
-use sea_orm::prelude::Decimal;
 
 use crate::{
     models::entities::sea_orm_active_enums::AccountType,
@@ -123,9 +122,9 @@ fn parse_trnx_xls(table: &Vec<Vec<String>>) -> Result<Vec<Transaction>, String> 
         let date = utils::datetime::date_str_to_datetime(&row[0]);
         let description = row[1].trim().to_string();
         let ref_no = row[2].trim().to_string();
-        let withdrawal = row[4].trim().parse::<Decimal>().unwrap_or(Decimal::ZERO);
-        let deposit = row[5].trim().parse::<Decimal>().unwrap_or(Decimal::ZERO);
-        let balance = row[6].trim().parse::<Decimal>().unwrap_or(Decimal::ZERO);
+        let withdrawal = row[4].trim().parse::<f32>().unwrap_or(0.0);
+        let deposit = row[5].trim().parse::<f32>().unwrap_or(0.0);
+        let balance = row[6].trim().parse::<f32>().unwrap_or(0.0);
 
         transactions.push(Transaction {
             date,
@@ -203,9 +202,9 @@ fn parse_trnx_pdf(source: &str) -> Result<Vec<Transaction>, String> {
 
     while !data.is_empty() {
         let mut description = String::new();
-        let mut withdrawal: Decimal = Decimal::ZERO;
-        let mut deposit: Decimal = Decimal::ZERO;
-        let mut balance: Decimal = Decimal::ZERO;
+        let mut withdrawal = 0.0;
+        let mut deposit = 0.0;
+        let mut balance = 0.0;
 
         // Capture transaction's 1st line
         let capture1 = line1
@@ -242,22 +241,17 @@ fn parse_trnx_pdf(source: &str) -> Result<Vec<Transaction>, String> {
         if let Some(dot_index) = number_collection.chars().position(|c| c == '.') {
             if dot_index + 2 < number_collection.len() - 1 {
                 deposit = number_collection[..dot_index + 3]
-                    .parse::<Decimal>()
-                    .unwrap_or(Decimal::ZERO);
+                    .parse::<f32>()
+                    .unwrap_or(0.0);
 
                 balance = number_collection[dot_index + 1..]
-                    .parse::<Decimal>()
-                    .unwrap_or(Decimal::ZERO);
+                    .parse::<f32>()
+                    .unwrap_or(0.0);
 
                 description.push_str(&parts2[1..].join(""));
             } else {
-                balance = parts2[1]
-                    .replace(",", "")
-                    .parse::<Decimal>()
-                    .unwrap_or(Decimal::ZERO);
-                withdrawal = number_collection
-                    .parse::<Decimal>()
-                    .unwrap_or(Decimal::ZERO);
+                balance = parts2[1].replace(",", "").parse::<f32>().unwrap_or(0.0);
+                withdrawal = number_collection.parse::<f32>().unwrap_or(0.0);
                 description.push_str(&parts2[2..].join(""));
             }
         }

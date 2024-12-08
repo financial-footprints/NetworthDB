@@ -1,5 +1,5 @@
 use crate::{models::entities::sea_orm_active_enums::AccountType, readers::types::File};
-use sea_orm::prelude::{DateTimeUtc, Decimal};
+use sea_orm::prelude::DateTimeUtc;
 
 #[derive(Debug)]
 pub struct Statement {
@@ -14,9 +14,9 @@ pub struct Transaction {
     pub date: DateTimeUtc,
     pub description: String,
     pub ref_no: String,
-    pub withdrawal: Decimal,
-    pub deposit: Decimal,
-    pub balance: Decimal,
+    pub withdrawal: f32,
+    pub deposit: f32,
+    pub balance: f32,
 }
 
 pub struct Parser {

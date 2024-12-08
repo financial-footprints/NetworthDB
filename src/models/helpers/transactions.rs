@@ -12,9 +12,8 @@ use uuid::Uuid;
 /// # Arguments
 ///
 /// * `amount` - The amount of the transaction
-/// * `import_id` - The UUID of the import record
+/// * `account_id` - The UUID of the account
 /// * `date` - The date of the transaction
-/// * `balance` - The balance after the transaction
 /// * `sequence_number` - The sequence number of the transaction
 /// * `ref_no` - The reference number of the transaction
 /// * `description` - The description of the transaction
@@ -22,17 +21,8 @@ use uuid::Uuid;
 /// # Returns
 ///
 /// * `staged_transactions::ActiveModel` - The constructed ActiveModel for the staged transaction
-
-// account_id: Option<Uuid>,
-// amount: Option<Decimal>,
-// balance: Option<Decimal>,
-// date: Option<DateTime>,
-// ref_no: Option<String>,
-// description: Option<String>,
-// sequence_number: Option<i64>,
-
 pub fn build_transaction(
-    amount: Decimal,
+    amount: f32,
     account_id: Uuid,
     date: DateTime,
     sequence_number: i64,
@@ -44,7 +34,7 @@ pub fn build_transaction(
         amount: Set(amount),
         account_id: Set(account_id),
         date: Set(date),
-        balance: Set(Decimal::new(0, 0)),
+        balance: Set(0.0),
         sequence_number: Set(sequence_number),
         ref_no: Set(ref_no),
         description: Set(description),

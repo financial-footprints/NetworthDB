@@ -22,10 +22,10 @@ use super::{DateFilterType, NumberFilterType, StringFilterType};
 ///
 /// * `staged_transactions::ActiveModel` - The constructed ActiveModel for the staged transaction
 pub fn build_staged_transaction(
-    amount: Decimal,
+    amount: f32,
     import_id: Uuid,
     date: DateTime,
-    balance: Decimal,
+    balance: f32,
     sequence_number: i64,
     ref_no: String,
     description: String,

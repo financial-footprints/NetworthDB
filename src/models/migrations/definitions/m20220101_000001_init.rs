@@ -129,8 +129,8 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(uuid(Transactions::AccountId).not_null())
-                    .col(decimal(Transactions::Amount).not_null())
-                    .col(decimal(Transactions::Balance).not_null())
+                    .col(float(Transactions::Amount).not_null())
+                    .col(float(Transactions::Balance).not_null())
                     .col(timestamp(Transactions::Date).not_null())
                     .col(string(Transactions::Description).not_null())
                     .col(string(Transactions::RefNo).not_null())
@@ -171,12 +171,32 @@ impl MigrationTrait for Migration {
                             AND max_sequence_number < NEW.sequence_number;
                             RETURN NEW;
                         END;
-                        $$ language 'plpgsql';
+                        $$ LANGUAGE 'plpgsql';
 
                         CREATE TRIGGER update_max_sequence_number_trigger
                             AFTER INSERT OR UPDATE ON transactions
                             FOR EACH ROW
                             EXECUTE FUNCTION update_max_sequence_number();
+
+                        CREATE OR REPLACE FUNCTION update_max_sequence_number_on_delete()
+                        RETURNS TRIGGER AS $$
+                        BEGIN
+                            UPDATE accounts
+                            SET max_sequence_number = (
+                                SELECT COALESCE(MAX(sequence_number), 0)
+                                FROM transactions
+                                WHERE account_id = OLD.account_id
+                            )
+                            WHERE id = OLD.account_id
+                            AND OLD.sequence_number = accounts.max_sequence_number;
+                            RETURN OLD;
+                        END;
+                        $$ LANGUAGE 'plpgsql';
+
+                        CREATE TRIGGER update_max_sequence_number_on_delete_trigger
+                            AFTER DELETE ON transactions
+                            FOR EACH ROW
+                            EXECUTE FUNCTION update_max_sequence_number_on_delete();
                         "#,
                     )
                     .await?;
@@ -186,7 +206,7 @@ impl MigrationTrait for Migration {
                     .get_connection()
                     .execute_unprepared(
                         r#"
-                        CREATE TRIGGER update_max_sequence_number_trigger
+                        CREATE TRIGGER update_max_sequence_number
                             AFTER INSERT OR UPDATE ON transactions
                             FOR EACH ROW
                             BEGIN
@@ -194,7 +214,20 @@ impl MigrationTrait for Migration {
                                 SET max_sequence_number = NEW.sequence_number
                                 WHERE id = NEW.account_id
                                 AND max_sequence_number < NEW.sequence_number;
-                                RETURN NEW;
+                            END;
+
+                        CREATE TRIGGER update_max_sequence_number_on_delete
+                            AFTER DELETE ON transactions
+                            FOR EACH ROW
+                            BEGIN
+                                UPDATE accounts
+                                SET max_sequence_number = (
+                                    SELECT COALESCE(MAX(sequence_number), 0)
+                                    FROM transactions
+                                    WHERE account_id = OLD.account_id
+                                )
+                                WHERE id = OLD.account_id
+                                AND OLD.sequence_number = accounts.max_sequence_number;
                             END;
                         "#,
                     )
@@ -205,14 +238,26 @@ impl MigrationTrait for Migration {
                     .get_connection()
                     .execute_unprepared(
                         r#"
-                        CREATE TRIGGER update_max_sequence_number_trigger
+                        CREATE TRIGGER update_max_sequence_number
                             AFTER INSERT OR UPDATE ON transactions
                             BEGIN
                                 UPDATE accounts
                                 SET max_sequence_number = NEW.sequence_number
                                 WHERE id = NEW.account_id
                                 AND max_sequence_number < NEW.sequence_number;
-                                RETURN NEW;
+                            END;
+
+                        CREATE TRIGGER update_max_sequence_number_on_delete
+                            AFTER DELETE ON transactions
+                            BEGIN
+                                UPDATE accounts
+                                SET max_sequence_number = (
+                                    SELECT COALESCE(MAX(sequence_number), 0)
+                                    FROM transactions
+                                    WHERE account_id = OLD.account_id
+                                )
+                                WHERE id = OLD.account_id
+                                AND OLD.sequence_number = accounts.max_sequence_number;
                             END;
                         "#,
                     )
@@ -267,8 +312,8 @@ impl MigrationTrait for Migration {
                     )
                     .col(uuid(StagedTransactions::ImportId).not_null())
                     .col(date_time(StagedTransactions::Date).not_null())
-                    .col(decimal(StagedTransactions::Amount).not_null())
-                    .col(decimal(StagedTransactions::Balance).not_null())
+                    .col(float(StagedTransactions::Amount).not_null())
+                    .col(float(StagedTransactions::Balance).not_null())
                     .col(string(StagedTransactions::RefNo).not_null())
                     .col(string(StagedTransactions::Description).not_null())
                     .col(big_integer(StagedTransactions::SequenceNumber).not_null())

@@ -20,8 +20,7 @@ mod xls {
         },
         utils,
     };
-    use sea_orm::{prelude::Decimal, sqlx::types::chrono::Utc};
-    use std::str::FromStr;
+    use sea_orm::sqlx::types::chrono::Utc;
 
     #[test]
     fn test_identify_valid_file() {
@@ -107,27 +106,18 @@ mod xls {
             utils::datetime::date_str_to_datetime(&"01/01/2021")
         );
         assert_eq!(transactions[0].description, "Description 1");
-        assert_eq!(
-            transactions[0].withdrawal,
-            Decimal::from_str("100.0").unwrap()
-        );
-        assert_eq!(transactions[0].deposit, Decimal::from_str("0.0").unwrap());
-        assert_eq!(transactions[0].balance, Decimal::from_str("900.0").unwrap());
+        assert_eq!(transactions[0].withdrawal, 100.0);
+        assert_eq!(transactions[0].deposit, 0.0);
+        assert_eq!(transactions[0].balance, 900.0);
 
         assert_eq!(
             transactions[1].date,
             utils::datetime::date_str_to_datetime(&"02/01/2021")
         );
         assert_eq!(transactions[1].description, "Description 2");
-        assert_eq!(
-            transactions[1].withdrawal,
-            Decimal::from_str("0.0").unwrap()
-        );
-        assert_eq!(transactions[1].deposit, Decimal::from_str("200.0").unwrap());
-        assert_eq!(
-            transactions[1].balance,
-            Decimal::from_str("1100.0").unwrap()
-        );
+        assert_eq!(transactions[1].withdrawal, 0.0);
+        assert_eq!(transactions[1].deposit, 200.0);
+        assert_eq!(transactions[1].balance, 1100.0);
     }
 
     #[test]
@@ -228,8 +218,7 @@ mod pdf {
         },
         utils,
     };
-    use sea_orm::{prelude::Decimal, sqlx::types::chrono::Utc};
-    use std::str::FromStr;
+    use sea_orm::sqlx::types::chrono::Utc;
 
     fn _common_pdf_data() -> FileData {
         FileData::Text("\nDate \nNarration \nChq./Ref.No. \nValueDt \nWithdrawalAmt. \nDepositAmt. \nClosingBalance \n01/01/23 \nUPI-TESTUSER-TEST@BANK \n0000000000000001 \n01/01/23 \n1,000.00 \n10,000.00 \nTEST-TRANSACTION-1 \n02/01/23 \nNEFT-TESTBANK-TESTUSER \n0000000000000002 \n02/01/23 \n500.00 \n9,500.00 \n03/01/23 \nPOS-TESTSHOP-TESTCITY \n0000000000000003 \n03/01/23 \n200.009,700.00 \nTEST-TRANSACTION-3\n\nTestMore\nPageNo.:1Statementofaccount \nMR.Tester TesterAddress JOINTHOLDERS: Holder1 Nomination:Nomination1 StatementFrom:01/04/1900To:31/03/1910 \nAccountBranch:Branch Address ODLimit:10Currency:INR Email:email@example.com CustID:12345 AccountNo:123456789 A/COpenDate:11/01/1900 AccountStatus:Regular RTGS/NEFTIFSC :HDFC0000001MICR:1000000 BranchCode:000ProductCode:100 HDFCBANKLIMITED *Closingbalanceincludesfundsearmarkedforholdandunclearedfunds Contentsofthisstatementwillbeconsideredcorrectifnoerrorisreportedwithin30daysofreceiptofstatement.TheaddressonthisstatementisthatonrecordwiththeBankasatthedayofrequesting thisstatement. StateaccountbranchGSTN:12345 HDFCBankGSTINnumberdetailsareavailableathttps://www.hdfcbank.com/personal/making-payments/online-tax-payment/goods-and-service-tax. RegisteredOfficeAddress:HDFCBankHouse,SenapatiBapatMarg,LowerParel,Mumbai400013".to_string())
@@ -283,9 +272,9 @@ mod pdf {
             "UPI-TESTUSER-TEST@BANKTEST-TRANSACTION-1"
         );
         assert_eq!(transaction.ref_no, "0000000000000001");
-        assert_eq!(transaction.withdrawal, Decimal::from_str("1000.0").unwrap());
-        assert_eq!(transaction.deposit, Decimal::from_str("0.0").unwrap());
-        assert_eq!(transaction.balance, Decimal::from_str("10000.0").unwrap());
+        assert_eq!(transaction.withdrawal, 1000.0);
+        assert_eq!(transaction.deposit, 0.0);
+        assert_eq!(transaction.balance, 10000.0);
 
         let transaction = &statements.transactions[1];
         assert_eq!(
@@ -294,9 +283,9 @@ mod pdf {
         );
         assert_eq!(transaction.description, "NEFT-TESTBANK-TESTUSER");
         assert_eq!(transaction.ref_no, "0000000000000002");
-        assert_eq!(transaction.withdrawal, Decimal::from_str("500.0").unwrap());
-        assert_eq!(transaction.deposit, Decimal::from_str("0.0").unwrap());
-        assert_eq!(transaction.balance, Decimal::from_str("9500.0").unwrap());
+        assert_eq!(transaction.withdrawal, 500.0);
+        assert_eq!(transaction.deposit, 0.0);
+        assert_eq!(transaction.balance, 9500.0);
 
         let transaction = &statements.transactions[2];
         assert_eq!(
@@ -308,9 +297,9 @@ mod pdf {
             "POS-TESTSHOP-TESTCITYTEST-TRANSACTION-3TestMore"
         );
         assert_eq!(transaction.ref_no, "0000000000000003");
-        assert_eq!(transaction.withdrawal, Decimal::from_str("0.0").unwrap());
-        assert_eq!(transaction.deposit, Decimal::from_str("200.0").unwrap());
-        assert_eq!(transaction.balance, Decimal::from_str("9700.0").unwrap());
+        assert_eq!(transaction.withdrawal, 0.0);
+        assert_eq!(transaction.deposit, 200.0);
+        assert_eq!(transaction.balance, 9700.0);
     }
 
     #[test]

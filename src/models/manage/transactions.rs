@@ -6,7 +6,7 @@ use crate::models::{
         NumberFilterType,
     },
 };
-use prelude::{DateTime, Decimal};
+use prelude::DateTime;
 use sea_orm::{entity::*, query::*, DatabaseConnection, DatabaseTransaction, DeleteResult};
 use uuid::Uuid;
 
@@ -116,7 +116,7 @@ pub async fn update_transaction(
     db: &DatabaseConnection,
     id: Uuid,
     account_id: Option<Uuid>,
-    amount: Option<Decimal>,
+    amount: Option<f32>,
     date: Option<DateTime>,
     ref_no: Option<String>,
     description: Option<String>,
@@ -320,7 +320,7 @@ async fn recalculate_balance(
     txn: &DatabaseTransaction,
     account_id: Uuid,
     sequence_number: i64,
-    mut current_balance: Decimal,
+    mut current_balance: f32,
 ) -> Result<Vec<transactions::ActiveModel>, sea_orm::DbErr> {
     // Get all transactions with sequence number higher than the given transaction
     let query = build_query(TransactionsQueryOptions {

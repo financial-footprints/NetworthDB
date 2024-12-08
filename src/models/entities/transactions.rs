@@ -3,14 +3,16 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "transactions")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
     pub account_id: Uuid,
-    pub amount: Decimal,
-    pub balance: Decimal,
+    #[sea_orm(column_type = "Float")]
+    pub amount: f32,
+    #[sea_orm(column_type = "Float")]
+    pub balance: f32,
     pub date: DateTime,
     pub description: String,
     pub ref_no: String,

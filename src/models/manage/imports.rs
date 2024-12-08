@@ -16,7 +16,7 @@ use crate::{
     readers::parsers::types::Statement,
     utils::datetime::get_current_naive_datetime,
 };
-use prelude::Decimal;
+
 use sea_orm::{entity::*, query::*, ActiveValue::Set, DatabaseConnection, DbErr, DeleteResult};
 use uuid::Uuid;
 
@@ -46,7 +46,7 @@ pub async fn create_import(db: &DatabaseConnection, statement: &Statement) -> Re
     let mut sequence_number = 0;
     let txn = db.begin().await?;
     for transaction in statement.transactions.iter() {
-        let amount = if transaction.deposit > Decimal::ZERO {
+        let amount = if transaction.deposit > 0.0 {
             transaction.deposit
         } else {
             -transaction.withdrawal
