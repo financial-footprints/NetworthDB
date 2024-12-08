@@ -1,6 +1,6 @@
-use crate::models::{entities::staged_transactions, helpers::SortDirection};
+use crate::models::entities::staged_transactions;
 use prelude::DateTime;
-use sea_orm::{entity::*, prelude::Decimal, ActiveValue::Set};
+use sea_orm::{entity::*, prelude::Decimal, ActiveValue::Set, Order};
 use uuid::Uuid;
 
 use super::{DateFilterType, NumberFilterType, StringFilterType};
@@ -44,7 +44,7 @@ pub fn build_staged_transaction(
 
 pub struct StagedTransactionSort {
     pub column: staged_transactions::Column,
-    pub direction: SortDirection,
+    pub direction: Order,
 }
 
 #[derive(Default)]

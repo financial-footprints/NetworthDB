@@ -1,12 +1,12 @@
-use crate::models::{entities::imports, helpers::SortDirection};
-use sea_orm::prelude::DateTime;
+use crate::models::entities::imports;
+use sea_orm::{prelude::DateTime, Order};
 use uuid::Uuid;
 
 use super::{DateFilterType, StringFilterType};
 
 pub struct ImportSort {
     pub column: imports::Column,
-    pub direction: SortDirection,
+    pub direction: Order,
 }
 
 #[derive(Default)]

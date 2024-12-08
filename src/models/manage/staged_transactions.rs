@@ -325,10 +325,7 @@ fn build_query(options: StagedTransactionsQueryOptions) -> Select<staged_transac
     }
 
     if let Some(sort) = options.sort {
-        match sort.direction {
-            SortDirection::Asc => query = query.order_by_asc(sort.column),
-            SortDirection::Desc => query = query.order_by_desc(sort.column),
-        }
+        query = query.order_by(sort.column, sort.direction);
     }
 
     return query;
@@ -350,7 +347,7 @@ async fn recalculate_balance(
         }),
         sort: Some(StagedTransactionSort {
             column: staged_transactions::Column::SequenceNumber,
-            direction: SortDirection::Asc,
+            direction: Order::Asc,
         }),
         ..Default::default()
     });

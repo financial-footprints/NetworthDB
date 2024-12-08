@@ -5,11 +5,6 @@ pub mod transactions;
 use sea_orm::{entity::*, query::*};
 use sea_orm::{prelude::DateTime, Select};
 
-pub enum SortDirection {
-    Asc,
-    Desc,
-}
-
 pub enum NumberFilterType {
     GreaterThan,
     EqualOrGreaterThan,

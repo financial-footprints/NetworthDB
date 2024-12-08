@@ -1,12 +1,15 @@
-use crate::models::{entities::transactions, helpers::SortDirection};
-use sea_orm::prelude::{DateTime, Decimal};
+use crate::models::entities::transactions;
+use sea_orm::{
+    prelude::{DateTime, Decimal},
+    Order,
+};
 use uuid::Uuid;
 
 use super::{DateFilterType, NumberFilterType, StringFilterType};
 
 pub struct TransactionSort {
     pub column: transactions::Column,
-    pub direction: SortDirection,
+    pub direction: Order,
 }
 
 #[derive(Default)]

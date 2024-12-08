@@ -1,7 +1,5 @@
-use crate::models::{
-    entities::{accounts, sea_orm_active_enums},
-    helpers::SortDirection,
-};
+use crate::models::entities::{accounts, sea_orm_active_enums};
+use sea_orm::Order;
 use sea_orm_active_enums::AccountType;
 use uuid::Uuid;
 
@@ -9,7 +7,7 @@ use super::StringFilterType;
 
 pub struct AccountSort {
     pub column: accounts::Column,
-    pub direction: SortDirection,
+    pub direction: Order,
 }
 
 #[derive(Default)]

@@ -3,7 +3,7 @@ use crate::models::{
     helpers::{
         apply_date_filter, apply_number_filter, apply_string_filter,
         transactions::{TransactionFilter, TransactionSort, TransactionsQueryOptions},
-        NumberFilterType, SortDirection,
+        NumberFilterType,
     },
 };
 use prelude::{DateTime, Decimal};
@@ -324,10 +324,7 @@ fn build_query(options: TransactionsQueryOptions) -> Select<transactions::Entity
     }
 
     if let Some(sort) = options.sort {
-        match sort.direction {
-            SortDirection::Asc => query = query.order_by_asc(sort.column),
-            SortDirection::Desc => query = query.order_by_desc(sort.column),
-        }
+        query = query.order_by(sort.column, sort.direction);
     }
 
     query
@@ -348,7 +345,7 @@ async fn recalculate_balance(
         }),
         sort: Some(TransactionSort {
             column: transactions::Column::SequenceNumber,
-            direction: SortDirection::Asc,
+            direction: Order::Asc,
         }),
         ..Default::default()
     });

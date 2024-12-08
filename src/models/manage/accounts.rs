@@ -1,5 +1,5 @@
 use crate::models::entities::{accounts, sea_orm_active_enums::AccountType};
-use crate::models::helpers::{accounts::*, apply_string_filter, SortDirection};
+use crate::models::helpers::{accounts::*, apply_string_filter};
 
 use sea_orm::{entity::*, query::*, DatabaseConnection, DbErr, DeleteResult, Set};
 use uuid::Uuid;
@@ -187,13 +187,7 @@ fn build_query(options: AccountsQueryOptions) -> Select<accounts::Entity> {
 
     // Apply sorting if present
     if let Some(sort) = options.sort {
-        query = query.order_by(
-            sort.column,
-            match sort.direction {
-                SortDirection::Asc => Order::Asc,
-                SortDirection::Desc => Order::Desc,
-            },
-        );
+        query = query.order_by(sort.column, sort.direction);
     }
 
     // Apply pagination if present

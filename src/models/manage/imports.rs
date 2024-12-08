@@ -280,10 +280,7 @@ fn build_query(options: ImportsQueryOptions) -> Select<imports::Entity> {
     }
 
     if let Some(sort) = options.sort {
-        match sort.direction {
-            SortDirection::Asc => query = query.order_by_asc(sort.column),
-            SortDirection::Desc => query = query.order_by_desc(sort.column),
-        }
+        query = query.order_by(sort.column, sort.direction);
     }
 
     query
