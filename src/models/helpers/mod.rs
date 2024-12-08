@@ -4,6 +4,9 @@ pub mod staged_transactions;
 pub mod transactions;
 use sea_orm::{entity::*, query::*};
 use sea_orm::{prelude::DateTime, Select};
+use serde::Deserialize;
+
+#[derive(Debug, Deserialize)]
 
 pub enum NumberFilterType {
     GreaterThan,
@@ -12,12 +15,15 @@ pub enum NumberFilterType {
     LessThan,
     Equal,
 }
+
+#[derive(Debug, Deserialize)]
 pub enum DateFilterType {
     GreaterThan,
     LessThan,
     Equal,
 }
 
+#[derive(Debug, Deserialize)]
 pub enum StringFilterType {
     Contains,
     NotContains,

@@ -1,6 +1,7 @@
 use crate::models::entities::staged_transactions;
 use prelude::DateTime;
 use sea_orm::{entity::*, prelude::Decimal, ActiveValue::Set, Order};
+use serde::Deserialize;
 use uuid::Uuid;
 
 use super::{DateFilterType, NumberFilterType, StringFilterType};
@@ -42,12 +43,59 @@ pub fn build_staged_transaction(
     }
 }
 
+#[derive(Debug)]
 pub struct StagedTransactionSort {
     pub column: staged_transactions::Column,
     pub direction: Order,
 }
 
-#[derive(Default)]
+impl Default for StagedTransactionSort {
+    fn default() -> Self {
+        StagedTransactionSort {
+            column: staged_transactions::Column::SequenceNumber,
+            direction: Order::Desc,
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for StagedTransactionSort {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct StagedTransactionSortHelper {
+            column: Option<String>,
+            direction: Option<String>,
+        }
+
+        let helper = StagedTransactionSortHelper::deserialize(deserializer)?;
+
+        let column = match helper.column.as_deref() {
+            Some("id") => staged_transactions::Column::Id,
+            Some("import_id") => staged_transactions::Column::ImportId,
+            Some("sequence_number") => staged_transactions::Column::SequenceNumber,
+            Some("date") => staged_transactions::Column::Date,
+            Some("amount") => staged_transactions::Column::Amount,
+            Some("balance") => staged_transactions::Column::Balance,
+            Some("ref_no") => staged_transactions::Column::RefNo,
+            Some("description") => staged_transactions::Column::Description,
+            None => staged_transactions::Column::SequenceNumber,
+            _ => return Err(serde::de::Error::custom("Invalid column value")),
+        };
+
+        let direction = match helper.direction.as_deref() {
+            Some("asc") => Order::Asc,
+            Some("desc") => Order::Desc,
+            None => Order::Desc,
+            _ => return Err(serde::de::Error::custom("Invalid direction value")),
+        };
+
+        Ok(StagedTransactionSort { column, direction })
+    }
+}
+
+#[derive(Debug, Default, Deserialize)]
 pub struct StagedTransactionFilter {
     pub id: Option<Uuid>,
     pub import_id: Option<Uuid>,
@@ -59,7 +107,7 @@ pub struct StagedTransactionFilter {
     pub description: Option<(StringFilterType, String)>,
 }
 
-#[derive(Default)]
+#[derive(Debug, Default, Deserialize)]
 pub struct StagedTransactionsQueryOptions {
     pub filter: Option<StagedTransactionFilter>,
     pub sort: Option<StagedTransactionSort>,

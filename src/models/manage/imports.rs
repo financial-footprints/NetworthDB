@@ -52,7 +52,7 @@ pub async fn create_import(db: &DatabaseConnection, statement: &Statement) -> Re
             -transaction.withdrawal
         };
         sequence_number += 1;
-        let staged_transaction = build_staged_transaction(
+        let mut staged_transaction = build_staged_transaction(
             amount,
             import_id,
             transaction.date.naive_utc(),
@@ -61,7 +61,7 @@ pub async fn create_import(db: &DatabaseConnection, statement: &Statement) -> Re
             transaction.ref_no.clone(),
             transaction.description.clone(),
         );
-        txn_create_staged_transaction(&txn, &staged_transaction).await?;
+        txn_create_staged_transaction(&txn, &mut staged_transaction).await?;
     }
     txn.commit().await?;
     Ok(import_id)

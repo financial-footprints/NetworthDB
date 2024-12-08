@@ -274,7 +274,7 @@ impl MigrationTrait for Migration {
                     .col(big_integer(StagedTransactions::SequenceNumber).not_null())
                     .index(
                         Index::create()
-                            .name("uniq_stagingid_sequencenumber")
+                            .name("uniq_importid_sequencenumber")
                             .table(StagedTransactions::Table)
                             .col(StagedTransactions::ImportId)
                             .col(StagedTransactions::SequenceNumber)

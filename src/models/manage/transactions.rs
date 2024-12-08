@@ -20,10 +20,10 @@ use uuid::Uuid;
 /// * `Result<Uuid, sea_orm::DbErr>` - UUID of the created transaction or error
 pub async fn create_transaction(
     db: &DatabaseConnection,
-    transaction: transactions::ActiveModel,
+    mut transaction: transactions::ActiveModel,
 ) -> Result<transactions::Model, sea_orm::DbErr> {
     let txn = db.begin().await?;
-    let inserted_transaction_id = txn_create_transaction(&txn, &transaction).await?;
+    let inserted_transaction_id = txn_create_transaction(&txn, &mut transaction).await?;
     txn.commit().await?;
 
     let inserted_transaction = get_transaction(
@@ -46,8 +46,26 @@ pub async fn create_transaction(
 
 pub(super) async fn txn_create_transaction(
     txn: &DatabaseTransaction,
-    transaction: &transactions::ActiveModel,
+    transaction: &mut transactions::ActiveModel,
 ) -> Result<Uuid, sea_orm::DbErr> {
+    // Calculate the correct balance after current transaction
+    transaction.balance = Set(build_query(TransactionsQueryOptions {
+        filter: Some(TransactionFilter {
+            account_id: Some(transaction.account_id.clone().unwrap()),
+            sequence_number: Some((
+                NumberFilterType::LessThan,
+                transaction.sequence_number.clone().unwrap(),
+            )),
+            ..Default::default()
+        }),
+        ..Default::default()
+    })
+    .one(txn)
+    .await?
+    .map(|prev_txn| prev_txn.balance + transaction.amount.clone().unwrap())
+    .unwrap_or_else(|| transaction.amount.clone().unwrap()));
+
+    // Calculate the balance of the subsequent transactions
     let mut dependent_transactions = recalculate_balance(
         txn,
         transaction.account_id.clone().unwrap(),
@@ -99,7 +117,6 @@ pub async fn update_transaction(
     id: Uuid,
     account_id: Option<Uuid>,
     amount: Option<Decimal>,
-    balance: Option<Decimal>,
     date: Option<DateTime>,
     ref_no: Option<String>,
     description: Option<String>,
@@ -113,12 +130,8 @@ pub async fn update_transaction(
         ))?
         .into();
 
-    let mut lowest_sequence_number = transaction.sequence_number.clone().unwrap();
     if let Some(sequence_number) = sequence_number {
         transaction.sequence_number = Set(sequence_number);
-        if sequence_number < lowest_sequence_number {
-            lowest_sequence_number = sequence_number;
-        }
     }
 
     if let Some(account_id) = account_id {
@@ -128,49 +141,22 @@ pub async fn update_transaction(
     if let Some(date) = date {
         transaction.date = Set(date);
     }
+
     if let Some(amount) = amount {
         transaction.amount = Set(amount);
     }
-    if let Some(balance) = balance {
-        transaction.balance = Set(balance);
-    }
+
     if let Some(ref_no) = ref_no {
         transaction.ref_no = Set(ref_no);
     }
+
     if let Some(description) = description {
         transaction.description = Set(description);
     }
 
     let txn = db.begin().await?;
     txn_delete_transaction(&txn, &transaction).await?;
-    let updated_transaction_id = txn_create_transaction(&txn, &transaction).await?;
-    // Rebalance from the smallest available affected sequence number
-    if sequence_number.is_some() {
-        let query = build_query(TransactionsQueryOptions {
-            filter: Some(TransactionFilter {
-                account_id: Some(transaction.account_id.clone().unwrap()),
-                sequence_number: Some((
-                    NumberFilterType::EqualOrGreaterThan,
-                    lowest_sequence_number,
-                )),
-                ..Default::default()
-            }),
-            ..Default::default()
-        });
-        let next_transaction = query.one(db).await?;
-        if let Some(next_transaction) = next_transaction {
-            let mut dependent_transactions = recalculate_balance(
-                &txn,
-                next_transaction.account_id,
-                lowest_sequence_number,
-                next_transaction.balance,
-            )
-            .await?;
-            for transaction in dependent_transactions.iter_mut() {
-                transaction.clone().update(&txn).await?;
-            }
-        }
-    }
+    let updated_transaction_id = txn_create_transaction(&txn, &mut transaction).await?;
 
     txn.commit().await?;
 

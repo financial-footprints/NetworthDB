@@ -19,10 +19,10 @@ use uuid::Uuid;
 /// * `Result<staged_transactions::Model, sea_orm::DbErr>` - The created staging transaction or error
 pub async fn create_staged_transaction(
     db: &DatabaseConnection,
-    transaction: staged_transactions::ActiveModel,
+    mut transaction: staged_transactions::ActiveModel,
 ) -> Result<staged_transactions::Model, sea_orm::DbErr> {
     let txn = db.begin().await?;
-    let inserted_transaction_id = txn_create_staged_transaction(&txn, &transaction).await?;
+    let inserted_transaction_id = txn_create_staged_transaction(&txn, &mut transaction).await?;
     txn.commit().await?;
 
     let inserted_transaction = get_staged_transaction(
@@ -45,8 +45,27 @@ pub async fn create_staged_transaction(
 
 pub(super) async fn txn_create_staged_transaction(
     txn: &DatabaseTransaction,
-    transaction: &staged_transactions::ActiveModel,
+    transaction: &mut staged_transactions::ActiveModel,
 ) -> Result<Uuid, sea_orm::DbErr> {
+    // Calculate the correct balance after current transaction
+    if let Some(prev_txn) = build_query(StagedTransactionsQueryOptions {
+        filter: Some(StagedTransactionFilter {
+            import_id: Some(transaction.import_id.clone().unwrap()),
+            sequence_number: Some((
+                NumberFilterType::LessThan,
+                transaction.sequence_number.clone().unwrap(),
+            )),
+            ..Default::default()
+        }),
+        ..Default::default()
+    })
+    .one(txn)
+    .await?
+    {
+        transaction.balance = Set(prev_txn.balance + transaction.amount.clone().unwrap());
+    }
+
+    // Calculate the balance of the subsequent transactions
     let mut dependent_transactions = recalculate_balance(
         txn,
         transaction.import_id.clone().unwrap(),
@@ -98,7 +117,6 @@ pub async fn update_staged_transaction(
     id: Uuid,
     date: Option<DateTime>,
     amount: Option<Decimal>,
-    balance: Option<Decimal>,
     ref_no: Option<String>,
     description: Option<String>,
     sequence_number: Option<i64>,
@@ -110,24 +128,18 @@ pub async fn update_staged_transaction(
             "error.staged_transactions.update_staged_transaction.not_found".to_string(),
         ))?
         .into_active_model();
-    let mut lowest_sequence_number = transaction.sequence_number.clone().unwrap();
+    let original_transaction = transaction.clone();
 
     if let Some(new_sequence_number) = sequence_number {
         transaction.sequence_number = Set(new_sequence_number);
-        if new_sequence_number < lowest_sequence_number {
-            lowest_sequence_number = new_sequence_number;
-        }
     }
+
     if let Some(new_date) = date {
         transaction.date = Set(new_date);
     }
 
     if let Some(new_amount) = amount {
         transaction.amount = Set(new_amount);
-    }
-
-    if let Some(new_balance) = balance {
-        transaction.balance = Set(new_balance);
     }
 
     if let Some(new_ref_no) = ref_no {
@@ -140,37 +152,8 @@ pub async fn update_staged_transaction(
 
     // Update all dependent transactions in an atomic transaction
     let txn = db.begin().await?;
-    txn_delete_staged_transaction(&txn, &transaction).await?;
-    let updated_transaction_id = txn_create_staged_transaction(&txn, &transaction).await?;
-
-    // Rebalance from the smallest available affected sequence number
-    if sequence_number.is_some() {
-        let query = build_query(StagedTransactionsQueryOptions {
-            filter: Some(StagedTransactionFilter {
-                import_id: Some(transaction.import_id.clone().unwrap()),
-                sequence_number: Some((
-                    NumberFilterType::EqualOrGreaterThan,
-                    lowest_sequence_number,
-                )),
-                ..Default::default()
-            }),
-            ..Default::default()
-        });
-        let next_transaction = query.one(db).await?;
-        if let Some(next_transaction) = next_transaction {
-            let mut dependent_transactions = recalculate_balance(
-                &txn,
-                next_transaction.import_id,
-                lowest_sequence_number,
-                next_transaction.balance,
-            )
-            .await?;
-            for transaction in dependent_transactions.iter_mut() {
-                transaction.clone().update(&txn).await?;
-            }
-        }
-    }
-
+    txn_delete_staged_transaction(&txn, &original_transaction).await?;
+    let updated_transaction_id = txn_create_staged_transaction(&txn, &mut transaction).await?;
     txn.commit().await?;
 
     let updated_transaction = get_staged_transaction(

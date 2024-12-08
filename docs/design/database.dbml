@@ -51,7 +51,7 @@ Table "staged_transactions" {
 
   Indexes {
     id [pk, name: "staged_transactions_pkey"]
-    (import_id, sequence_number) [unique, name: "uniq_stagingid_sequencenumber"]
+    (import_id, sequence_number) [unique, name: "uniq_importid_sequencenumber"]
   }
 }
 
