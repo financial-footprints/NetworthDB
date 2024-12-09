@@ -288,7 +288,7 @@ impl MigrationTrait for Migration {
                     .get_connection()
                     .execute_unprepared(
                         r#"
-                        CREATE OR REPLACE FUNCTION update_max_sequence_number()
+                        CREATE OR REPLACE FUNCTION update_transaction_count()
                         RETURNS TRIGGER AS $$
                         BEGIN
                             UPDATE accounts
@@ -301,7 +301,7 @@ impl MigrationTrait for Migration {
                         CREATE TRIGGER update_transaction_count_trigger
                             AFTER INSERT ON transactions
                             FOR EACH ROW
-                            EXECUTE FUNCTION update_max_sequence_number();
+                            EXECUTE FUNCTION update_transaction_count();
 
                         CREATE OR REPLACE FUNCTION update_transaction_count_on_delete()
                         RETURNS TRIGGER AS $$
