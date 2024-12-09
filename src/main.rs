@@ -1,6 +1,9 @@
 use networth_db::{
     self,
-    models::{entities::sea_orm_active_enums::AccountType, manage::accounts::create_account},
+    models::{
+        entities::sea_orm_active_enums::{AccountType, InstitutionName},
+        manage::accounts::create_account,
+    },
 };
 mod config;
 
@@ -32,9 +35,14 @@ async fn main() {
         );
     }
 
-    let account = create_account(&config.db, "1234567890", &AccountType::CheckingAccount)
-        .await
-        .unwrap();
+    let account = create_account(
+        &config.db,
+        "1234567890",
+        &AccountType::CheckingAccount,
+        &InstitutionName::Hdfc,
+    )
+    .await
+    .unwrap();
 
     match networth_db::models::manage::imports::create_import(&config.db, &statement, &account.id)
         .await

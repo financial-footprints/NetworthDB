@@ -1,4 +1,6 @@
-use crate::models::entities::{accounts, sea_orm_active_enums::AccountType};
+use crate::models::entities::{
+    accounts, sea_orm_active_enums::AccountType, sea_orm_active_enums::InstitutionName,
+};
 use crate::models::helpers::{accounts::*, apply_string_filter};
 
 use sea_orm::{entity::*, query::*, DatabaseConnection, DbErr, DeleteResult, Set};
@@ -19,11 +21,13 @@ pub async fn create_account(
     db: &DatabaseConnection,
     account_number: &str,
     account_type: &AccountType,
+    institution_name: &InstitutionName,
 ) -> Result<accounts::Model, DbErr> {
     let account = accounts::ActiveModel {
         id: Set(Uuid::new_v4()),
         account_number: Set(account_number.to_string()),
         r#type: Set(account_type.clone()),
+        institution_name: Set(institution_name.clone()),
         ..Default::default()
     };
 
@@ -61,6 +65,7 @@ pub async fn update_account(
     id: Uuid,
     account_type: Option<AccountType>,
     account_number: Option<String>,
+    institution_name: Option<InstitutionName>,
 ) -> Result<accounts::Model, DbErr> {
     let mut account: accounts::ActiveModel = accounts::Entity::find_by_id(id)
         .one(db)
@@ -76,6 +81,10 @@ pub async fn update_account(
 
     if let Some(new_number) = account_number {
         account.account_number = Set(new_number);
+    }
+
+    if let Some(new_institution_name) = institution_name {
+        account.institution_name = Set(new_institution_name);
     }
 
     account.update(db).await
@@ -101,20 +110,6 @@ pub async fn delete_account(db: &DatabaseConnection, id: Uuid) -> Result<DeleteR
     }
 
     Ok(delete_result)
-}
-
-pub(crate) async fn get_max_sequence(
-    db: &DatabaseConnection,
-    account_id: &Uuid,
-) -> Result<i64, DbErr> {
-    let account = accounts::Entity::find_by_id(account_id.clone())
-        .one(db)
-        .await?
-        .ok_or(DbErr::RecordNotFound(
-            "error.fiscal_accounts.get_max_sequence.not_found".to_string(),
-        ))?;
-
-    Ok(account.max_sequence_number)
 }
 
 /// Get all accounts based on the provided query options

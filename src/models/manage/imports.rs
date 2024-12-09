@@ -1,6 +1,5 @@
 use super::{
-    accounts::{get_account, get_max_sequence},
-    staged_transactions::txn_create_staged_transaction,
+    accounts::get_account, staged_transactions::txn_create_staged_transaction,
     transactions::txn_create_transaction,
 };
 use crate::{
@@ -50,14 +49,24 @@ pub async fn create_import(
         .await?
         .last_insert_id;
 
-    let mut sequence_number = match get_max_sequence(db, account_id).await {
-        Ok(seq) => seq,
-        Err(DbErr::RecordNotFound(_)) => {
+    let mut sequence_number = match get_account(
+        db,
+        AccountsQueryOptions {
+            filter: Some(AccountFilter {
+                id: Some(account_id.clone()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        },
+    )
+    .await?
+    {
+        Some(account) => account.max_sequence_number,
+        None => {
             return Err(DbErr::RecordNotFound(
                 "error.import.account_not_found".to_string(),
             ));
         }
-        Err(e) => return Err(e),
     };
     let txn = db.begin().await?;
     for transaction in statement.transactions.iter() {

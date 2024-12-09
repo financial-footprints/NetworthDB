@@ -1,16 +1,22 @@
 // Use DBML to define your database structure
 // Docs: https://dbml.dbdiagram.io/docs
 
+enum bank_name {
+  None
+}
+
 enum account_type {
   None
 }
 
-Table "accounts" {
+Table "fiscal_accounts" {
   "id" uuid [not null, default: `gen_random_uuid()`]
   "updated_at" timestamp [not null, default: `CURRENT_TIMESTAMP`]
   "account_number" "character varying" [not null]
   "max_sequence_number" bigint [not null, default: 0]
+  "transaction_count" bigint [not null, default: 0]
   "type" account_type [not null]
+  "institution_name" bank_name [not null]
   "auto_change_updated_at" TRIGGER
 
   Indexes {
@@ -65,6 +71,8 @@ Table "transactions" {
   "sequence_number" bigint [not null]
   "update_max_sequence_number" TRIGGER
   "update_max_sequence_number_on_delete" TRIGGER
+  "update_transaction_count" TRIGGER
+  "update_transaction_count_on_delete" TRIGGER
 
   Indexes {
     id [pk, name: "transactions_pkey"]

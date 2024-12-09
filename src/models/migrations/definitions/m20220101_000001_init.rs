@@ -29,6 +29,12 @@ impl MigrationTrait for Migration {
                             .create_enum_from_active_enum::<AccountType>(),
                     )
                     .await?;
+                manager
+                    .create_type(
+                        Schema::new(DbBackend::Postgres)
+                            .create_enum_from_active_enum::<InstitutionName>(),
+                    )
+                    .await?;
             }
             DbBackend::MySql | DbBackend::Sqlite => {}
         }
@@ -56,8 +62,18 @@ impl MigrationTrait for Migration {
                             .not_null(),
                     )
                     .col(
+                        big_integer(Accounts::TransactionCount)
+                            .default(0)
+                            .not_null(),
+                    )
+                    .col(
                         ColumnDef::new(Accounts::Type)
                             .custom(AccountType::name())
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(Accounts::InstitutionName)
+                            .custom(InstitutionName::name())
                             .not_null(),
                     )
                     .to_owned(),
@@ -265,6 +281,98 @@ impl MigrationTrait for Migration {
             }
         }
 
+        // Create trigger to update transaction_count
+        match schema {
+            DbBackend::Postgres => {
+                manager
+                    .get_connection()
+                    .execute_unprepared(
+                        r#"
+                        CREATE OR REPLACE FUNCTION update_max_sequence_number()
+                        RETURNS TRIGGER AS $$
+                        BEGIN
+                            UPDATE accounts
+                            SET transaction_count = transaction_count + 1
+                            WHERE id = NEW.account_id;
+                            RETURN NEW;
+                        END;
+                        $$ LANGUAGE 'plpgsql';
+
+                        CREATE TRIGGER update_transaction_count_trigger
+                            AFTER INSERT ON transactions
+                            FOR EACH ROW
+                            EXECUTE FUNCTION update_max_sequence_number();
+
+                        CREATE OR REPLACE FUNCTION update_transaction_count_on_delete()
+                        RETURNS TRIGGER AS $$
+                        BEGIN
+                            UPDATE accounts
+                            SET transaction_count = transaction_count - 1
+                            WHERE id = OLD.account_id;
+                            RETURN OLD;
+                        END;
+                        $$ LANGUAGE 'plpgsql';
+
+                        CREATE TRIGGER update_transaction_count_on_delete_trigger
+                            AFTER DELETE ON transactions
+                            FOR EACH ROW
+                            EXECUTE FUNCTION update_transaction_count_on_delete();
+                        "#,
+                    )
+                    .await?;
+            }
+            DbBackend::MySql => {
+                manager
+                    .get_connection()
+                    .execute_unprepared(
+                        r#"
+                        CREATE TRIGGER update_transaction_count
+                            AFTER INSERT ON transactions
+                            FOR EACH ROW
+                            BEGIN
+                                UPDATE accounts
+                                SET transaction_count = transaction_count + 1
+                                WHERE id = NEW.account_id;
+                            END;
+
+                        CREATE TRIGGER update_transaction_count_on_delete
+                            AFTER DELETE ON transactions
+                            FOR EACH ROW
+                            BEGIN
+                                UPDATE accounts
+                                SET transaction_count = transaction_count - 1
+                                WHERE id = OLD.account_id;
+                            END;
+                        "#,
+                    )
+                    .await?;
+            }
+            DbBackend::Sqlite => {
+                manager
+                    .get_connection()
+                    .execute_unprepared(
+                        r#"
+                        CREATE TRIGGER update_transaction_count
+                            AFTER INSERT ON transactions
+                            BEGIN
+                                UPDATE accounts
+                                SET transaction_count = transaction_count + 1
+                                WHERE id = NEW.account_id;
+                            END;
+
+                        CREATE TRIGGER update_transaction_count_on_delete
+                            AFTER DELETE ON transactions
+                            BEGIN
+                                UPDATE accounts
+                                SET transaction_count = transaction_count - 1
+                                WHERE id = OLD.account_id;
+                            END;
+                        "#,
+                    )
+                    .await?;
+            }
+        }
+
         // Create index on date
         match schema {
             DbBackend::Sqlite => {}
@@ -373,6 +481,9 @@ impl MigrationTrait for Migration {
                 manager
                     .drop_type(Type::drop().name(AccountType::name()).to_owned())
                     .await?;
+                manager
+                    .drop_type(Type::drop().name(InstitutionName::name()).to_owned())
+                    .await?;
             }
             DbBackend::MySql | DbBackend::Sqlite => {}
         }
@@ -405,6 +516,8 @@ enum Accounts {
     AccountNumber,
     UpdatedAt,
     MaxSequenceNumber,
+    TransactionCount,
+    InstitutionName,
     Type,
 }
 
@@ -421,6 +534,37 @@ pub enum AccountType {
     FixedDeposit,
     #[sea_orm(string_value = "unknown")]
     Unknown,
+}
+
+#[derive(Debug, PartialEq, Eq, EnumIter, DeriveActiveEnum, DeriveIden)]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "institution_name")]
+pub enum InstitutionName {
+    #[sea_orm(string_value = "StateBankOfIndia")]
+    StateBankOfIndia,
+    #[sea_orm(string_value = "PunjabNationalBank")]
+    PunjabNationalBank,
+    #[sea_orm(string_value = "HDFC")]
+    HDFC,
+    #[sea_orm(string_value = "ICICI")]
+    ICICI,
+    #[sea_orm(string_value = "Axis")]
+    Axis,
+    #[sea_orm(string_value = "Yes")]
+    Yes,
+    #[sea_orm(string_value = "IndusInd")]
+    IndusInd,
+    #[sea_orm(string_value = "OneCard")]
+    OneCard,
+    #[sea_orm(string_value = "Jupiter")]
+    Jupiter,
+    #[sea_orm(string_value = "Citi")]
+    Citi,
+    #[sea_orm(string_value = "BankOfBaroda")]
+    BankOfBaroda,
+    #[sea_orm(string_value = "IDFC")]
+    IDFC,
+    #[sea_orm(string_value = "Other")]
+    Other,
 }
 
 #[derive(DeriveIden)]

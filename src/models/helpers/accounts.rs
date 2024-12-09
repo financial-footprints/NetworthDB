@@ -38,6 +38,8 @@ impl<'de> Deserialize<'de> for AccountSort {
             Some("account_number") => accounts::Column::AccountNumber,
             Some("type") => accounts::Column::Type,
             Some("updated_at") => accounts::Column::UpdatedAt,
+            Some("transaction_count") => accounts::Column::TransactionCount,
+            Some("max_sequence_number") => accounts::Column::MaxSequenceNumber,
             None => accounts::Column::UpdatedAt,
             _ => return Err(serde::de::Error::custom("Invalid column value")),
         };
