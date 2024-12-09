@@ -3,5 +3,6 @@
 
 pub mod accounts;
 pub mod imports;
+pub mod joins;
 pub mod staged_transactions;
 pub mod transactions;

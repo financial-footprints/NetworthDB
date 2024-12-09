@@ -26,11 +26,11 @@ pub enum InstitutionName {
     BankOfBaroda,
     #[sea_orm(string_value = "Citi")]
     Citi,
-    #[sea_orm(string_value = "HDFC")]
+    #[sea_orm(string_value = "Hdfc")]
     Hdfc,
-    #[sea_orm(string_value = "ICICI")]
+    #[sea_orm(string_value = "Icici")]
     Icici,
-    #[sea_orm(string_value = "IDFC")]
+    #[sea_orm(string_value = "Idfc")]
     Idfc,
     #[sea_orm(string_value = "IndusInd")]
     IndusInd,

@@ -288,7 +288,7 @@ impl MigrationTrait for Migration {
                     .get_connection()
                     .execute_unprepared(
                         r#"
-                        CREATE OR REPLACE FUNCTION update_max_sequence_number()
+                        CREATE OR REPLACE FUNCTION update_transaction_count()
                         RETURNS TRIGGER AS $$
                         BEGIN
                             UPDATE accounts
@@ -301,7 +301,7 @@ impl MigrationTrait for Migration {
                         CREATE TRIGGER update_transaction_count_trigger
                             AFTER INSERT ON transactions
                             FOR EACH ROW
-                            EXECUTE FUNCTION update_max_sequence_number();
+                            EXECUTE FUNCTION update_transaction_count();
 
                         CREATE OR REPLACE FUNCTION update_transaction_count_on_delete()
                         RETURNS TRIGGER AS $$
@@ -543,10 +543,10 @@ pub enum InstitutionName {
     StateBankOfIndia,
     #[sea_orm(string_value = "PunjabNationalBank")]
     PunjabNationalBank,
-    #[sea_orm(string_value = "HDFC")]
-    HDFC,
-    #[sea_orm(string_value = "ICICI")]
-    ICICI,
+    #[sea_orm(string_value = "Hdfc")]
+    Hdfc,
+    #[sea_orm(string_value = "Icici")]
+    Icici,
     #[sea_orm(string_value = "Axis")]
     Axis,
     #[sea_orm(string_value = "Yes")]
@@ -561,8 +561,8 @@ pub enum InstitutionName {
     Citi,
     #[sea_orm(string_value = "BankOfBaroda")]
     BankOfBaroda,
-    #[sea_orm(string_value = "IDFC")]
-    IDFC,
+    #[sea_orm(string_value = "Idfc")]
+    Idfc,
     #[sea_orm(string_value = "Other")]
     Other,
 }
