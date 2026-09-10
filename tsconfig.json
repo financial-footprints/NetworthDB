@@ -1,0 +1,22 @@
+{
+  "extends": "@tsconfig/node22/tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "strict": true,
+    "allowImportingTsExtensions": true,
+    "types": ["bun", "node"],
+    "paths": {
+      "@api/*": ["./src/apps/api/src/*"],
+      "@bootstrap/*": ["./src/packages/bootstrap/src/*"],
+      "@core/*": ["./src/packages/core/src/*"],
+      "@database/*": ["./src/packages/database/src/*"],
+      "@middleware/*": ["./src/packages/middleware/src/*"],
+      "@platform/*": ["./src/packages/platform/src/*"],
+      // Tests
+      "@tests/api/*": ["./src/apps/api/tests/*"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

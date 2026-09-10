@@ -1,0 +1,29 @@
+{
+  "name": "@ndb/database",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./config": "./src/config.ts",
+    "./env": "./src/env.ts"
+  },
+  "scripts": {
+    "generate": "bash scripts/generate-migration.sh",
+    "migrate": "bun --env-file ../../apps/api/.env drizzle-kit migrate && bash scripts/seed.sh",
+    "migrate:test": "bun --env-file ../../apps/api/.env.tests drizzle-kit migrate && ENV_FILE=../../apps/api/.env.tests bash scripts/seed.sh",
+    "type-check": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@ndb/core": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "pg": "^8.16.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "@types/pg": "^8.15.5",
+    "drizzle-kit": "^0.31.10",
+    "typescript": "~7.0.2"
+  }
+}

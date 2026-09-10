@@ -1,0 +1,21 @@
+{
+  "name": "@ndb/bootstrap",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@ndb/database": "workspace:*",
+    "@ndb/logger": "workspace:*",
+    "@ndb/platform": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "typescript": "~7.0.2"
+  }
+}

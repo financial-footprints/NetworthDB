@@ -1,0 +1,26 @@
+{
+  "name": "@ndb/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "bun --watch --no-clear-screen --env-file .env src/index.ts",
+    "start": "bun --env-file .env src/index.ts",
+    "start:test": "bun --env-file .env.tests src/index.ts",
+    "test": "bun test --env-file .env.tests ./tests/unit",
+    "type-check": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@ndb/bootstrap": "workspace:*",
+    "@ndb/middleware": "workspace:*",
+    "@ndb/platform": "workspace:*",
+    "hono": "^4.13.5"
+  },
+  "devDependencies": {
+    "@ndb/logger": "workspace:*",
+    "@types/bun": "^1.4.1"
+  }
+}

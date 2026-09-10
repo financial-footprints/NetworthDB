@@ -1,0 +1,29 @@
+{
+  "name": "networthdb",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "src/apps/*",
+    "src/packages/bootstrap",
+    "src/packages/core",
+    "src/packages/database",
+    "src/packages/logger",
+    "src/packages/middleware",
+    "src/packages/platform"
+  ],
+  "scripts": {
+    "dev": "bun run --parallel --workspaces --if-present dev",
+    "test": "bun run --parallel --workspaces --if-present test",
+    "type-check": "bun run --parallel --workspaces type-check"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.13",
+    "@usebruno/cli": "^4.1.0",
+    "@napi-rs/cli": "^3.9.1",
+    "@tsconfig/node22": "^22.0.6",
+    "@types/bun": "^1.4.2",
+    "@types/node": "^26.5.1",
+    "typescript": "~7.0.2"
+  }
+}

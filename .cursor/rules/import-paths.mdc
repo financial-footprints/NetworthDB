@@ -1,0 +1,47 @@
+---
+description: Alias-based imports; no relative ./ or ../ paths in source
+globs: **/*.{ts,tsx,js,mjs}
+alwaysApply: false
+---
+# Import Paths
+
+No `./` or `../` in TypeScript imports or re-exports.
+
+- **Cross-package**: `@ndb/<package>`
+- **Within-package**: `@<short-name>/<path-from-src>` — `@api/`, `@bootstrap/`, `@core/`, `@database/`, `@middleware/`, `@platform/`
+- **API test helpers**: `@tests/api/<path>` — maps to `src/apps/api/tests/`
+
+```typescript
+// BAD
+import { createApp } from "./app";
+
+// GOOD
+import { createApp } from "@api/index";
+import { loadConfig } from "@ndb/bootstrap";
+```
+
+New packages:
+
+- **Within-package alias**: add `"@<short-name>/*": ["./src/packages/<name>/src/*"]` to root `tsconfig.json` `paths` only
+- **Child tsconfigs**: only `extends` root — do not redefine `paths`
+- **Cross-package**: use `@ndb/<package>` via workspace `dependencies` and `package.json` `exports`, not tsconfig `paths`
+
+## No inline import type queries
+
+Import types at the top of the file — not `import("module").Type` or `typeof import("module")` in type positions.
+
+```typescript
+// BAD
+type Context = { health: import("@ndb/bootstrap").HealthStatus };
+
+// GOOD
+import type { HealthStatus } from "@ndb/bootstrap";
+type Context = { health: HealthStatus };
+```
+
+For Bun partial mocks, use a top-level namespace import:
+
+```typescript
+import type * as Bootstrap from "@ndb/bootstrap";
+const actual = await importOriginal<Bootstrap>();
+```

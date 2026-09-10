@@ -1,0 +1,25 @@
+meta {
+  name: 00-00 Health
+  type: http
+  seq: 1
+}
+
+docs {
+  **Endpoint:** `GET /health`
+
+  Liveness probe. Confirms the API process is running.
+
+  **This test verifies:** Response is 200 with `{ data: { ok: true } }`. No auth required.
+}
+
+get {
+  url: {{BASE_URL}}/health
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.ok: eq true
+  res.body.errors: isEmpty
+}
