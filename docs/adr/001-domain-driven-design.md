@@ -62,7 +62,7 @@ flowchart TB
 
 - **`src/packages/database`** — persistence infrastructure. Drizzle schema and
   repository implementations. Depends on `@ndb/core`. Layout: `drizzle/` holds
-  migrations and seed SQL; `src/schema/` holds Drizzle table definitions;
+  migrations; `src/schema/` holds Drizzle table definitions;
   `src/repositories/` holds adapters that map rows into core entities.
 
 - **`src/packages/middleware`** — HTTP cross-cutting concerns (CORS, error handler,
@@ -143,6 +143,8 @@ CloudWatch backend without blocking the event loop.
 
 ## References
 
+- [ADR-002](002-authentication.md) — authentication, MFA, sessions, recovery
+- [ADR-003](003-end-to-end-encryption.md) — client-side end-to-end encryption
 - [DEV.md](../DEV.md) — setup, make targets, bootstrap wiring
 - [NAPI-RS](https://napi.rs/)
 - [Hono](https://hono.dev/)

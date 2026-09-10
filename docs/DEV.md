@@ -14,18 +14,15 @@ make dev
 - Health: `http://127.0.0.1:8000/health`
 - Postgres: `localhost:5451` (`networthdb` / `networthdb`)
 
-## Database migrate
+## Database Migrations
 
-`make migrate` runs Drizzle migrations, then seeds automatically:
+Migrations run automatically during `make setup`. When `ENVIRONMENT=local`, seed applies dev fixtures (`admin`, `manasi`, `usher` — password `admin`).
 
-| File | When it runs |
-| ---- | ------------ |
-| `drizzle/seed/seed.sql` | Every environment |
-| `drizzle/seed/local.template.sql` | `ENVIRONMENT=local` only (rendered at seed time) |
+To apply migrations manually when Postgres is already running:
 
-In local, both run. `seed.sql` holds invariant data; `local.template.sql` holds dev fixtures (e.g. `admin` / `admin` once foundation implements hash rendering).
-
-Re-run `make migrate` when Postgres is already up. Or use `make setup` for the full flow.
+```bash
+bun run --filter @ndb/database migrate
+```
 
 Generate new migrations after schema changes: `make migrations name=<name>`.
 
@@ -36,7 +33,6 @@ Generate new migrations after schema changes: `make migrations name=<name>`.
 | `help`       | List make targets                                        |
 | `install`    | `bun install`, NAPI debug build for logger               |
 | `setup`      | Copy `.env`, install, start Postgres, and migrate       |
-| `migrate`    | Apply Drizzle migrations and seed (`@ndb/database`) |
 | `migrations` | Generate Drizzle migrations from schema (`name=<name>`) |
 | `update`     | `cargo update` and `bun update` within current ranges    |
 | `upgrade`    | Latest stable Rust, Bun, and all dependencies            |
@@ -48,7 +44,9 @@ Generate new migrations after schema changes: `make migrations name=<name>`.
 
 Config: [src/apps/api/.env.example](../src/apps/api/.env.example) → `src/apps/api/.env`.
 
-Architecture: [adr/001-domain-driven-design.md](adr/001-domain-driven-design.md).
+Architecture: [adr/001-domain-driven-design.md](adr/001-domain-driven-design.md),
+[adr/002-authentication.md](adr/002-authentication.md),
+[adr/003-end-to-end-encryption.md](adr/003-end-to-end-encryption.md).
 
 ## Observability
 

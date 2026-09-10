@@ -1,0 +1,27 @@
+meta {
+  name: 06-05 Me Shows Recovery Email
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/users/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{recoveryEmailSessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.recovery_email_enabled: eq true
+  res.body.data.recovery_email_set_at: isDefined
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/users/me`
+
+  **This test verifies:** Recovery email enrollment is reflected on profile.
+}

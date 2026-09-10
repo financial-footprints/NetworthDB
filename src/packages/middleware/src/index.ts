@@ -1,5 +1,11 @@
-export { corsMiddleware } from "@middleware/cors";
-export { errorHandler } from "@middleware/error";
-export type { LogMiddlewareOptions } from "@middleware/logging/middleware";
-export { logMiddleware } from "@middleware/logging/middleware";
-export { securityMiddleware } from "@middleware/security";
+export type { MultifactorContext, SessionContext } from "@middleware/auth";
+export {
+  mfaPrincipal,
+  rateLimit,
+  requireMultifactor,
+  requireMultifactorChallenge,
+  requireSession,
+  sessionPrincipal,
+} from "@middleware/auth";
+export { cors, onError, security } from "@middleware/http";
+export { requestLog } from "@middleware/logging";

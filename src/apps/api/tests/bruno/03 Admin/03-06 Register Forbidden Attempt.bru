@@ -1,0 +1,33 @@
+meta {
+  name: 03-06 Register Forbidden Attempt
+  type: http
+  seq: 6
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/users`
+
+  **This test verifies:** Regular user receives 403 when attempting registration.
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/users
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{regularUserSessionToken}}
+}
+
+body:json {
+  {
+    "username": "bruno_forbidden_user",
+    "password": "password123"
+  }
+}
+
+assert {
+  res.status: eq 403
+  res.body.error: isDefined
+}

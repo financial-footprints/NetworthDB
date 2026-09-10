@@ -1,0 +1,27 @@
+meta {
+  name: 04-08 Me Shows MFA Methods
+  type: http
+  seq: 8
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/users/me`
+
+  **This test verifies:** AAL2 session reflects enrolled TOTP method.
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/users/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mfaSessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.multifactor_enabled: eq true
+  res.body.data.multifactor_methods: isArray
+}

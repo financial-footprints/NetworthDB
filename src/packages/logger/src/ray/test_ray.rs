@@ -77,5 +77,8 @@ fn require_ray_id_returns_active_ray_id() {
 
 #[test]
 fn require_ray_id_fails_outside_a_scope() {
-    assert_eq!(super::require_ray_id(), Err("request rayId is missing"));
+    assert_eq!(
+        super::require_ray_id(),
+        Err("logger.ray.require.error.missing-ray-id")
+    );
 }

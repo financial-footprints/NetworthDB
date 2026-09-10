@@ -1,0 +1,32 @@
+meta {
+  name: 08-04 Put Recovery Email
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{BASE_URL}}/api/v1/users/me
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{advancedSessionToken}}
+}
+
+body:json {
+  {
+    "recovery_email": "{{advancedEmail}}",
+    "current_password": "{{advancedPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  **Endpoint:** `PATCH /api/v1/users/me`
+
+  **This test verifies:** Enroll recovery email for advanced recovery begin.
+}

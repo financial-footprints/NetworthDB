@@ -12,10 +12,14 @@
       "@bootstrap/*": ["./src/packages/bootstrap/src/*"],
       "@core/*": ["./src/packages/core/src/*"],
       "@database/*": ["./src/packages/database/src/*"],
+      "@auth/*": ["./src/packages/auth/src/*"],
       "@middleware/*": ["./src/packages/middleware/src/*"],
+      "@notifications/*": ["./src/packages/notifications/src/*"],
       "@platform/*": ["./src/packages/platform/src/*"],
       // Tests
-      "@tests/api/*": ["./src/apps/api/tests/*"]
+      "@tests/api/*": ["./src/apps/api/tests/*"],
+      "@tests/core/*": ["./src/packages/core/tests/*"],
+      "@tests/database/*": ["./src/packages/database/tests/*"]
     }
   },
   "include": ["src/**/*.ts"]

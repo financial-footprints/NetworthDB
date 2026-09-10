@@ -1,0 +1,25 @@
+{
+  "name": "@ndb/auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@ndb/core": "workspace:*",
+    "@ndb/database": "workspace:*",
+    "@ndb/logger": "workspace:*",
+    "@ndb/notifications": "workspace:*",
+    "rate-limiter-flexible": "^9.1.1",
+    "redis": "^5.8.2"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.1",
+    "@types/node": "^26.4.1",
+    "typescript": "~7.0.2"
+  }
+}

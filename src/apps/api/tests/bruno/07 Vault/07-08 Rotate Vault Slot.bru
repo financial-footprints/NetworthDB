@@ -1,0 +1,33 @@
+meta {
+  name: 07-08 Rotate Vault Slot
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{BASE_URL}}/api/v1/users/me/vault/slots/{{vaultSlotId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vaultSessionToken}}
+}
+
+body:json {
+  {
+    "salt": "CQIDBAUGBwgJCgsMDQ4PEC",
+    "wrap_blob": "mno.pqr"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.wrap_blob: eq mno.pqr
+}
+
+docs {
+  **Endpoint:** `PUT /api/v1/users/me/vault/slots/:id`
+
+  **This test verifies:** User can rotate a vault slot wrap.
+}

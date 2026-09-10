@@ -1,0 +1,32 @@
+meta {
+  name: 03-09 Patch User Role
+  type: http
+  seq: 9
+}
+
+docs {
+  **Endpoint:** `PATCH /api/v1/users/:id`
+
+  **This test verifies:** Administrator can change another user's role.
+}
+
+patch {
+  url: {{BASE_URL}}/api/v1/users/{{adminTargetUserId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminSessionToken}}
+}
+
+body:json {
+  {
+    "role": "manager"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.role: eq manager
+}

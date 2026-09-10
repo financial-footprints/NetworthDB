@@ -1,23 +1,38 @@
 import type { AppDependencies } from "@api/config/bootstrap";
 import { loadApiRuntime } from "@api/config/bootstrap";
-import { createHealthRoutes } from "@api/routes/health";
-import { corsMiddleware, errorHandler, logMiddleware, securityMiddleware } from "@ndb/middleware";
-import { Hono } from "hono";
+import type { BaseEnv } from "@api/config/hono-env";
+import authRoutes from "@api/routes/auth/index";
+import sessionRoutes from "@api/routes/auth/sessions";
+import healthRoutes from "@api/routes/health/index";
+import enrollmentRoutes from "@api/routes/users/enrollment";
+import userRoutes from "@api/routes/users/index";
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { cors, onError, requestLog, security } from "@ndb/middleware";
 
-export function createApp(deps: AppDependencies): Hono {
-  const app = new Hono();
+export function createApp(deps: AppDependencies): OpenAPIHono<BaseEnv> {
+  const app = new OpenAPIHono<BaseEnv>();
 
-  app.use("*", logMiddleware({ logger: deps.logger }));
+  app.use("*", requestLog(deps.logger));
   app.use(
     "*",
-    corsMiddleware({
+    cors({
       allowedOrigins: deps.config.corsAllowOrigins,
       allowLocalhost: deps.config.environment !== "production",
     })
   );
-  app.use("*", securityMiddleware());
-  app.onError(errorHandler(deps.logger));
-  app.route("/", createHealthRoutes(deps.services));
+  app.use("*", security());
+  app.use("*", async (c, next) => {
+    c.set("config", deps.config);
+    c.set("services", deps.services);
+    await next();
+  });
+  app.onError(onError(deps.logger));
+
+  app.route("/", healthRoutes);
+  app.route("/", authRoutes);
+  app.route("/", sessionRoutes);
+  app.route("/", userRoutes);
+  app.route("/", enrollmentRoutes);
 
   return app;
 }

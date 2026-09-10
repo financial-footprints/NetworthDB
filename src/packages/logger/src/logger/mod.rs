@@ -39,7 +39,7 @@ impl FromStr for LogLevel {
             "info" => Ok(Self::Info),
             "warn" => Ok(Self::Warn),
             "error" => Ok(Self::Error),
-            other => Err(format!("invalid log level: {other}")),
+            other => Err(format!("logger.config.log-level.invalid.{other}")),
         }
     }
 }
@@ -239,17 +239,17 @@ pub fn current_ray_id() -> Option<String> {
 
 #[derive(Debug, thiserror::Error)]
 pub enum LogError {
-    #[error("logger.not-initialized")]
+    #[error("logger.install.error.not-initialized")]
     NotInitialized,
-    #[error("logger.lock-poisoned")]
+    #[error("logger.state.error.lock-poisoned")]
     LockPoisoned,
-    #[error("logger.message.empty")]
+    #[error("logger.message.invalid.empty")]
     EmptyMessage,
-    #[error("logger.serialize.failed.{0}")]
+    #[error("logger.write.error.serialize-failed.{0}")]
     Serialize(serde_json::Error),
-    #[error("logger.write.failed.{0}")]
+    #[error("logger.backend.write.error.failed.{0}")]
     Write(std::io::Error),
-    #[error("logger.destination.invalid.{0}")]
+    #[error("logger.config.destination.invalid.{0}")]
     InvalidDestination(String),
 }
 

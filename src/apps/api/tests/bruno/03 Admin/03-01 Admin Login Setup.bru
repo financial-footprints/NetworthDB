@@ -1,0 +1,39 @@
+meta {
+  name: 03-01 Admin Login Setup
+  type: http
+  seq: 1
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/auth/login`
+
+  **This test verifies:** Administrator session for admin route tests.
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/auth/login
+  body: json
+  auth: none
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar("adminTargetUsername", `bruno_target_${suffix}`);
+  bru.setVar("adminManagerUsername", `bruno_mgr_${suffix}`);
+  bru.setVar("adminRegularUsername", `bruno_user_${suffix}`);
+}
+
+script:post-response {
+  bru.setVar("adminSessionToken", res.body.data.session_token);
+}
+
+body:json {
+  {
+    "username": "admin",
+    "password": "admin"
+  }
+}
+
+assert {
+  res.status: eq 200
+}

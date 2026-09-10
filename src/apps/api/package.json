@@ -15,12 +15,15 @@
   },
   "dependencies": {
     "@ndb/bootstrap": "workspace:*",
+    "@ndb/core": "workspace:*",
     "@ndb/middleware": "workspace:*",
     "@ndb/platform": "workspace:*",
+    "@hono/zod-openapi": "^1.6.1",
     "hono": "^4.13.5"
   },
   "devDependencies": {
     "@ndb/logger": "workspace:*",
-    "@types/bun": "^1.4.1"
+    "@types/bun": "^1.4.1",
+    "otpauth": "^9.4.0"
   }
 }

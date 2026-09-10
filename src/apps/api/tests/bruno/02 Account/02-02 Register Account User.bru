@@ -1,0 +1,34 @@
+meta {
+  name: 02-02 Register Account User
+  type: http
+  seq: 2
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/users`
+
+  **This test verifies:** Administrator can register a disposable user for account tests.
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/users
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminSessionToken}}
+}
+
+body:json {
+  {
+    "username": "{{accountUsername}}",
+    "password": "{{accountPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.data.username: eq {{accountUsername}}
+  res.body.data.role: eq user
+}

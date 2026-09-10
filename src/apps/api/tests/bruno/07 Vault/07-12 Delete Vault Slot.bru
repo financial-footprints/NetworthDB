@@ -1,0 +1,30 @@
+meta {
+  name: 07-12 Delete Vault Slot
+  type: http
+  seq: 12
+}
+
+delete {
+  url: {{BASE_URL}}/api/v1/users/me/vault/slots/{{vaultPhraseSlotId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vaultSessionToken}}
+}
+
+body:json {
+  {}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: eq null
+}
+
+docs {
+  **Endpoint:** `DELETE /api/v1/users/me/vault/slots/:id`
+
+  **This test verifies:** User can delete a non-last vault slot.
+}

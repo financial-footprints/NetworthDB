@@ -1,0 +1,30 @@
+meta {
+  name: 01-03 Login Missing Username
+  type: http
+  seq: 3
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/auth/login`
+
+  **This test verifies:** Empty username returns 400 validation error.
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "",
+    "password": "admin"
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.error: isDefined
+  res.body.field: eq username
+}

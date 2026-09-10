@@ -1,0 +1,32 @@
+meta {
+  name: 03-04 Register Regular User
+  type: http
+  seq: 4
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/users`
+
+  **This test verifies:** Administrator can create a regular user for forbidden-register tests.
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/users
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminSessionToken}}
+}
+
+body:json {
+  {
+    "username": "{{adminRegularUsername}}",
+    "password": "password123"
+  }
+}
+
+assert {
+  res.status: eq 201
+}

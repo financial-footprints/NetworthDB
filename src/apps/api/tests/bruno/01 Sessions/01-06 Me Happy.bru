@@ -1,0 +1,28 @@
+meta {
+  name: 01-06 Me Happy
+  type: http
+  seq: 6
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/users/me`
+
+  **This test verifies:** Authenticated administrator receives profile data.
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/users/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{sessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.username: eq admin
+  res.body.data.role: eq administrator
+  res.body.errors: isEmpty
+}

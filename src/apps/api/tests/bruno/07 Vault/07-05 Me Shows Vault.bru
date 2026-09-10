@@ -1,0 +1,27 @@
+meta {
+  name: 07-05 Me Shows Vault
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/users/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vaultSessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.e2ee_vault_initialized: eq true
+  res.body.data.e2ee_slots: isArray
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/users/me`
+
+  **This test verifies:** Vault initialization is reflected on profile.
+}

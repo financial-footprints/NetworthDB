@@ -9,9 +9,11 @@
     "./env": "./src/env.ts"
   },
   "scripts": {
-    "generate": "bash scripts/generate-migration.sh",
-    "migrate": "bun --env-file ../../apps/api/.env drizzle-kit migrate && bash scripts/seed.sh",
-    "migrate:test": "bun --env-file ../../apps/api/.env.tests drizzle-kit migrate && ENV_FILE=../../apps/api/.env.tests bash scripts/seed.sh",
+    "generate": "bash scripts/migration.sh",
+    "migrate": "bun --env-file ../../apps/api/.env drizzle-kit migrate && bun --env-file ../../apps/api/.env scripts/seed.ts",
+    "migrate:test": "bun --env-file ../../apps/api/.env.tests drizzle-kit migrate && bun --env-file ../../apps/api/.env.tests scripts/seed.ts",
+    "seed": "bun --env-file ../../apps/api/.env scripts/seed.ts",
+    "test": "bun test --env-file ../../apps/api/.env.tests ./tests",
     "type-check": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
@@ -21,6 +23,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@types/bun": "^1.4.1",
     "@types/node": "^26.4.1",
     "@types/pg": "^8.15.5",
     "drizzle-kit": "^0.31.10",

@@ -1,0 +1,36 @@
+meta {
+  name: 04-06 Login MFA Required
+  type: http
+  seq: 6
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/auth/login`
+
+  **This test verifies:** MFA-enabled user receives multifactor_required challenge.
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{mfaUsername}}",
+    "password": "{{mfaPassword}}"
+  }
+}
+
+script:post-response {
+  bru.setVar("mfaChallengeToken", res.body.data.multifactor_token);
+  const { generateNextTotpCode } = require("./lib/bruno-totp/index.cjs");
+  bru.setVar("totpCode", generateNextTotpCode(bru.getVar("totpSecret")));
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.status: eq multifactor_required
+  res.body.data.multifactor_token: isDefined
+}

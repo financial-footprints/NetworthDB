@@ -1,0 +1,28 @@
+meta {
+  name: 01-11 Me Manager Happy
+  type: http
+  seq: 11
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/users/me`
+
+  **This test verifies:** Authenticated manager receives profile data.
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/users/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{managerSessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.username: eq {{seedManagerUsername}}
+  res.body.data.role: eq manager
+  res.body.errors: isEmpty
+}

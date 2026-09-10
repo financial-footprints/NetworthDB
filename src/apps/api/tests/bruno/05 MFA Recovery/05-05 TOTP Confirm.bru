@@ -1,0 +1,35 @@
+meta {
+  name: 05-05 TOTP Confirm
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/users/me/totp/confirm
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{recoverySessionToken}}
+}
+
+body:json {
+  {
+    "code": "{{recoveryTotpCode}}"
+  }
+}
+
+script:post-response {
+  bru.setVar("recoverySessionToken", res.body.data.session_token);
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/users/me/totp/confirm`
+
+  **This test verifies:** Confirm TOTP and obtain AAL2 session.
+}

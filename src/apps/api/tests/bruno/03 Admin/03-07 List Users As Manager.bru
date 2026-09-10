@@ -1,0 +1,32 @@
+meta {
+  name: 03-07 List Users As Manager
+  type: http
+  seq: 7
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/auth/login` then `GET /api/v1/users`
+
+  **This test verifies:** Manager can list users.
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/auth/login
+  body: json
+  auth: none
+}
+
+script:post-response {
+  bru.setVar("managerSessionToken", res.body.data.session_token);
+}
+
+body:json {
+  {
+    "username": "{{seedManagerUsername}}",
+    "password": "{{seedPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+}

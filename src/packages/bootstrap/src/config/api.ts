@@ -1,24 +1,16 @@
-import {
-  optionalEnv,
-  parseCorsOrigins,
-  requireDuration,
-  requireEnv,
-  requirePort,
-} from "@bootstrap/config/env";
+import type {
+  MultifactorConfig,
+  RecoveryConfig,
+  SecurityConfig,
+  WebAuthnConfig,
+} from "@bootstrap/config/auth";
+import { loadAuthConfig } from "@bootstrap/config/auth";
+import { parseEnv } from "@bootstrap/config/env";
+import type { AppEnv } from "@ndb/core";
 import type { LogLevel } from "@ndb/logger";
 import { API_PREFIX } from "@ndb/platform";
 
-export type AppEnv = "local" | "production";
-
-function requireLogLevel(): LogLevel {
-  const value = requireEnv("LOG_LEVEL");
-
-  if (value !== "debug" && value !== "info" && value !== "warn" && value !== "error") {
-    throw new Error(`bootstrap.config.env.invalid-log-level.value.${value}`);
-  }
-
-  return value;
-}
+export type { AppEnv, MultifactorConfig, RecoveryConfig, SecurityConfig, WebAuthnConfig };
 
 export type ApiConfig = {
   host: string;
@@ -26,57 +18,46 @@ export type ApiConfig = {
   logLevel: LogLevel;
   apiPrefix: typeof API_PREFIX;
   environment: AppEnv;
-  postgres: {
-    user: string;
-    password: string;
-    host: string;
-    port: number;
-    database: string;
-    sslMode: string;
-  };
-  sessionTtlMs: number;
-  refreshTtlMs: number;
-  mfaChallengeTtlMs: number;
+  sessionTtl: number;
+  refreshTtl: number;
+  multifactor: MultifactorConfig;
+  webauthn: WebAuthnConfig;
+  recovery: RecoveryConfig;
+  security: SecurityConfig;
   corsAllowOrigins: string[];
 };
 
-function requireEnvironment(): AppEnv {
-  const value = requireEnv("ENVIRONMENT");
-
-  if (value !== "local" && value !== "production") {
-    throw new Error(`bootstrap.config.env.invalid-environment.value.${value}`);
-  }
-
-  return value;
-}
-
 export function loadConfig(): ApiConfig {
-  const environment = requireEnvironment();
-  const corsAllowOrigins = parseCorsOrigins(optionalEnv("CORS_ALLOW_ORIGINS"));
+  const env = parseEnv();
+  const environment = env.ENVIRONMENT;
 
-  if (environment === "production" && corsAllowOrigins.includes("*")) {
+  if (environment === "production" && env.CORS_ALLOW_ORIGINS.includes("*")) {
     throw new Error(
       "bootstrap.config.env.cors-allow-origins.cannot-include-wildcard.when-production"
     );
   }
 
+  if (
+    environment === "production" &&
+    (env.POSTGRES_SSLMODE.length === 0 || env.POSTGRES_SSLMODE === "disable")
+  ) {
+    throw new Error("bootstrap.config.env.postgres-sslmode.cannot-be-disable.when-production");
+  }
+
+  const auth = loadAuthConfig(env, environment);
+
   return {
-    host: requireEnv("HOST"),
-    port: requirePort("PORT"),
-    logLevel: requireLogLevel(),
+    host: env.HOST,
+    port: env.PORT,
+    logLevel: env.LOG_LEVEL,
     apiPrefix: API_PREFIX,
     environment,
-    postgres: {
-      user: requireEnv("POSTGRES_USER"),
-      password: requireEnv("POSTGRES_PASSWORD"),
-      host: requireEnv("POSTGRES_HOST"),
-      port: requirePort("POSTGRES_PORT"),
-      database: requireEnv("POSTGRES_DATABASE"),
-      sslMode: requireEnv("POSTGRES_SSLMODE"),
-    },
-    sessionTtlMs: requireDuration("SESSION_TTL"),
-    refreshTtlMs: requireDuration("REFRESH_TTL"),
-    mfaChallengeTtlMs: requireDuration("MFA_CHALLENGE_TTL"),
-    corsAllowOrigins,
+    sessionTtl: env.SESSION_TTL,
+    refreshTtl: env.REFRESH_TTL,
+    multifactor: auth.multifactor,
+    webauthn: auth.webauthn,
+    recovery: auth.recovery,
+    security: auth.security,
+    corsAllowOrigins: env.CORS_ALLOW_ORIGINS,
   };
 }

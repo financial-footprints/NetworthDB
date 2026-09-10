@@ -1,0 +1,37 @@
+meta {
+  name: 01-09 Login Manager Happy
+  type: http
+  seq: 9
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/auth/login`
+
+  **This test verifies:** Seeded manager can log in and receives session tokens.
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{seedManagerUsername}}",
+    "password": "{{seedPassword}}"
+  }
+}
+
+script:post-response {
+  bru.setVar("managerSessionToken", res.body.data.session_token);
+  bru.setVar("managerRefreshToken", res.body.data.refresh_token);
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.token_type: eq Bearer
+  res.body.data.session_token: isDefined
+  res.body.data.refresh_token: isDefined
+  res.body.errors: isEmpty
+}

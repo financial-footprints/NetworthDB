@@ -1,0 +1,32 @@
+meta {
+  name: 07-06 Patch E2EE Name
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{BASE_URL}}/api/v1/users/me
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vaultSessionToken}}
+}
+
+body:json {
+  {
+    "e2ee_name": "abc.def"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: eq null
+}
+
+docs {
+  **Endpoint:** `PATCH /api/v1/users/me`
+
+  **This test verifies:** User can set sealed e2ee_name after vault exists.
+}

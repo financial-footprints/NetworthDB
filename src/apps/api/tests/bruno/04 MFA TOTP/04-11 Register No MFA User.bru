@@ -1,0 +1,38 @@
+meta {
+  name: 04-11 Register No MFA User
+  type: http
+  seq: 11
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/users`
+
+  **This test verifies:** Register a user without MFA for password-required begin test.
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/users
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminSessionToken}}
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar("noMfaUsername", `bruno_nomfa_${suffix}`);
+  bru.setVar("noMfaPassword", "password123");
+}
+
+body:json {
+  {
+    "username": "{{noMfaUsername}}",
+    "password": "{{noMfaPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+}

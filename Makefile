@@ -1,4 +1,4 @@
-.PHONY: help install setup update upgrade dev kill check ci clean migrations migrate
+.PHONY: help install setup update upgrade dev kill check ci clean migrations
 
 .DEFAULT_GOAL := help
 
@@ -22,14 +22,11 @@ install:
 
 setup: install
 	cp -n src/apps/api/.env.example src/apps/api/.env 2>/dev/null || true
-	docker compose up -d
-	$(MAKE) migrate
+	docker compose up -d --wait
+	bun run --filter @ndb/database migrate
 
 migrations:
 	bun run --filter @ndb/database generate $(name)
-
-migrate:
-	bun run --filter @ndb/database migrate
 
 update:
 	cargo update --workspace

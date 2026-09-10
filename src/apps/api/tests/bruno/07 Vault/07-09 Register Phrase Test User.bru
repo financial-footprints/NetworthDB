@@ -1,0 +1,38 @@
+meta {
+  name: 07-09 Register Phrase Test User
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/users
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminSessionToken}}
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar("phraseUsername", `bruno_phrase_${suffix}`);
+  bru.setVar("phrasePassword", "password123");
+}
+
+body:json {
+  {
+    "username": "{{phraseUsername}}",
+    "password": "{{phrasePassword}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/users`
+
+  **This test verifies:** Register a fresh user for plaintext recovery secret rejection.
+}

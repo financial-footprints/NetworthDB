@@ -44,7 +44,7 @@ pub fn current_ray_id() -> Option<String> {
 pub fn require_ray_id() -> Result<String, &'static str> {
     match current() {
         Some(context) if !context.ray_id.trim().is_empty() => Ok(context.ray_id),
-        _ => Err("request rayId is missing"),
+        _ => Err("logger.ray.require.error.missing-ray-id"),
     }
 }
 

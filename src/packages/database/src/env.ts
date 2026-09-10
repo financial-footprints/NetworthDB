@@ -26,7 +26,7 @@ export function parseDbEnv(): DbConfig {
 
   if (!parsed.success) {
     const fields = parsed.error.issues.map((issue) => issue.path.join(".")).join(", ");
-    throw new Error(`Invalid database environment variables: ${fields}`);
+    throw new Error(`database.config.env.invalid.fields.${fields}`);
   }
 
   const {

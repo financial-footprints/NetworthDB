@@ -7,7 +7,14 @@ export default {
       comment: "src/packages/core must stay domain-only (no database, logger, hono, or apps)",
       from: { path: "^src/packages/core" },
       to: {
-        path: ["^src/packages/database", "^src/packages/logger", "^src/apps/", "node_modules/hono"],
+        path: [
+          "^src/packages/auth",
+          "^src/packages/database",
+          "^src/packages/logger",
+          "^src/apps/",
+          "node_modules/hono",
+          "node_modules/redis",
+        ],
       },
     },
     {

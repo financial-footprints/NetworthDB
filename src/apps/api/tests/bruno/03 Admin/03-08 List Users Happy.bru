@@ -1,0 +1,27 @@
+meta {
+  name: 03-08 List Users Happy
+  type: http
+  seq: 8
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/users`
+
+  **This test verifies:** Manager receives a non-empty user list.
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/users
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{managerSessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.total: gte 1
+  res.body.data.items: isArray
+}

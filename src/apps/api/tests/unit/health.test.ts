@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { createApp } from "@ndb/api";
 import { API, REQUEST_ID_HEADER } from "@ndb/platform";
+import { readApiJson } from "@tests/api/helpers/api-response";
 import { fakeConfig, fakeServices } from "@tests/api/helpers/config";
 import { createMemoryLogger } from "@tests/api/helpers/memory.logger";
 
@@ -15,7 +16,8 @@ describe("GET /health", () => {
     const response = await app.request(API.health.get);
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({
+    const body = await readApiJson<{ ok: boolean }>(response);
+    expect(body).toEqual({
       data: {
         ok: true,
       },

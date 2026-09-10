@@ -1,0 +1,32 @@
+meta {
+  name: 05-02 Register Recovery User
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/users
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminSessionToken}}
+}
+
+body:json {
+  {
+    "username": "{{recoveryUsername}}",
+    "password": "{{recoveryPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/users`
+
+  **This test verifies:** Register user for recovery code enrollment.
+}

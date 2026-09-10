@@ -12,12 +12,12 @@ Never create, modify, or delete files under `src/packages/database/drizzle/migra
 1. Edit Drizzle schema in `src/packages/database/src/schema/` (follow postgres-column-alignment for column order).
 2. Implement repository changes in `src/packages/database/src/repositories/`.
 3. **Stop** — tell the developer to review the schema changes.
-4. The developer runs `make migrations name=<name>` and `make migrate` manually.
+4. The developer runs `make migrations name=<name>` and `bun run --filter @ndb/database migrate` manually.
 
 ## Allowed
 
 - **Read** migration files to understand the current database shape.
-- Edit `src/packages/database/drizzle/seed/` (local seed is separate from migrations).
+- Edit `src/packages/database/drizzle/seed/local.template.sql`.
 
 ## Not allowed
 

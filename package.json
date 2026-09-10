@@ -5,12 +5,7 @@
   "type": "module",
   "workspaces": [
     "src/apps/*",
-    "src/packages/bootstrap",
-    "src/packages/core",
-    "src/packages/database",
-    "src/packages/logger",
-    "src/packages/middleware",
-    "src/packages/platform"
+    "src/packages/*"
   ],
   "scripts": {
     "dev": "bun run --parallel --workspaces --if-present dev",

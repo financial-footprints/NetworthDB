@@ -40,4 +40,4 @@ export const authSessions = pgTable("auth_sessions", {
 });
 ```
 
-Reference: `src/packages/database/src/schema/auth/auth-sessions.ts`.
+Reference: `src/packages/database/src/schema/auth/sessions.ts`.

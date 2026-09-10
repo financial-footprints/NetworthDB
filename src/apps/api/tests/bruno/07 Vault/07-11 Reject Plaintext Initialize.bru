@@ -1,0 +1,39 @@
+meta {
+  name: 07-11 Reject Plaintext Initialize
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/users/me/vault/initialize
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{phraseSessionToken}}
+}
+
+body:json {
+  {
+    "phrase": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
+    "slots": [
+      {
+        "slot_type": "recovery_phrase",
+        "salt": "AQIDBAUGBwgJCgsMDQ4PEA",
+        "wrap_blob": "abc.def"
+      }
+    ]
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.error: isDefined
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/users/me/vault/initialize`
+
+  **This test verifies:** Plaintext recovery secrets in initialize body are rejected.
+}

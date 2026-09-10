@@ -1,0 +1,33 @@
+meta {
+  name: 06-04 Put Recovery Email
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{BASE_URL}}/api/v1/users/me
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{recoveryEmailSessionToken}}
+}
+
+body:json {
+  {
+    "recovery_email": "{{recoveryEmailAddress}}",
+    "current_password": "{{recoveryEmailPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: eq null
+}
+
+docs {
+  **Endpoint:** `PATCH /api/v1/users/me`
+
+  **This test verifies:** User can enroll a recovery email address.
+}

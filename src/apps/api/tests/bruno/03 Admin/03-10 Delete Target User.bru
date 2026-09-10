@@ -1,0 +1,26 @@
+meta {
+  name: 03-10 Delete Target User
+  type: http
+  seq: 10
+}
+
+docs {
+  **Endpoint:** `DELETE /api/v1/users/:id`
+
+  **This test verifies:** Administrator can delete another user.
+}
+
+delete {
+  url: {{BASE_URL}}/api/v1/users/{{adminTargetUserId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminSessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: eq null
+}

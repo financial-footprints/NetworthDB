@@ -1,0 +1,43 @@
+meta {
+  name: 04-04 TOTP Begin
+  type: http
+  seq: 4
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/users/me/totp/begin`
+
+  **This test verifies:** User can begin TOTP enrollment with password proof.
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/users/me/totp/begin
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mfaSessionToken}}
+}
+
+body:json {
+  {
+    "password": "{{mfaPassword}}"
+  }
+}
+
+script:post-response {
+  const uri = res.body.data.uri;
+  const secretMatch = /secret=([A-Z2-7]+)/.exec(uri);
+  if (!secretMatch?.[1]) {
+    throw new Error("missing TOTP secret in provisioning URI");
+  }
+  bru.setVar("totpSecret", secretMatch[1]);
+  const { generateTotpCode } = require("./lib/bruno-totp/index.cjs");
+  bru.setVar("totpCode", generateTotpCode(secretMatch[1]));
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.uri: isDefined
+}

@@ -1,0 +1,43 @@
+meta {
+  name: 07-04 Vault Initialize
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/users/me/vault/initialize
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vaultSessionToken}}
+}
+
+body:json {
+  {
+    "slots": [
+      {
+        "slot_type": "password",
+        "salt": "AQIDBAUGBwgJCgsMDQ4PEA",
+        "wrap_blob": "abc.def",
+        "password": "{{vaultPassword}}"
+      }
+    ]
+  }
+}
+
+script:post-response {
+  bru.setVar("vaultSlotId", res.body.data.e2ee_slots[0].id);
+}
+
+assert {
+  res.status: eq 201
+  res.body.data.e2ee_slots: isArray
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/users/me/vault/initialize`
+
+  **This test verifies:** User can initialize vault with a password slot.
+}

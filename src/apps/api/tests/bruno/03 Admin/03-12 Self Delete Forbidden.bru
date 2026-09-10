@@ -1,0 +1,26 @@
+meta {
+  name: 03-12 Self Delete Forbidden
+  type: http
+  seq: 12
+}
+
+docs {
+  **Endpoint:** `DELETE /api/v1/users/:id`
+
+  **This test verifies:** Administrator cannot delete their own account.
+}
+
+delete {
+  url: {{BASE_URL}}/api/v1/users/{{adminUserId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminSessionToken}}
+}
+
+assert {
+  res.status: eq 400
+  res.body.error: isDefined
+}

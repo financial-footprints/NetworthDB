@@ -1,0 +1,29 @@
+meta {
+  name: 03-11 Self Delete Forbidden
+  type: http
+  seq: 11
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/users/me` then `DELETE /api/v1/users/:id`
+
+  **This test verifies:** Administrator cannot delete their own account.
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/users/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{adminSessionToken}}
+}
+
+script:post-response {
+  bru.setVar("adminUserId", res.body.data.id);
+}
+
+assert {
+  res.status: eq 200
+}

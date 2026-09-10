@@ -20,6 +20,11 @@ cleanup() {
 
 trap cleanup EXIT
 
+cd "$ROOT"
+
+docker compose up -d --wait
+bun run --filter @ndb/database migrate:test
+
 bash "$KILL_SCRIPT" --tests
 
 bun --cwd "$API_DIR" --env-file .env.tests src/index.ts >"$LOG_FILE" 2>&1 &
@@ -38,4 +43,12 @@ if ! curl -sf "http://127.0.0.1:8001/health" >/dev/null; then
 	exit 1
 fi
 
-bun --cwd "$BRUNO_DIR" "$ROOT/node_modules/@usebruno/cli/bin/bru.js" run --env tests
+if ! curl -sf -X POST "http://127.0.0.1:8001/api/v1/auth/login" \
+	-H "Content-Type: application/json" \
+	-d '{"username":"admin","password":"admin"}' | rg -q '"session_token"'; then
+	echo "Seed/admin login preflight failed. Check Postgres users table and seed.ts output." >&2
+	tail -n 30 "$LOG_FILE" >&2 || true
+	exit 1
+fi
+
+bun --cwd "$BRUNO_DIR" "$ROOT/node_modules/@usebruno/cli/bin/bru.js" run --env tests --sandbox=developer

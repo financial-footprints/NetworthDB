@@ -1,0 +1,33 @@
+meta {
+  name: 05-07 Login MFA Required
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{recoveryUsername}}",
+    "password": "{{recoveryPassword}}"
+  }
+}
+
+script:post-response {
+  bru.setVar("recoveryMfaToken", res.body.data.multifactor_token);
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.status: eq multifactor_required
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/auth/login`
+
+  **This test verifies:** MFA challenge after recovery code generation.
+}

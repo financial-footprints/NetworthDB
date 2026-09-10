@@ -12,3 +12,5 @@ To add a new ADR:
 ## Index
 
 - [001 - Domain-Driven Design and Clean Architecture](./001-domain-driven-design.md)
+- [002 - Authentication](./002-authentication.md)
+- [003 - End-to-end encryption](./003-end-to-end-encryption.md)

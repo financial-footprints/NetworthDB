@@ -7,12 +7,17 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "test": "bun test ./tests",
     "type-check": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@ndb/auth": "workspace:*",
+    "@ndb/core": "workspace:*",
     "@ndb/database": "workspace:*",
     "@ndb/logger": "workspace:*",
-    "@ndb/platform": "workspace:*"
+    "@ndb/notifications": "workspace:*",
+    "@ndb/platform": "workspace:*",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/node": "^26.4.1",

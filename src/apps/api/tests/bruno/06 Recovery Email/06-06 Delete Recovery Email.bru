@@ -1,0 +1,33 @@
+meta {
+  name: 06-06 Delete Recovery Email
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{BASE_URL}}/api/v1/users/me
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{recoveryEmailSessionToken}}
+}
+
+body:json {
+  {
+    "recovery_email": null,
+    "current_password": "{{recoveryEmailPassword}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: eq null
+}
+
+docs {
+  **Endpoint:** `PATCH /api/v1/users/me`
+
+  **This test verifies:** User can clear recovery email with password proof.
+}

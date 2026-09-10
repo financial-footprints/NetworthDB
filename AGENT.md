@@ -23,7 +23,9 @@ Run `make check` before considering work done. The agent cannot run install/buil
 | Path                       | Name                    | Role                                                              |
 | -------------------------- | ----------------------- | ----------------------------------------------------------------- |
 | `src/packages/core`        | `@ndb/core`      | Domain center (TS). `domains/`, `shared/`, repository ports.        |
+| `src/packages/auth`        | `@ndb/auth`      | Auth service factory and KV rate-limit wiring for bootstrap.        |
 | `src/packages/database`    | `@ndb/database`  | Persistence (Drizzle + pg), migrations, seed scripts.           |
+| `src/packages/notifications` | `@ndb/notifications` | Email delivery (`console` / `smtp`) for recovery flows.         |
 | `src/packages/logger`      | `@ndb/logger`    | JSON logging (Rust + NAPI). `createLogger()` from native binding.   |
 | `src/packages/middleware`  | `@ndb/middleware`| HTTP cross-cutting (CORS, errors, request logging).             |
 | `src/packages/bootstrap`   | `@ndb/bootstrap` | Composition root: config, runtime, services (TS only).              |

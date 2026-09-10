@@ -1,0 +1,27 @@
+meta {
+  name: 01-08 Logout Happy
+  type: http
+  seq: 8
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/auth/logout`
+
+  **This test verifies:** Authenticated logout succeeds and revokes the session.
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/auth/logout
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{sessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: eq null
+  res.body.errors: isEmpty
+}

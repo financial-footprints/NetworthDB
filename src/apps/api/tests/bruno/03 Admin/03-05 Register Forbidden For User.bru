@@ -1,0 +1,28 @@
+meta {
+  name: 03-05 Register Forbidden For User
+  type: http
+  seq: 5
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/users`
+
+  **This test verifies:** Regular users cannot register new accounts.
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/auth/login
+  body: json
+  auth: none
+}
+
+script:post-response {
+  bru.setVar("regularUserSessionToken", res.body.data.session_token);
+}
+
+body:json {
+  {
+    "username": "{{seedUserUsername}}",
+    "password": "{{seedPassword}}"
+  }
+}

@@ -1,0 +1,29 @@
+meta {
+  name: 08-06 Advanced Begin Happy
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/auth/recovery/advanced/begin
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "{{advancedUsername}}",
+    "email": "{{advancedEmail}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.message: isDefined
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/auth/recovery/advanced/begin`
+
+  **This test verifies:** Advanced recovery begin returns generic success message.
+}

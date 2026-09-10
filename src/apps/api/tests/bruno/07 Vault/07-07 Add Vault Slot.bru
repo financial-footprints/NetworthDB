@@ -1,0 +1,39 @@
+meta {
+  name: 07-07 Add Vault Slot
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/users/me/vault/slots
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{vaultSessionToken}}
+}
+
+body:json {
+  {
+    "slot_type": "recovery_phrase",
+    "salt": "BQIDBAUGBwgJCgsMDQ4PEB",
+    "wrap_blob": "ghi.jkl",
+    "label": "backup phrase"
+  }
+}
+
+script:post-response {
+  bru.setVar("vaultPhraseSlotId", res.body.data.id);
+}
+
+assert {
+  res.status: eq 201
+  res.body.data.slot_type: eq recovery_phrase
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/users/me/vault/slots`
+
+  **This test verifies:** User can add a recovery phrase slot.
+}
