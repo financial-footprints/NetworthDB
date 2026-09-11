@@ -1,0 +1,14 @@
+meta {
+  name: 12-11 Get Banks Unauthorized
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/accounts/banks
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}

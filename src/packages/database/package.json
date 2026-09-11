@@ -4,9 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./config": "./src/config.ts",
-    "./env": "./src/env.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "generate": "bash scripts/migration.sh",
@@ -17,7 +15,9 @@
     "type-check": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@ndb/auth": "workspace:*",
     "@ndb/core": "workspace:*",
+    "@ndb/encryption": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "pg": "^8.16.0",
     "zod": "^3.24.2"

@@ -1,31 +1,28 @@
 import { describe, expect, test } from "bun:test";
-import { normalizeRecoverySecret } from "@core/domains/auth/modules/recovery/embedded/recovery-codes";
 import {
   generateRecoveryToken,
   hashRecoverySecret,
-  validateRecoveryEmail,
-} from "@core/domains/auth/modules/recovery/embedded/recovery-token";
-import { ValidationError } from "@core/shared/errors/domain-error";
+} from "@core/domains/auth/embedded/recovery-token";
+import type { TokenDigest } from "@core/ports/auth";
+
+const testTokens: TokenDigest = {
+  randomHex(byteLength: number) {
+    return "b".repeat(byteLength * 2);
+  },
+  randomBase64Url(_byteLength: number) {
+    return "token-value";
+  },
+  sha256Hex(value: string) {
+    return `hash:${value}`;
+  },
+};
 
 describe("recovery token helpers", () => {
-  test("generateRecoveryToken returns url-safe tokens", () => {
-    const token = generateRecoveryToken();
-    expect(token.length).toBeGreaterThan(20);
-    expect(token).not.toContain("+");
-    expect(token).not.toContain("/");
+  test("generates recovery tokens", () => {
+    expect(generateRecoveryToken(testTokens)).toBe("token-value");
   });
 
-  test("hashRecoverySecret normalizes dashes and case", () => {
-    const plain = "abcd-efgh-IJKL-mnop";
-    const hashA = hashRecoverySecret(plain);
-    const hashB = hashRecoverySecret(plain.toLowerCase());
-    expect(hashA).toBe(hashB);
-    expect(normalizeRecoverySecret(" ab-cd ")).toBe("ABCD");
-  });
-
-  test("validateRecoveryEmail rejects invalid addresses", () => {
-    expect(() => validateRecoveryEmail("")).toThrow(ValidationError);
-    expect(() => validateRecoveryEmail("not-an-email")).toThrow(ValidationError);
-    validateRecoveryEmail("user@example.com");
+  test("hashes recovery secrets", () => {
+    expect(hashRecoverySecret(testTokens, "abc-def")).toBe("hash:ABCDEF");
   });
 });

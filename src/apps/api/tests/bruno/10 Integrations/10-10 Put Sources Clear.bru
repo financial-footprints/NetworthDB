@@ -1,0 +1,32 @@
+meta {
+  name: 10-10 Put Sources Clear
+  type: http
+  seq: 10
+}
+
+docs {
+  **Endpoint:** `PUT /api/v1/sources`
+
+  Empty sources list clears all sources.
+}
+
+put {
+  url: {{BASE_URL}}/api/v1/sources
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{integrationsSessionToken}}
+}
+
+body:json {
+  {
+    "sources": []
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.sources: isEmpty
+}

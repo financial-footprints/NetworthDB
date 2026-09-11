@@ -16,8 +16,11 @@ meRoutes.endpoint(
   },
   async (c) => {
     const user = c.get("principal").user;
-    const vault = await c.get("services").vault.get(user.id);
-    return c.json(serializeMeDetails(user, vault), 200);
+    const [vault, multifactorState] = await Promise.all([
+      c.get("services").vault.get(user.id),
+      c.get("services").auth.multifactor.buildState(user),
+    ]);
+    return c.json(serializeMeDetails(user, vault, multifactorState), 200);
   }
 );
 

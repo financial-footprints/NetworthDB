@@ -1,15 +1,14 @@
 import { describe, expect, test } from "bun:test";
-import { parseRole } from "@core/domains/user/helpers";
-import { ValidationError } from "@core/shared/errors/domain-error";
+import { isRole } from "@core/domains/user/helpers";
 
 describe("Role", () => {
-  test("parses known roles", () => {
-    expect(parseRole("administrator")).toBe("administrator");
-    expect(parseRole("manager")).toBe("manager");
-    expect(parseRole("user")).toBe("user");
+  test("recognizes known roles", () => {
+    expect(isRole("administrator")).toBe(true);
+    expect(isRole("manager")).toBe(true);
+    expect(isRole("user")).toBe(true);
   });
 
   test("rejects unknown roles", () => {
-    expect(() => parseRole("owner")).toThrow(ValidationError);
+    expect(isRole("owner")).toBe(false);
   });
 });

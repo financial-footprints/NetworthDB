@@ -1,7 +1,7 @@
 import { readBearerToken } from "@middleware/auth/bearer";
 import type { Principal } from "@middleware/auth/types";
 import type { MultifactorService, ResolvedMultifactorBearer } from "@ndb/core";
-import { PublicUser, UnauthorizedError } from "@ndb/core";
+import { UnauthorizedError } from "@ndb/core";
 import type { Env, MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
 
@@ -10,11 +10,11 @@ export type MultifactorContext = {
 };
 
 function bearerPrincipal(token: string, bearer: ResolvedMultifactorBearer): Principal {
-  const user = PublicUser.fromUser(bearer.user);
+  const user = bearer.user;
   const multifactor = { token, bearer };
 
   if (bearer.kind === "session") {
-    return { user, jwt: { acr: bearer.authAcr, amr: bearer.authAmr }, multifactor };
+    return { user, auth: { acr: bearer.authAcr, amr: bearer.authAmr }, multifactor };
   }
 
   return { user, multifactor };

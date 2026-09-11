@@ -3,13 +3,15 @@ import type { AppEnv, WebAuthnRpConfig } from "@ndb/core";
 
 export type WebAuthnConfig = {
   rp: WebAuthnRpConfig | null;
-  webauthnsessionTtl: number;
+  ttl: {
+    session: number;
+  };
 };
 
 export function loadWebAuthnConfig(
   env: BootstrapEnv,
   environment: AppEnv,
-  webauthnsessionTtl: number
+  ttl: number
 ): WebAuthnConfig {
   const rpId = env.WEBAUTHN_RP_ID;
   const rpOrigins = env.WEBAUTHN_RP_ORIGINS;
@@ -20,7 +22,7 @@ export function loadWebAuthnConfig(
       throw new Error("bootstrap.config.env.required.not-found.WEBAUTHN_RP_ID");
     }
 
-    return { rp: null, webauthnsessionTtl };
+    return { rp: null, ttl: { session: ttl } };
   }
 
   return {
@@ -29,6 +31,6 @@ export function loadWebAuthnConfig(
       rpId,
       rpOrigins,
     },
-    webauthnsessionTtl,
+    ttl: { session: ttl },
   };
 }

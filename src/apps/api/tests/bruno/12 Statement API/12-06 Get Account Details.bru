@@ -1,0 +1,20 @@
+meta {
+  name: 12-06 Get Account Details
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/accounts/{{statementAccountId}}/metadata
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{statementSessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.statements.available: eq true
+  res.body.data.statements.statement_count: gte 1
+}

@@ -1,12 +1,14 @@
-import { generateSessionToken, hashSessionToken } from "@core/domains/auth/embedded/crypto";
 import { Session } from "@core/domains/auth/entities/session";
 import type { AuthContext, SessionTokenPair } from "@core/domains/auth/helpers";
 import type { SessionRepository } from "@core/domains/auth/repositories/session-repository";
+import type { TokenDigest } from "@core/ports/auth";
 import { findFirst } from "@core/shared/query";
 
+const TOKEN_BYTE_LENGTH = 32;
+
 type SessionLifecycleConfig = {
-  sessionTtl: number;
-  refreshTtl: number;
+  session: number;
+  refresh: number;
 };
 
 type SessionRevokeTarget = { sessionId: string } | { userId: string };
@@ -14,7 +16,8 @@ type SessionRevokeTarget = { sessionId: string } | { userId: string };
 export class SessionLifecycle {
   constructor(
     private readonly sessions: SessionRepository,
-    private readonly config: SessionLifecycleConfig
+    private readonly tokens: TokenDigest,
+    private readonly ttl: SessionLifecycleConfig
   ) {}
 
   async issue(userId: string, auth: AuthContext): Promise<SessionTokenPair> {
@@ -23,10 +26,10 @@ export class SessionLifecycle {
     const session = new Session(
       crypto.randomUUID(),
       userId,
-      hashSessionToken(pair.sessionToken),
-      hashSessionToken(pair.refreshToken),
-      new Date(now.getTime() + this.config.sessionTtl * 1000),
-      new Date(now.getTime() + this.config.refreshTtl * 1000),
+      this.tokens.sha256Hex(pair.sessionToken),
+      this.tokens.sha256Hex(pair.refreshToken),
+      new Date(now.getTime() + this.ttl.session * 1000),
+      new Date(now.getTime() + this.ttl.refresh * 1000),
       now,
       auth.amr,
       auth.acr
@@ -40,10 +43,10 @@ export class SessionLifecycle {
     const pair = this._createTokenPair();
     const now = new Date();
     const rotated = session.withRotatedTokens({
-      accessHash: hashSessionToken(pair.sessionToken),
-      refreshHash: hashSessionToken(pair.refreshToken),
-      accessExpiresAt: new Date(now.getTime() + this.config.sessionTtl * 1000),
-      refreshExpiresAt: new Date(now.getTime() + this.config.refreshTtl * 1000),
+      sessionHash: this.tokens.sha256Hex(pair.sessionToken),
+      refreshHash: this.tokens.sha256Hex(pair.refreshToken),
+      sessionExpiresAt: new Date(now.getTime() + this.ttl.session * 1000),
+      refreshExpiresAt: new Date(now.getTime() + this.ttl.refresh * 1000),
     });
     await this.sessions.save(rotated);
 
@@ -52,15 +55,15 @@ export class SessionLifecycle {
 
   async findByRefreshToken(refreshToken: string): Promise<Session | null> {
     return findFirst(this.sessions.findByFilters.bind(this.sessions), {
-      refreshHash: hashSessionToken(refreshToken),
+      refreshHash: this.tokens.sha256Hex(refreshToken),
     });
   }
 
-  async findValidAccess(accessToken: string): Promise<Session | null> {
+  async findValidSession(sessionToken: string): Promise<Session | null> {
     const session = await findFirst(this.sessions.findByFilters.bind(this.sessions), {
-      accessHash: hashSessionToken(accessToken),
+      sessionHash: this.tokens.sha256Hex(sessionToken),
     });
-    if (!session?.isAccessValid()) {
+    if (!session?.isSessionValid()) {
       return null;
     }
 
@@ -83,10 +86,9 @@ export class SessionLifecycle {
 
   private _createTokenPair(): SessionTokenPair {
     return {
-      sessionToken: generateSessionToken(),
-      refreshToken: generateSessionToken(),
-      tokenType: "Bearer",
-      expiresIn: Math.floor(this.config.sessionTtl / 1000),
+      sessionToken: this.tokens.randomHex(TOKEN_BYTE_LENGTH),
+      refreshToken: this.tokens.randomHex(TOKEN_BYTE_LENGTH),
+      expiresIn: Math.floor(this.ttl.session / 1000),
     };
   }
 }

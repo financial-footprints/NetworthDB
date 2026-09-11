@@ -1,12 +1,8 @@
-import type { AppEnv } from "@core/domains/auth/constants";
-import { hashPassword, validatePassword } from "@core/domains/auth/embedded/password";
 import { assertAal2 } from "@core/domains/auth/helpers";
-import { PublicUser } from "@core/domains/user/entities/public-user";
-import { User, Username } from "@core/domains/user/entities/user/index";
+import { type User, Username } from "@core/domains/user/entities/user/index";
 import {
   assertAdministrator,
   assertAdministratorOrManager,
-  parseRole,
   type Role,
   type UserListQuery,
   type UserListResult,
@@ -19,15 +15,9 @@ import {
 } from "@core/shared/errors/domain-error";
 import { findFirst } from "@core/shared/query";
 
-export type RegisterUserInput = {
-  username: string;
-  password: string;
-  role?: string;
-};
-
 export type UpdateUserInput = {
   username?: string;
-  role?: string;
+  role?: Role;
 };
 
 export type SessionRevoker = {
@@ -37,8 +27,7 @@ export type SessionRevoker = {
 export class UserService {
   constructor(
     private readonly users: UserRepository,
-    private readonly auth: SessionRevoker,
-    private readonly appEnv: AppEnv
+    private readonly auth: SessionRevoker
   ) {}
 
   private async _get(userId: string): Promise<User> {
@@ -54,7 +43,7 @@ export class UserService {
   }
 
   private async _applyUpdates(
-    actor: PublicUser,
+    caller: User,
     user: User,
     userId: string,
     input: UpdateUserInput
@@ -62,7 +51,7 @@ export class UserService {
     let updated = user;
 
     if (input.role !== undefined) {
-      updated = this._applyRole(actor, user, userId, input.role, updated);
+      updated = this._applyRole(caller, user, userId, input.role, updated);
     }
 
     if (input.username !== undefined) {
@@ -72,19 +61,12 @@ export class UserService {
     return updated;
   }
 
-  private _applyRole(
-    actor: PublicUser,
-    user: User,
-    userId: string,
-    role: string,
-    updated: User
-  ): User {
-    const parsedRole = parseRole(role);
-    if (actor.id === userId) {
+  private _applyRole(caller: User, user: User, userId: string, role: Role, updated: User): User {
+    if (caller.id === userId) {
       throw new ValidationError("core.user.role.invalid.self-change");
     }
 
-    return parsedRole === user.role ? updated : updated.withRole(parsedRole);
+    return role === user.role ? updated : updated.withRole(role);
   }
 
   private async _applyUsername(
@@ -110,40 +92,9 @@ export class UserService {
     return updated.withUsername(parsedUsername);
   }
 
-  async register(
-    actor: PublicUser,
-    authAcr: string,
-    input: RegisterUserInput
-  ): Promise<PublicUser> {
-    assertAdministrator(actor);
-    assertAal2(actor.multifactorEnabled, authAcr);
-
-    const username = Username.parse(input.username);
-    validatePassword(input.password, this.appEnv);
-    const role: Role = input.role === undefined ? "user" : parseRole(input.role);
-
-    const existing = await findFirst(this.users.findByFilters.bind(this.users), { username });
-    if (existing) {
-      throw new ConflictError("core.user.username.conflict.taken", {
-        username: username.toString(),
-      });
-    }
-
-    const user = new User(
-      crypto.randomUUID(),
-      username,
-      await hashPassword(input.password),
-      role,
-      false,
-      new Date()
-    );
-    const created = await this.users.create(user);
-    return PublicUser.fromUser(created);
-  }
-
-  async list(actor: PublicUser, authAcr: string, query: UserListQuery): Promise<UserListResult> {
-    assertAdministratorOrManager(actor);
-    assertAal2(actor.multifactorEnabled, authAcr);
+  async list(user: User, authAcr: string, query: UserListQuery): Promise<UserListResult> {
+    assertAdministratorOrManager(user);
+    assertAal2(user.multifactorEnabled, authAcr);
 
     const filters: UserFilters = {
       role: query.role,
@@ -156,42 +107,39 @@ export class UserService {
       { column: "username", direction: "asc" },
       { limit: query.limit, offset: query.offset }
     );
-    return {
-      items: items.map((user) => PublicUser.fromUser(user)),
-      total,
-    };
+    return { items, total };
   }
 
   async update(
-    actor: PublicUser,
+    caller: User,
     authAcr: string,
     userId: string,
     input: UpdateUserInput
-  ): Promise<PublicUser> {
-    assertAdministrator(actor);
-    assertAal2(actor.multifactorEnabled, authAcr);
+  ): Promise<User> {
+    assertAdministrator(caller);
+    assertAal2(caller.multifactorEnabled, authAcr);
 
     if (input.username === undefined && input.role === undefined) {
       throw new ValidationError("core.user.patch.invalid.no-fields");
     }
 
     const user = await this._get(userId);
-    const updated = await this._applyUpdates(actor, user, userId, input);
+    const updated = await this._applyUpdates(caller, user, userId, input);
 
     if (updated === user) {
-      return PublicUser.fromUser(user);
+      return user;
     }
 
     const saved = await this.users.save(updated);
     await this.auth.revoke(userId);
-    return PublicUser.fromUser(saved);
+    return saved;
   }
 
-  async delete(actor: PublicUser, authAcr: string, userId: string): Promise<void> {
-    assertAdministrator(actor);
-    assertAal2(actor.multifactorEnabled, authAcr);
+  async delete(user: User, authAcr: string, userId: string): Promise<void> {
+    assertAdministrator(user);
+    assertAal2(user.multifactorEnabled, authAcr);
 
-    if (actor.id === userId) {
+    if (user.id === userId) {
       throw new ValidationError("core.user.delete.invalid.self-delete");
     }
 

@@ -1,33 +1,32 @@
 # Auth domain
 
-Authentication bounded context: sessions, multifactor, recovery, and WebAuthn ceremonies.
+Authentication bounded context: sessions, MFA, recovery, and WebAuthn.
 
-[`AuthService`](services/auth-service.ts) owns the public surface. HTTP and middleware talk to `AuthService` (and nested `auth.multifactor`, `auth.webauthn`, `auth.recovery`). Module classes stay as collaborators; they are not peer entry points.
+## Layout
 
-## Root layout
+| Path | Contents |
+| --- | --- |
+| [`constants.ts`](constants.ts) | AAL/AMR constants, `AppEnv`, recovery kinds |
+| [`entities/`](entities/) | `Session`, `MultifactorChallenge`, `RecoveryChallenge`, WebAuthn entities |
+| [`embedded/`](embedded/) | Recovery codes, recovery tokens, recovery email helpers |
+| [`helpers.ts`](helpers.ts) | `SessionTokenPair`, `AuthContext`, `assertAal2`, `PasswordLockout` |
+| [`repositories/`](repositories/) | Persistence ports for sessions, MFA, recovery, WebAuthn |
+| [`services/`](services/) | `AuthService`, `SessionLifecycle`, `MultifactorService`, `RecoveryService`, `WebAuthnService` |
+| [`embedded/webauthn-ceremony.ts`](embedded/webauthn-ceremony.ts) | WebAuthn ceremony blob encode/decode |
 
-| Path                                                                               | Contents                                             |
-| ---------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| [`constants.ts`](constants.ts)                                                     | `APP_ENVS`, ACR/AMR constants                        |
-| [`helpers.ts`](helpers.ts)                                                         | Types, `AuthContext` builders, `assertAal2`          |
-| [`entities/session.ts`](entities/session.ts)                                       | `Session`                                            |
-| [`repositories/session-repository.ts`](repositories/session-repository.ts)         | Session port + `SessionFilters`                      |
-| [`services/auth-service.ts`](services/auth-service.ts)                             | Owner: login, refresh, logout, me, session lifecycle |
-| [`services/session-lifecycle.ts`](services/session-lifecycle.ts)                   | Issue, rotate, revoke sessions                       |
-| [`embedded/`](embedded/)                                                           | Shared crypto: password, tokens, secret encryption   |
-
-## Feature modules (`modules/`)
-
-| Module                                             | Role                                                              |
-| -------------------------------------------------- | ----------------------------------------------------------------- |
-| [`modules/multifactor/`](modules/multifactor/)     | Challenges, TOTP, recovery codes; nested as `auth.multifactor`    |
-| [`modules/recovery/`](modules/recovery/)           | Email/token flows; nested as `auth.recovery`                      |
-| [`modules/webauthn/`](modules/webauthn/)           | Credentials and ceremonies; nested as `auth.webauthn`             |
-
-## Vault
-
-Vault slots live under [`user/modules/vault/`](../user/modules/vault/README.md) (user-owned). `VaultService` is injected into AuthService for recovery and WebAuthn PRF; HTTP uses `services.vault`.
+Crypto adapters (`createAuthCrypto`, Argon2, TOTP, WebAuthn RP) live in [`@ndb/auth`](../../../../auth/README.md).
 
 ## Dependencies
 
-Auth reads `User` and `PublicUser` from the user domain. User services call `AuthService.revoke` after admin user changes.
+- Other domains import `assertAal2` from [`helpers.ts`](helpers.ts) for MFA step-up.
+- `UserService` accepts a narrow `SessionRevoker` hook (implemented by `AuthService`) after admin edits.
+- `VaultService` lives under [`user/modules/vault/`](../user/modules/vault/README.md).
+- Repository ports are implemented by `@ndb/database` Drizzle adapters.
+- Services depend on `AuthCrypto` ports (`PasswordHasher`, `TotpEngine`, `SecretBox`, `TokenDigest`, `WebAuthnRelyingParty`) implemented by `@ndb/auth`.
+
+## Import rules
+
+- Auth **types, entities, and services** — `@ndb/core`
+- Auth **crypto adapters** (`createAuthCrypto`, `KvstoreAuthLimits`, `seedHashPassword`) — `@ndb/auth`
+
+See [ADR-006](../../../../../docs/adr/006-type-ownership.md) for the full type-ownership model.

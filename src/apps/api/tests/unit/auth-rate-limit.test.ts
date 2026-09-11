@@ -4,7 +4,7 @@ import { API } from "@ndb/platform";
 import { createAuthTestServices } from "@tests/api/helpers/auth-services";
 import { fakeConfig } from "@tests/api/helpers/config";
 import { createMemoryLogger } from "@tests/api/helpers/memory.logger";
-import { createTestSecurityStores } from "@tests/core/helpers/auth";
+import { createTestSecurityStores } from "@tests/auth/helpers";
 
 describe("auth rate limit routes", () => {
   test("returns 429 after exceeding the shared IP bucket", async () => {

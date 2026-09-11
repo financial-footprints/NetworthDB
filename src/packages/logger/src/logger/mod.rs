@@ -3,14 +3,16 @@ use std::str::FromStr;
 use std::sync::Mutex;
 
 use chrono::Utc;
-use napi_derive::napi;
 use serde_json::{Map, Value};
+
+#[cfg(feature = "napi")]
+use napi_derive::napi;
 use uuid::Uuid;
 
 use crate::backend::Backend;
 use crate::ray;
 
-#[napi(string_enum = "lowercase")]
+#[cfg_attr(feature = "napi", napi(string_enum = "lowercase"))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LogLevel {
     Debug,
@@ -71,7 +73,7 @@ impl InstallOptions {
     }
 }
 
-#[napi(string_enum = "lowercase")]
+#[cfg_attr(feature = "napi", napi(string_enum = "lowercase"))]
 pub enum LogDestination {
     Console,
     Stdout,
@@ -218,6 +220,42 @@ pub fn log(
     context: Option<HashMap<String, Value>>,
 ) -> Result<(), LogError> {
     write_log(level, msg, ray_id, context)
+}
+
+/// Runs `f` with the logger tee'd to stdout/stderr and an in-memory buffer.
+/// Returns the closure result and captured JSONL lines joined by newlines.
+pub fn with_tee_capture<F, T>(f: F) -> Result<(T, String), LogError>
+where
+    F: FnOnce() -> T,
+{
+    let (tee_backend, buffer) = {
+        let mut guard = LOGGER.lock().map_err(|_| LogError::LockPoisoned)?;
+        let logger = guard.as_mut().ok_or(LogError::NotInitialized)?;
+        let console = logger.backend.console();
+        crate::backend::tee_backend(console)
+    };
+
+    {
+        let mut guard = LOGGER.lock().map_err(|_| LogError::LockPoisoned)?;
+        let logger = guard.as_mut().ok_or(LogError::NotInitialized)?;
+        logger.backend = tee_backend;
+    }
+
+    let result = f();
+
+    {
+        let mut guard = LOGGER.lock().map_err(|_| LogError::LockPoisoned)?;
+        let logger = guard.as_mut().ok_or(LogError::NotInitialized)?;
+        let console = logger.backend.console();
+        logger.backend = Backend::Console(console);
+    }
+
+    let lines = buffer
+        .lock()
+        .map_err(|_| LogError::LockPoisoned)?
+        .join("\n");
+
+    Ok((result, lines))
 }
 
 pub async fn scope<F, T>(ray_id: &str, future: F) -> T

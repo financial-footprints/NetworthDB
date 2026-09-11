@@ -1,0 +1,24 @@
+meta {
+  name: 10-08 Get Sources
+  type: http
+  seq: 8
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/sources`
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/sources
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{integrationsSessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.sources[1].has_password: eq true
+}

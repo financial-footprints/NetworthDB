@@ -4,22 +4,34 @@ import {
   generateRecoveryCodes,
   hashRecoveryCode,
   normalizeRecoverySecret,
-  RECOVERY_CODE_COUNT,
-} from "@core/domains/auth/modules/recovery/embedded/recovery-codes";
+} from "@core/domains/auth/embedded/recovery-codes";
+import type { TokenDigest } from "@core/ports/auth";
 
-describe("recovery-codes", () => {
-  test("formats dashed codes and hashes normalized secrets", () => {
-    const formatted = formatDashedRecoveryCode("abcdefghijklmnop");
-    expect(formatted).toBe("ABCD-EFGH-IJKL-MNOP");
-    expect(normalizeRecoverySecret("abcd-efgh-ijkl-mnop")).toBe("ABCDEFGHIJKLMNOP");
-    expect(hashRecoveryCode("abcd-efgh-ijkl-mnop")).toMatch(/^[0-9a-f]{64}$/);
+const testTokens: TokenDigest = {
+  randomHex(byteLength: number) {
+    return "a".repeat(byteLength * 2);
+  },
+  randomBase64Url(byteLength: number) {
+    return "a".repeat(byteLength);
+  },
+  sha256Hex(value: string) {
+    return `hash:${value}`;
+  },
+};
+
+describe("recovery codes", () => {
+  test("normalizes recovery secrets", () => {
+    expect(normalizeRecoverySecret(" ab-cd ")).toBe("ABCD");
   });
 
-  test("generates ten unique recovery codes", () => {
-    const generated = generateRecoveryCodes();
-    expect(generated.plain).toHaveLength(RECOVERY_CODE_COUNT);
-    expect(generated.hashes).toHaveLength(RECOVERY_CODE_COUNT);
-    expect(new Set(generated.plain).size).toBe(RECOVERY_CODE_COUNT);
-    expect(new Set(generated.hashes).size).toBe(RECOVERY_CODE_COUNT);
+  test("formats dashed recovery codes", () => {
+    expect(formatDashedRecoveryCode("ABCDEFGHIJKLMNOP")).toBe("ABCD-EFGH-IJKL-MNOP");
+  });
+
+  test("generates recovery codes", () => {
+    const generated = generateRecoveryCodes(testTokens);
+    expect(generated.plain).toHaveLength(10);
+    expect(generated.hashes).toHaveLength(10);
+    expect(hashRecoveryCode(testTokens, generated.plain[0])).toBe(generated.hashes[0]);
   });
 });

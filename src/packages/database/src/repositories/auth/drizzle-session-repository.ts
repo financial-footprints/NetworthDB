@@ -17,9 +17,9 @@ function mapRow(row: typeof authSessions.$inferSelect): Session {
   return new Session(
     row.id,
     row.userId,
-    row.accessHash,
+    row.sessionHash,
     row.refreshHash,
-    row.accessExpiresAt,
+    row.sessionExpiresAt,
     row.refreshExpiresAt,
     row.createdAt,
     row.authAmr,
@@ -38,9 +38,9 @@ export class DrizzleSessionRepository implements SessionRepository {
         .values({
           id: session.id,
           userId: session.userId,
-          accessHash: session.accessHash,
+          sessionHash: session.sessionHash,
           refreshHash: session.refreshHash,
-          accessExpiresAt: session.accessExpiresAt,
+          sessionExpiresAt: session.sessionExpiresAt,
           refreshExpiresAt: session.refreshExpiresAt,
           createdAt: session.createdAt,
           authAmr: session.authAmr,
@@ -90,9 +90,9 @@ export class DrizzleSessionRepository implements SessionRepository {
     const rows = await this.db
       .update(authSessions)
       .set({
-        accessHash: session.accessHash,
+        sessionHash: session.sessionHash,
         refreshHash: session.refreshHash,
-        accessExpiresAt: session.accessExpiresAt,
+        sessionExpiresAt: session.sessionExpiresAt,
         refreshExpiresAt: session.refreshExpiresAt,
         revokedAt: session.revokedAt,
         authAmr: session.authAmr,
@@ -124,8 +124,8 @@ export class DrizzleSessionRepository implements SessionRepository {
     if (filters.userId !== undefined) {
       conditions.push(eq(authSessions.userId, filters.userId));
     }
-    if (filters.accessHash !== undefined) {
-      conditions.push(eq(authSessions.accessHash, filters.accessHash));
+    if (filters.sessionHash !== undefined) {
+      conditions.push(eq(authSessions.sessionHash, filters.sessionHash));
     }
     if (filters.refreshHash !== undefined) {
       conditions.push(eq(authSessions.refreshHash, filters.refreshHash));

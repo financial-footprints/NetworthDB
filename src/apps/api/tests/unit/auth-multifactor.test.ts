@@ -3,15 +3,15 @@ import { createApp } from "@ndb/api";
 import { API } from "@ndb/platform";
 import {
   type MultifactorChallengeResponse,
-  type PublicUserResponse,
   readApiJson,
   type SessionTokenPair,
   type TotpBeginResponse,
+  type UserResponse,
 } from "@tests/api/helpers/api-response";
 import { createAuthTestServices } from "@tests/api/helpers/auth-services";
 import { fakeConfig } from "@tests/api/helpers/config";
 import { createMemoryLogger } from "@tests/api/helpers/memory.logger";
-import { enrollTotp, resetTotpStep, totpCode } from "@tests/core/helpers/auth";
+import { enrollTotp, resetTotpStep, totpCode } from "@tests/auth/helpers";
 
 describe("auth multifactor routes", () => {
   test("POST /api/v1/auth/login returns multifactor_required when multifactor is enabled", async () => {
@@ -118,7 +118,7 @@ describe("auth multifactor routes", () => {
     const meResponse = await app.request(API.users.me.details, {
       headers: { Authorization: `Bearer ${verifyBody.data.session_token}` },
     });
-    const meBody = await readApiJson<PublicUserResponse>(meResponse);
+    const meBody = await readApiJson<UserResponse>(meResponse);
     expect(meBody.data.multifactor_methods).toEqual(["totp"]);
     expect(meBody.data.recovery_codes_enabled).toBe(false);
   });

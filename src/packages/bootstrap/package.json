@@ -13,6 +13,7 @@
   "dependencies": {
     "@ndb/auth": "workspace:*",
     "@ndb/core": "workspace:*",
+    "@ndb/statements": "workspace:*",
     "@ndb/database": "workspace:*",
     "@ndb/logger": "workspace:*",
     "@ndb/notifications": "workspace:*",

@@ -1,0 +1,33 @@
+meta {
+  name: 11-02 Create Account
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/accounts
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jobsSessionToken}}
+}
+
+body:json {
+  {
+    "bank": "onecard",
+    "account_type": "credit_card",
+    "opening_date": "2020-01-15",
+    "account_number": "abc.def",
+    "passwords": []
+  }
+}
+
+script:post-response {
+  bru.setVar("jobsAccountId", res.body.data.id);
+}
+
+assert {
+  res.status: eq 201
+}

@@ -1,5 +1,6 @@
 //! NAPI boundary — exports are called from Bun/JavaScript, not from Rust.
 
+#![cfg(feature = "napi")]
 #![allow(dead_code)]
 
 use std::collections::HashMap;

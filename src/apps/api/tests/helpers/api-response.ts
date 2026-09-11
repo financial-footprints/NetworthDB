@@ -4,7 +4,6 @@ export type ApiEnvelope<T> = {
 };
 
 export type SessionTokenPair = {
-  token_type: string;
   session_token: string;
   refresh_token: string;
   expires_in: number;
@@ -26,7 +25,7 @@ export type RecoveryCodesResponse = {
 };
 
 export type AdvancedRecoveryContextResponse = {
-  e2ee_vault_initialized: boolean;
+  vault_initialized: boolean;
   vault_recovery_methods: string[];
 };
 
@@ -40,10 +39,10 @@ export type VaultSlotResponse = {
 };
 
 export type VaultInitializeResponse = {
-  e2ee_slots: VaultSlotResponse[];
+  vault_slots: VaultSlotResponse[];
 };
 
-export type PublicUserResponse = {
+export type UserResponse = {
   id: string;
   username: string;
   role: string;
@@ -53,15 +52,15 @@ export type PublicUserResponse = {
   recovery_codes_enabled: boolean;
   recovery_email_enabled: boolean;
   recovery_email_set_at: string | null;
-  e2ee_vault_initialized: boolean;
-  e2ee_slots: Array<{
+  vault_initialized: boolean;
+  vault_slots: Array<{
     id?: string;
     slot_type: string;
     salt?: string;
     wrap_blob?: string;
     label?: string;
   }>;
-  e2ee_name: string | null;
+  display_name: string | null;
 };
 
 export async function readApiJson<T>(response: Response): Promise<ApiEnvelope<T>> {

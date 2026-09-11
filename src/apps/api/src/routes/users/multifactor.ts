@@ -8,11 +8,11 @@ import {
 import { sessionPrincipal } from "@ndb/middleware";
 import {
   API,
-  adminUserIdParamsSchema,
   emptySchema,
   mfaProofReqSchema,
   recoveryCodeSchema,
   totpDisableReqSchema,
+  uuidIdParamsSchema,
   webauthnCredSchema,
 } from "@ndb/platform";
 
@@ -68,8 +68,8 @@ const multifactorRoutes = createSessionRouter()
     },
     async (c) => {
       const { totp } = c.req.valid("json");
-      const { user, jwt } = sessionPrincipal(c.get("principal"));
-      await c.get("services").auth.multifactor.disableTotp(user, jwt.acr, totp);
+      const { user, auth } = sessionPrincipal(c.get("principal"));
+      await c.get("services").auth.multifactor.disableTotp(user, auth.acr, totp);
       return c.json(serializeEmpty(), 200);
     }
   )
@@ -95,7 +95,7 @@ const multifactorRoutes = createSessionRouter()
       method: "delete",
       path: API.users.me.webauthn.details,
       request: {
-        params: adminUserIdParamsSchema,
+        params: uuidIdParamsSchema,
         body: jsonBody(mfaProofReqSchema),
       },
       responses: {

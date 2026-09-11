@@ -18,10 +18,13 @@ help:
 
 install:
 	bun install
+	bun run --filter @ndb/encryption build:debug
 	bun run --filter @ndb/logger build:debug
+	bun run --filter @ndb/statements build:debug
 
 setup: install
 	cp -n src/apps/api/.env.example src/apps/api/.env 2>/dev/null || true
+	cp -n src/apps/web/.env.example src/apps/web/.env 2>/dev/null || true
 	docker compose up -d --wait
 	bun run --filter @ndb/database migrate
 
@@ -66,7 +69,9 @@ ci: install
 
 clean:
 	rm -rf dist/
+	rm -f src/packages/encryption/*.node
 	rm -f src/packages/logger/*.node
+	rm -f src/packages/statements/*.node
 	rm -rf src/packages/.*.napi-stage-*
 	rm -f src/packages/.napi-rs-*
 	docker compose down -v

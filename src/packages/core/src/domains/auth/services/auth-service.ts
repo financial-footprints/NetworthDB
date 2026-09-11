@@ -1,10 +1,4 @@
 import type { AppEnv } from "@core/domains/auth/constants";
-import {
-  hashPassword,
-  seedHashPassword,
-  validatePassword,
-  verifyPassword,
-} from "@core/domains/auth/embedded/password";
 import type {
   LoginResult,
   PasswordLockout,
@@ -12,31 +6,27 @@ import type {
   SessionTokenPair,
 } from "@core/domains/auth/helpers";
 import { type AuthContext, assertAal2, passwordOnlyAuth } from "@core/domains/auth/helpers";
-import type { MultifactorChallengeRepository } from "@core/domains/auth/modules/multifactor/repositories/multifactor-challenge-repository";
-import type { RecoveryCodeRepository } from "@core/domains/auth/modules/multifactor/repositories/recovery-code-repository";
-import {
-  MultifactorService,
-  type MultifactorServiceConfig,
-} from "@core/domains/auth/modules/multifactor/services/multifactor-service";
-import type { RecoveryChallengeRepository } from "@core/domains/auth/modules/recovery/repositories/recovery-challenge-repository";
-import {
-  RecoveryService,
-  type RecoveryServiceConfig,
-} from "@core/domains/auth/modules/recovery/services/recovery-service";
-import type { WebAuthnCredentialRepository } from "@core/domains/auth/modules/webauthn/repositories/webauthn-credential-repository";
-import type { WebAuthnSessionRepository } from "@core/domains/auth/modules/webauthn/repositories/webauthn-session-repository";
-import {
-  WebAuthnService,
-  type WebAuthnServiceConfig,
-} from "@core/domains/auth/modules/webauthn/services/webauthn-service";
+import type { MultifactorChallengeRepository } from "@core/domains/auth/repositories/multifactor-challenge-repository";
+import type { RecoveryChallengeRepository } from "@core/domains/auth/repositories/recovery-challenge-repository";
+import type { RecoveryCodeRepository } from "@core/domains/auth/repositories/recovery-code-repository";
 import type { SessionRepository } from "@core/domains/auth/repositories/session-repository";
+import type { WebAuthnCredentialRepository } from "@core/domains/auth/repositories/webauthn-credential-repository";
+import type { WebAuthnSessionRepository } from "@core/domains/auth/repositories/webauthn-session-repository";
+import type { MultifactorServiceConfig } from "@core/domains/auth/services/multifactor-service";
+import { MultifactorService } from "@core/domains/auth/services/multifactor-service";
+import type { RecoveryServiceConfig } from "@core/domains/auth/services/recovery-service";
+import { RecoveryService } from "@core/domains/auth/services/recovery-service";
 import { SessionLifecycle } from "@core/domains/auth/services/session-lifecycle";
-import type { PublicUser } from "@core/domains/user/entities/public-user";
-import { Username } from "@core/domains/user/entities/user/index";
+import type { WebAuthnServiceConfig } from "@core/domains/auth/services/webauthn-service";
+import { WebAuthnService } from "@core/domains/auth/services/webauthn-service";
+import { User, Username } from "@core/domains/user/entities/user/index";
+import { Password } from "@core/domains/user/entities/user/password";
+import { assertAdministrator, type Role } from "@core/domains/user/helpers";
 import type { VaultService } from "@core/domains/user/modules/vault/services/vault-service";
 import type { UserRepository } from "@core/domains/user/repositories/user-repository";
+import type { AuthCrypto } from "@core/ports/auth";
 import type { EmailSender } from "@core/ports/email";
-import type { RateLimiter } from "@core/ports/rate-limiter";
+import type { RateLimiter } from "@core/ports/ratelimiter";
 import {
   ConflictError,
   UnauthorizedError,
@@ -46,14 +36,22 @@ import { findFirst } from "@core/shared/query";
 
 let dummyPasswordHashPromise: Promise<string> | null = null;
 
-function dummyPasswordHash(): Promise<string> {
-  dummyPasswordHashPromise ??= seedHashPassword("__ndb_dummy_login__");
+function dummyPasswordHash(crypto: AuthCrypto): Promise<string> {
+  dummyPasswordHashPromise ??= crypto.password.hash("__ndb_dummy_login__");
   return dummyPasswordHashPromise;
 }
 
+export type RegisterUserInput = {
+  username: string;
+  password: string;
+  role?: Role;
+};
+
 export type AuthServiceConfig = {
-  sessionTtl: number;
-  refreshTtl: number;
+  ttl: {
+    session: number;
+    refresh: number;
+  };
   appEnv: AppEnv;
   multifactor: MultifactorServiceConfig;
   webauthn: WebAuthnServiceConfig;
@@ -72,6 +70,7 @@ export type AuthServiceDeps = {
   emailSender: EmailSender;
   passwordLockout: PasswordLockout;
   rateLimiter: RateLimiter;
+  crypto: AuthCrypto;
   config: AuthServiceConfig;
 };
 
@@ -84,23 +83,26 @@ export class AuthService {
   private readonly sessions: SessionLifecycle;
   private readonly passwordLockout: PasswordLockout;
   private readonly rateLimiter: RateLimiter;
+  private readonly crypto: AuthCrypto;
   private readonly config: AuthServiceConfig;
 
   constructor(deps: AuthServiceDeps) {
     this.users = deps.users;
     this.passwordLockout = deps.passwordLockout;
     this.rateLimiter = deps.rateLimiter;
+    this.crypto = deps.crypto;
     this.config = deps.config;
-    this.sessions = new SessionLifecycle(deps.sessions, {
-      sessionTtl: deps.config.sessionTtl,
-      refreshTtl: deps.config.refreshTtl,
-    });
+    this.sessions = new SessionLifecycle(deps.sessions, deps.crypto.tokens, deps.config.ttl);
     this.multifactor = new MultifactorService(
       deps.users,
       this.sessions,
       deps.multifactorChallenges,
       deps.recoveryCodes,
       deps.webauthnCredentials,
+      deps.crypto.password,
+      deps.crypto.totp,
+      deps.crypto.secrets,
+      deps.crypto.tokens,
       deps.config.multifactor
     );
     this.webauthn = new WebAuthnService(
@@ -110,6 +112,9 @@ export class AuthService {
       deps.webauthnCredentials,
       deps.webauthnSessions,
       deps.recoveryCodes,
+      deps.crypto.password,
+      deps.crypto.tokens,
+      deps.crypto.webauthn,
       deps.config.webauthn,
       (user, input) => this.multifactor.verifyProof(user, input),
       deps.vault
@@ -125,12 +130,40 @@ export class AuthService {
       this.webauthn,
       deps.vault,
       deps.emailSender,
+      deps.crypto.password,
+      deps.crypto.tokens,
       deps.config.recovery
     );
   }
 
   async allowRequest(key: string): Promise<boolean> {
     return this.rateLimiter.allow(key);
+  }
+
+  async register(user: User, authAcr: string, input: RegisterUserInput): Promise<User> {
+    assertAdministrator(user);
+    assertAal2(user.multifactorEnabled, authAcr);
+
+    const username = Username.parse(input.username);
+    const password = Password.parse(input.password, this.config.appEnv);
+    const role: Role = input.role ?? "user";
+
+    const existing = await findFirst(this.users.findByFilters.bind(this.users), { username });
+    if (existing) {
+      throw new ConflictError("core.user.username.conflict.taken", {
+        username: username.toString(),
+      });
+    }
+
+    const createdUser = new User(
+      crypto.randomUUID(),
+      username,
+      await this.crypto.password.hash(password.toString()),
+      role,
+      false,
+      new Date()
+    );
+    return this.users.create(createdUser);
   }
 
   async issue(userId: string, auth: AuthContext): Promise<SessionTokenPair> {
@@ -146,16 +179,16 @@ export class AuthService {
     const usernameKey = parsedUsername.toString();
 
     if (await this.passwordLockout.isLocked(usernameKey)) {
-      const dummyHash = await dummyPasswordHash();
-      await verifyPassword(password, dummyHash);
+      const dummyHash = await dummyPasswordHash(this.crypto);
+      await this.crypto.password.verify(password, dummyHash);
       throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
     }
 
     const user = await findFirst(this.users.findByFilters.bind(this.users), {
       username: parsedUsername,
     });
-    const passwordHash = user?.passwordHash ?? (await dummyPasswordHash());
-    const valid = await verifyPassword(password, passwordHash);
+    const passwordHash = user?.passwordHash ?? (await dummyPasswordHash(this.crypto));
+    const valid = await this.crypto.password.verify(password, passwordHash);
 
     if (!user || !valid) {
       await this.passwordLockout.recordFailure(usernameKey);
@@ -194,7 +227,7 @@ export class AuthService {
   }
 
   async get(sessionToken: string): Promise<ResolvedSession> {
-    const session = await this.sessions.findValidAccess(sessionToken);
+    const session = await this.sessions.findValidSession(sessionToken);
     if (!session) {
       throw new UnauthorizedError("core.auth.session.unauthorized.invalid-or-expired");
     }
@@ -205,7 +238,7 @@ export class AuthService {
     }
 
     return {
-      user: await this.multifactor.buildUser(user),
+      user,
       sessionId: session.id,
       authAmr: session.authAmr,
       authAcr: session.authAcr,
@@ -213,35 +246,37 @@ export class AuthService {
   }
 
   async updatePassword(
-    actor: PublicUser,
+    user: User,
     authAcr: string,
     authAmr: string,
     currentPassword: string,
     newPassword: string
   ): Promise<SessionTokenPair> {
-    assertAal2(actor.multifactorEnabled, authAcr);
-    const user = await this._get(actor.id);
-    await this._verifyPassword(user, currentPassword);
-    validatePassword(newPassword, this.config.appEnv);
+    assertAal2(user.multifactorEnabled, authAcr);
+    const stored = await this._get(user.id);
+    await this._verifyPassword(stored, currentPassword);
+    const parsedPassword = Password.parse(newPassword, this.config.appEnv);
 
-    const saved = await this.users.save(user.withPasswordHash(await hashPassword(newPassword)));
+    const saved = await this.users.save(
+      stored.withPasswordHash(await this.crypto.password.hash(parsedPassword.toString()))
+    );
     await this.sessions.revoke({ userId: saved.id });
     return this.sessions.issue(saved.id, { amr: authAmr, acr: authAcr });
   }
 
   async updateUsername(
-    actor: PublicUser,
+    user: User,
     authAcr: string,
     authAmr: string,
     username: string,
     currentPassword: string
   ): Promise<SessionTokenPair> {
-    assertAal2(actor.multifactorEnabled, authAcr);
-    const user = await this._get(actor.id);
-    await this._verifyPassword(user, currentPassword);
+    assertAal2(user.multifactorEnabled, authAcr);
+    const stored = await this._get(user.id);
+    await this._verifyPassword(stored, currentPassword);
 
     const nextUsername = Username.parse(username);
-    if (nextUsername.toString() === user.username.toString()) {
+    if (nextUsername.toString() === stored.username.toString()) {
       throw new ValidationError("core.auth.username.invalid.unchanged");
     }
 
@@ -254,7 +289,7 @@ export class AuthService {
       });
     }
 
-    const saved = await this.users.save(user.withUsername(nextUsername));
+    const saved = await this.users.save(stored.withUsername(nextUsername));
     await this.sessions.revoke({ userId: saved.id });
     return this.sessions.issue(saved.id, { amr: authAmr, acr: authAcr });
   }
@@ -272,7 +307,7 @@ export class AuthService {
     user: { passwordHash: string },
     currentPassword: string
   ): Promise<void> {
-    const valid = await verifyPassword(currentPassword, user.passwordHash);
+    const valid = await this.crypto.password.verify(currentPassword, user.passwordHash);
     if (!valid) {
       throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
     }

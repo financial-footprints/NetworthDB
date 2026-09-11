@@ -5,7 +5,7 @@ import {
   parseCommaSeparatedValue,
   parseDurationValue,
 } from "@bootstrap/config/env/parsers";
-import { APP_ENVS } from "@ndb/core";
+import { APP_ENVS, ROLES } from "@ndb/core";
 import { z } from "zod";
 
 export const durationMs = z.string().transform(parseDurationValue);
@@ -18,7 +18,7 @@ const nonNegativeInt = z
   .string()
   .transform((value) => parseBoundedInt(value, 0, "invalid-non-negative-int"));
 
-function withEnvDefault<T extends z.ZodTypeAny>(schema: T, defaultInput: string) {
+export function withEnvDefault<T extends z.ZodTypeAny>(schema: T, defaultInput: string) {
   return z.preprocess((value) => emptyToUndefined(value) ?? defaultInput, schema);
 }
 
@@ -78,8 +78,8 @@ const multifactorEnvSchema = z.object({
   MFA_LOCKOUT_TTL: durationMs,
   MFA_TOTP_SKEW: withEnvDefault(nonNegativeInt, "1"),
   MFA_MAX_FAILURES: withEnvDefault(positiveInt, "5"),
-  MFA_ENCRYPTION_KEY: optionalString,
-  MFA_REQUIRED_ROLES: envCommaSeparatedList,
+  MFA_SECRET: optionalString,
+  MFA_REQUIRED_ROLES: envCommaSeparatedList.pipe(z.array(z.enum(ROLES))),
 });
 
 const securityEnvSchema = z.object({
@@ -110,6 +110,22 @@ const corsEnvSchema = z.object({
   CORS_ALLOW_ORIGINS: envCommaSeparatedList,
 });
 
+const storageEnvSchema = z.object({
+  FILESTORE_SECRET: optionalString,
+  FILESTORE_PATH: optionalString,
+});
+
+const jobsEnvSchema = z.object({
+  JOBS_MAX_WORKERS: withEnvDefault(positiveInt, "2"),
+});
+
+const advancedSecurityEnvSchema = z.object({
+  DISABLE_ADVANCED_SECURITY: withEnvDefault(
+    z.enum(["true", "false"]).transform((value) => value === "true"),
+    "false"
+  ),
+});
+
 export const bootstrapEnvSchema = runtimeEnvSchema
   .merge(databaseEnvSchema)
   .merge(sessionEnvSchema)
@@ -117,6 +133,9 @@ export const bootstrapEnvSchema = runtimeEnvSchema
   .merge(securityEnvSchema)
   .merge(recoveryEnvSchema)
   .merge(webauthnEnvSchema)
-  .merge(corsEnvSchema);
+  .merge(corsEnvSchema)
+  .merge(storageEnvSchema)
+  .merge(jobsEnvSchema)
+  .merge(advancedSecurityEnvSchema);
 
 export type BootstrapEnv = z.infer<typeof bootstrapEnvSchema>;

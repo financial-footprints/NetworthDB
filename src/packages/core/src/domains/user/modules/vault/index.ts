@@ -1,15 +1,16 @@
-export type { VaultSlotType } from "@core/domains/user/modules/vault/embedded/vault-wrap";
 export {
-  decodeCredentialId,
-  encodeCredentialId,
-  isValidSlotType,
-  packBlob,
-  unpackBlob,
+  isVaultSlotType,
+  MAX_RECOVERY_PHRASE_SLOTS,
+  MAX_VAULT_NONCE_LEN,
+  MAX_VAULT_SLOT_LABEL,
+  MAX_VAULT_WRAP_BLOB_LEN,
+  MAX_VAULT_WRAP_CT_LEN,
   VAULT_SLOT_TYPE_PASSWORD,
   VAULT_SLOT_TYPE_RECOVERY_PHRASE,
   VAULT_SLOT_TYPE_WEBAUTHN_PRF,
-  validateE2eeNameBlob,
-} from "@core/domains/user/modules/vault/embedded/vault-wrap";
+  VAULT_SLOT_TYPES,
+  type VaultSlotType,
+} from "@core/domains/user/modules/vault/constants";
 export { VaultSlot } from "@core/domains/user/modules/vault/entities/vault-slot";
 export type {
   VaultSlotFilters,

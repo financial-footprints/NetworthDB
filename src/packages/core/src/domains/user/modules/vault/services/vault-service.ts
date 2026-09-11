@@ -1,20 +1,13 @@
-import { verifyPassword } from "@core/domains/auth/embedded/password";
 import { AUTH_ACR_AAL2 } from "@core/domains/auth/helpers";
-import type { WebAuthnCredentialRepository } from "@core/domains/auth/modules/webauthn/repositories/webauthn-credential-repository";
+import type { WebAuthnCredentialRepository } from "@core/domains/auth/repositories/webauthn-credential-repository";
+import { DisplayName } from "@core/domains/user/entities/user/display-name";
 import type { User } from "@core/domains/user/entities/user/index";
 import {
-  decodeCredentialId,
-  encodeCredentialId,
-  isValidSlotType,
   MAX_RECOVERY_PHRASE_SLOTS,
   VAULT_SLOT_TYPE_PASSWORD,
   VAULT_SLOT_TYPE_RECOVERY_PHRASE,
   VAULT_SLOT_TYPE_WEBAUTHN_PRF,
-  validateE2eeNameBlob,
-  validateSlotLabel,
-  validateSlotSalt,
-  validateSlotWrapBlob,
-} from "@core/domains/user/modules/vault/embedded/vault-wrap";
+} from "@core/domains/user/modules/vault/constants";
 import { VaultSlot } from "@core/domains/user/modules/vault/entities/vault-slot";
 import type { VaultSlotRepository } from "@core/domains/user/modules/vault/repositories/vault-slot-repository";
 import type {
@@ -24,6 +17,7 @@ import type {
   VaultSlotUpdateInput,
 } from "@core/domains/user/modules/vault/types";
 import type { UserRepository } from "@core/domains/user/repositories/user-repository";
+import type { PasswordHasher } from "@core/ports/auth";
 import {
   ConflictError,
   EntityNotFoundError,
@@ -38,7 +32,7 @@ function toPublicSlot(slot: VaultSlot): VaultSlotPublic {
     slotType: slot.slotType,
     salt: slot.salt,
     wrapBlob: slot.wrapBlob,
-    credentialId: slot.credentialId ? encodeCredentialId(slot.credentialId) : null,
+    credentialId: slot.credentialId ? VaultSlot.encodeCredentialId(slot.credentialId) : null,
     label: slot.label,
   };
 }
@@ -47,7 +41,8 @@ export class VaultService {
   constructor(
     private readonly users: UserRepository,
     private readonly vaultSlots: VaultSlotRepository,
-    private readonly webauthnCredentials: WebAuthnCredentialRepository
+    private readonly webauthnCredentials: WebAuthnCredentialRepository,
+    private readonly password: PasswordHasher
   ) {}
 
   async get(userId: string): Promise<VaultPublicState> {
@@ -55,9 +50,9 @@ export class VaultService {
     const slots = await this.vaultSlots.findByFilters({ userId: user.id });
 
     return {
-      e2eeVaultInitialized: slots.length > 0,
-      e2eeSlots: slots.map(toPublicSlot),
-      e2eeName: user.e2eeName,
+      vaultInitialized: slots.length > 0,
+      vaultSlots: slots.map(toPublicSlot),
+      displayName: user.displayName?.toString() ?? null,
     };
   }
 
@@ -65,7 +60,7 @@ export class VaultService {
     userId: string,
     authAcr: string,
     slots: VaultSlotInput[],
-    e2eeName?: string | null
+    displayName?: string | null
   ): Promise<VaultSlotPublic[]> {
     const user = await this._get(userId);
 
@@ -78,11 +73,7 @@ export class VaultService {
       throw new ConflictError("core.auth.vault.initialize.conflict.already-initialized");
     }
 
-    let nameBlob: string | null = null;
-    if (e2eeName !== undefined && e2eeName !== null && e2eeName.trim().length > 0) {
-      validateE2eeNameBlob(e2eeName);
-      nameBlob = e2eeName.trim();
-    }
+    const name = DisplayName.parseOptional(displayName);
 
     const existing: VaultSlot[] = [];
     const pending: VaultSlot[] = [];
@@ -104,8 +95,8 @@ export class VaultService {
 
     const created = await this.vaultSlots.create(pending);
     const createdSlots = Array.isArray(created) ? created : [created];
-    if (nameBlob !== null) {
-      await this.users.save(user.withE2eeName(nameBlob));
+    if (name !== null) {
+      await this.users.save(user.withDisplayName(name));
     }
 
     return createdSlots.map(toPublicSlot);
@@ -156,25 +147,25 @@ export class VaultService {
       false
     );
 
-    validateSlotSalt(input.salt);
-    validateSlotWrapBlob(input.wrapBlob);
+    const updatedAt = new Date();
+    const updated = slot.withWrap(input.salt, input.wrapBlob, updatedAt);
 
-    const [updated] = await this.vaultSlots.update(
+    const [saved] = await this.vaultSlots.update(
       { id: slot.id },
       {
-        salt: input.salt.trim(),
-        wrapBlob: input.wrapBlob.trim(),
-        updatedAt: new Date(),
+        salt: updated.salt,
+        wrapBlob: updated.wrapBlob,
+        updatedAt,
       }
     );
-    if (!updated) {
+    if (!saved) {
       throw new EntityNotFoundError("core.auth.vault.slot.not-found", {
         entityName: "VaultSlot",
         id: slot.id,
       });
     }
 
-    return toPublicSlot(updated);
+    return toPublicSlot(saved);
   }
 
   async delete(userId: string, authAcr: string, slotId: string, password?: string): Promise<void> {
@@ -196,14 +187,14 @@ export class VaultService {
 
   async update(userId: string, blob: string): Promise<void> {
     const user = await this._get(userId);
-    validateE2eeNameBlob(blob);
+    const displayName = DisplayName.parse(blob);
 
     const count = await this.vaultSlots.aggregate({ userId: user.id });
     if (count === 0) {
       throw new ConflictError("core.auth.vault.invalid.not-initialized");
     }
 
-    await this.users.save(user.withE2eeName(blob.trim()));
+    await this.users.save(user.withDisplayName(displayName));
   }
 
   async canDeleteCredential(userId: string, credentialId: Buffer): Promise<boolean> {
@@ -261,35 +252,29 @@ export class VaultService {
   }
 
   async upsertPassword(userId: string, salt: string, wrapBlob: string): Promise<void> {
-    const trimmedSalt = salt.trim();
-    const trimmedWrap = wrapBlob.trim();
-    validateSlotSalt(trimmedSalt);
-    validateSlotWrapBlob(trimmedWrap);
-
     const slots = await this.vaultSlots.findByFilters({ userId });
     const existing = slots.find((slot) => slot.slotType === VAULT_SLOT_TYPE_PASSWORD);
     const now = new Date();
 
     if (existing) {
+      const updated = existing.withWrap(salt, wrapBlob, now);
       await this.vaultSlots.update(
         { id: existing.id },
-        { salt: trimmedSalt, wrapBlob: trimmedWrap, updatedAt: now }
+        { salt: updated.salt, wrapBlob: updated.wrapBlob, updatedAt: now }
       );
       return;
     }
 
     await this.vaultSlots.create(
-      new VaultSlot(
-        crypto.randomUUID(),
+      VaultSlot.create({
         userId,
-        VAULT_SLOT_TYPE_PASSWORD,
-        trimmedSalt,
-        trimmedWrap,
-        "",
-        null,
-        now,
-        now
-      )
+        slotType: VAULT_SLOT_TYPE_PASSWORD,
+        salt,
+        wrapBlob,
+        label: "",
+        createdAt: now,
+        updatedAt: now,
+      })
     );
   }
 
@@ -326,18 +311,6 @@ export class VaultService {
     now: Date
   ): Promise<VaultSlot> {
     const slotType = input.slotType.trim();
-    if (!isValidSlotType(slotType)) {
-      throw new ValidationError("core.auth.vault.slot.invalid.type");
-    }
-
-    const salt = input.salt.trim();
-    const wrapBlob = input.wrapBlob.trim();
-    validateSlotSalt(salt);
-    validateSlotWrapBlob(wrapBlob);
-
-    const label = (input.label ?? "").trim();
-    validateSlotLabel(label);
-
     let credentialId: Buffer | null = null;
 
     switch (slotType) {
@@ -360,7 +333,7 @@ export class VaultService {
           throw new ValidationError("core.auth.vault.slot.invalid.credential-id-required");
         }
 
-        const raw = Buffer.from(decodeCredentialId(input.credentialId));
+        const raw = VaultSlot.parseCredentialId(input.credentialId);
         const credential = await findFirst(
           this.webauthnCredentials.findByFilters.bind(this.webauthnCredentials),
           { credentialId: raw }
@@ -385,17 +358,16 @@ export class VaultService {
       }
     }
 
-    return new VaultSlot(
-      crypto.randomUUID(),
+    return VaultSlot.create({
       userId,
-      slotType,
-      salt,
-      wrapBlob,
-      label,
+      slotType: input.slotType,
+      salt: input.salt,
+      wrapBlob: input.wrapBlob,
+      label: input.label,
       credentialId,
-      now,
-      now
-    );
+      createdAt: now,
+      updatedAt: now,
+    });
   }
 
   private async _authorizeSlotMutation(
@@ -481,7 +453,7 @@ export class VaultService {
       return false;
     }
 
-    return verifyPassword(password, user.passwordHash);
+    return this.password.verify(password, user.passwordHash);
   }
 
   private _hasUnlockSlot(slots: VaultSlot[]): boolean {

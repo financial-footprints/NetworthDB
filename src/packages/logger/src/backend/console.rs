@@ -8,6 +8,7 @@ pub(crate) enum Stream {
     Stderr,
 }
 
+#[derive(Clone, Copy)]
 pub(crate) struct Console(pub Option<Stream>);
 
 impl Console {

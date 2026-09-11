@@ -22,7 +22,7 @@ export function loadAuthConfig(env: BootstrapEnv, environment: AppEnv): AuthConf
 
   return {
     multifactor,
-    webauthn: loadWebAuthnConfig(env, environment, multifactor.mfaChallengeTtl),
+    webauthn: loadWebAuthnConfig(env, environment, multifactor.ttl.challenge),
     recovery: loadRecoveryConfig(env, environment),
     security: loadSecurityConfig(env),
   };

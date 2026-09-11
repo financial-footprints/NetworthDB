@@ -10,9 +10,8 @@ Never create, modify, or delete `src/packages/logger/native.d.ts`. It is regener
 ## Where to make changes instead
 
 - **NAPI bindings**: edit Rust in `src/packages/logger/src/` and run the logger RS build.
-- **JS entry glue**: edit `src/packages/logger/index.ts` to re-export native bindings and JS-only exports (e.g. `ray`). Annotate JS-only exports with types from `./native.d.ts`.
+- **JS entry glue**: edit `src/packages/logger/index.ts` to re-export native bindings. Annotate JS-only exports with types from `./native.d.ts`.
 - **Package types**: edit `src/packages/logger/exports.d.ts` to re-export NAPI types from `native.d.ts` and JS-only values from `index.ts`; `package.json` `types` points here, `default` at `index.ts`.
-- **Consumers**: import `ray` from `@ndb/logger`; use `RayManager` only when a separate instance is needed.
 
 ## Allowed
 

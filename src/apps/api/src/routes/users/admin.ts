@@ -1,20 +1,16 @@
 import { createSessionRouter, errorResponses } from "@api/config/router";
 import { jsonBody, jsonMedia, toUserListQuery } from "@api/routes/auth/helpers";
-import {
-  serializeEmpty,
-  serializePublicUser,
-  serializePublicUserList,
-} from "@api/routes/auth/serializer";
+import { serializeEmpty, serializeUser, serializeUserList } from "@api/routes/auth/serializer";
 import { sessionPrincipal } from "@ndb/middleware";
 import {
   API,
-  adminUserIdParamsSchema,
   adminUserListQuerySchema,
   emptySchema,
   patchAdminUserReqSchema,
-  publicUserListSchema,
-  publicUserSchema,
   registerUserReqSchema,
+  userListSchema,
+  userSchema,
+  uuidIdParamsSchema,
 } from "@ndb/platform";
 
 const adminRoutes = createSessionRouter()
@@ -24,7 +20,7 @@ const adminRoutes = createSessionRouter()
       path: API.users.create,
       request: { body: jsonBody(registerUserReqSchema) },
       responses: {
-        201: { content: jsonMedia(publicUserSchema), description: "User created" },
+        201: { content: jsonMedia(userSchema), description: "User created" },
         400: errorResponses[400],
         401: errorResponses[401],
         403: errorResponses[403],
@@ -32,9 +28,9 @@ const adminRoutes = createSessionRouter()
     },
     async (c) => {
       const body = c.req.valid("json");
-      const { user: actor, jwt } = sessionPrincipal(c.get("principal"));
-      const user = await c.get("services").user.register(actor, jwt.acr, body);
-      return c.json(serializePublicUser(user), 201);
+      const { user, auth } = sessionPrincipal(c.get("principal"));
+      const created = await c.get("services").auth.register(user, auth.acr, body);
+      return c.json(serializeUser(created), 201);
     }
   )
   .endpoint(
@@ -43,17 +39,17 @@ const adminRoutes = createSessionRouter()
       path: API.users.list,
       request: { query: adminUserListQuerySchema },
       responses: {
-        200: { content: jsonMedia(publicUserListSchema), description: "User list" },
+        200: { content: jsonMedia(userListSchema), description: "User list" },
         401: errorResponses[401],
         403: errorResponses[403],
       },
     },
     async (c) => {
-      const { user, jwt } = sessionPrincipal(c.get("principal"));
+      const { user, auth } = sessionPrincipal(c.get("principal"));
       const result = await c
         .get("services")
-        .user.list(user, jwt.acr, toUserListQuery(c.req.valid("query")));
-      return c.json(serializePublicUserList(result.items, result.total), 200);
+        .user.list(user, auth.acr, toUserListQuery(c.req.valid("query")));
+      return c.json(serializeUserList(result.items, result.total), 200);
     }
   )
   .endpoint(
@@ -61,11 +57,11 @@ const adminRoutes = createSessionRouter()
       method: "patch",
       path: API.users.details,
       request: {
-        params: adminUserIdParamsSchema,
+        params: uuidIdParamsSchema,
         body: jsonBody(patchAdminUserReqSchema),
       },
       responses: {
-        200: { content: jsonMedia(publicUserSchema), description: "User updated" },
+        200: { content: jsonMedia(userSchema), description: "User updated" },
         400: errorResponses[400],
         401: errorResponses[401],
         403: errorResponses[403],
@@ -74,16 +70,16 @@ const adminRoutes = createSessionRouter()
     async (c) => {
       const body = c.req.valid("json");
       const { id } = c.req.valid("param");
-      const { user: actor, jwt } = sessionPrincipal(c.get("principal"));
-      const user = await c.get("services").user.update(actor, jwt.acr, id, body);
-      return c.json(serializePublicUser(user), 200);
+      const { user, auth } = sessionPrincipal(c.get("principal"));
+      const updated = await c.get("services").user.update(user, auth.acr, id, body);
+      return c.json(serializeUser(updated), 200);
     }
   )
   .endpoint(
     {
       method: "delete",
       path: API.users.details,
-      request: { params: adminUserIdParamsSchema },
+      request: { params: uuidIdParamsSchema },
       responses: {
         200: { content: jsonMedia(emptySchema), description: "User deleted" },
         401: errorResponses[401],
@@ -92,8 +88,8 @@ const adminRoutes = createSessionRouter()
     },
     async (c) => {
       const { id } = c.req.valid("param");
-      const { user, jwt } = sessionPrincipal(c.get("principal"));
-      await c.get("services").user.delete(user, jwt.acr, id);
+      const { user, auth } = sessionPrincipal(c.get("principal"));
+      await c.get("services").user.delete(user, auth.acr, id);
       return c.json(serializeEmpty(), 200);
     }
   );

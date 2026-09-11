@@ -53,7 +53,7 @@ describe("DrizzleUserRepository", () => {
 
     const created = await repo.create(user);
     expect(created.username.toString()).toBe(user.username.toString());
-    expect(created.e2eeName).toBeNull();
+    expect(created.displayName).toBeNull();
 
     const [byUsername] = await repo.findByFilters({ username: user.username }, undefined, {
       limit: 1,

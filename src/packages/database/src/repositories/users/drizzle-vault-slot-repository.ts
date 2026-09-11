@@ -9,7 +9,6 @@ import { usersVault } from "@database/schema/users/vault";
 import type { DbClient } from "@database/types";
 import {
   ConflictError,
-  isValidSlotType,
   ONE,
   type Pagination,
   type Sort,
@@ -22,10 +21,6 @@ import {
 import { and, count, eq, type SQL } from "drizzle-orm";
 
 function mapRow(row: typeof usersVault.$inferSelect): VaultSlot {
-  if (!isValidSlotType(row.slotType)) {
-    throw new Error(`database.vault.slot.map.invalid.type.${row.slotType}`);
-  }
-
   return new VaultSlot(
     row.id,
     row.userId,

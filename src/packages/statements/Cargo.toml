@@ -1,0 +1,39 @@
+[package]
+name = "statements"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[features]
+default = ["napi"]
+napi = ["dep:napi", "dep:napi-derive"]
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[[bin]]
+name = "gen-bruno-pdf"
+path = "src/bin/gen-bruno-pdf.rs"
+
+[dependencies]
+base64 = "0.23"
+chrono = { workspace = true }
+encryption = { path = "../encryption", default-features = false }
+logger = { path = "../logger", default-features = false }
+lopdf = "0.45"
+napi = { workspace = true, optional = true }
+napi-derive = { workspace = true, optional = true }
+imap = "2.4"
+mail-parser = "0.11"
+native-tls = "0.2"
+regex = "1"
+rust_decimal = { version = "1", features = ["serde"] }
+sha2 = "0.11"
+serde = { version = "1", features = ["derive"] }
+serde_json.workspace = true
+thiserror.workspace = true
+zip = { version = "8.6", default-features = false, features = ["deflate", "aes-crypto"] }
+
+[build-dependencies]
+napi-build.workspace = true

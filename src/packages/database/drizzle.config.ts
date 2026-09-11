@@ -1,4 +1,4 @@
-import { parseDbEnv } from "@database/env";
+import { parseDbEnv } from "@database/env/db";
 import { defineConfig } from "drizzle-kit";
 
 const db = parseDbEnv();

@@ -1,0 +1,31 @@
+(Rupees)
+One Credit Card Statement (01 Mar 2024 - 31 Mar 2024)
+SUMMARY
+Full Name
+NEHA VARMA
+One Credit Card Number
+5521-88XX-XXXX-9044
+Statement Date
+01 Apr 2024
+Payment Due Date
+18 Apr 2024
+Total Amount Due
+0.00
+Minimum Amount Due
+0.00
+STATEMENT ILLUSTRATION
+Opening Balance (as on 01 Mar 2024) 0.00
+Spends (in Mar) + 0.00
+Interest Charges (including taxes) + 0.00
+Fees & Charges (including taxes) + 0.00
+Repayments & Refunds - 0.00
+New EMI - 0.00
+Paid via points - 0.00
+Total Amount Due
+=
+0.00
+Minimum Amount Due 0.00
+TRANSACTION HISTORY
+IMPORTANT INFORMATION
+In case you pay only the Minimum Amount Due or any amount lesser than Total Amount Due, interest will be
+charged on a daily basis on the unpaid amount.

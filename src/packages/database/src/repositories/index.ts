@@ -4,5 +4,8 @@ export { DrizzleRecoveryCodeRepository } from "@database/repositories/auth/drizz
 export { DrizzleSessionRepository } from "@database/repositories/auth/drizzle-session-repository";
 export { DrizzleWebAuthnCredsRepository } from "@database/repositories/auth/drizzle-webauthn-creds-repository";
 export { DrizzleWebAuthnSessionRepository } from "@database/repositories/auth/drizzle-webauthn-session-repository";
+export { DrizzleAccountRepository } from "@database/repositories/drizzle-account-repository";
+export { DrizzleJobRepository } from "@database/repositories/drizzle-job-repository";
+export { DrizzleSourcesRepository } from "@database/repositories/drizzle-sources-repository";
 export { DrizzleUserRepository } from "@database/repositories/users/drizzle-user-repository";
 export { DrizzleVaultSlotRepository } from "@database/repositories/users/drizzle-vault-slot-repository";

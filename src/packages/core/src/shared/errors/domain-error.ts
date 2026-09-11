@@ -35,7 +35,7 @@ export class DomainError extends Error {
 }
 
 export class EntityNotFoundError extends DomainError {
-  constructor(message: string, context: { entityName: string; id: string }, cause?: Error) {
+  constructor(message: string, context?: Record<string, unknown>, cause?: Error) {
     super(message, {
       code: "not_found",
       context,
@@ -49,21 +49,15 @@ export class ValidationError extends DomainError {
 
   constructor(
     message: string,
-    options?: {
-      field?: string;
-      value?: unknown;
-      cause?: Error;
-    }
+    options?: Record<string, unknown> & { field?: string; value?: unknown; cause?: Error }
   ) {
+    const { cause, field, ...context } = options ?? {};
     super(message, {
       code: "invalid_input",
-      context: {
-        field: options?.field,
-        value: options?.value,
-      },
-      cause: options?.cause,
+      context: Object.keys(context).length > 0 ? context : undefined,
+      cause,
     });
-    this.field = options?.field;
+    this.field = field;
   }
 }
 

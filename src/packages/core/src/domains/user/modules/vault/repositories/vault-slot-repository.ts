@@ -1,4 +1,4 @@
-import type { VaultSlotType } from "@core/domains/user/modules/vault/embedded/vault-wrap";
+import type { VaultSlotType } from "@core/domains/user/modules/vault/constants";
 import type { VaultSlot } from "@core/domains/user/modules/vault/entities/vault-slot";
 import type { Pagination, Sort } from "@core/shared/query";
 

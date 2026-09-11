@@ -29,13 +29,13 @@ Drizzle preserves `pgTable` property order in generated `CREATE TABLE` SQL. Post
 
 ```typescript
 export const authSessions = pgTable("auth_sessions", {
-  accessExpiresAt: timestamp("access_expires_at").notNull(),
+  sessionExpiresAt: timestamp("session_expires_at").notNull(),
   refreshExpiresAt: timestamp("refresh_expires_at").notNull(),
   revokedAt: timestamp("revoked_at"),
   createdAt: timestamp("created_at").notNull(),
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  accessHash: text("access_hash").notNull(),
+  sessionHash: text("session_hash").notNull(),
   refreshHash: text("refresh_hash").notNull(),
 });
 ```

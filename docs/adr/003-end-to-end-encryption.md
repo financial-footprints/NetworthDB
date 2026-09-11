@@ -7,8 +7,8 @@ Accepted
 ## Context
 
 Sensitive application data must remain confidential even if a host operator can read
-NetworthDB and NetworthSync databases or configuration (including
-`MFA_ENCRYPTION_KEY`). [ADR-002](002-authentication.md) covers authentication;
+the NetworthDB Postgres database, on-disk storage, or configuration (including
+`MFA_SECRET`). [ADR-002](002-authentication.md) covers authentication;
 this ADR defines the client-side encryption boundary.
 
 Constraints:
@@ -28,14 +28,13 @@ Constraints:
 
 ### Confidentiality boundary
 
-| Layer        | Stores                                                                       | Can decrypt E2E fields? |
-| ------------ | ---------------------------------------------------------------------------- | ----------------------- |
-| NetworthDOM  | Session DEK (tab), plaintext only in memory/UI                               | Yes, after unlock       |
-| NetworthDB   | Opaque `e2ee_*` field blobs; `users_vault` rows; Argon2id recovery-email hash | No                      |
-| NetworthSync | Opaque ciphertext for financial payloads                                     | No                      |
+| Layer        | Stores                                                                                      | Can decrypt E2E fields? |
+| ------------ | ------------------------------------------------------------------------------------------- | ----------------------- |
+| NetworthDOM  | Session DEK (tab), plaintext only in memory/UI                                              | Yes, after unlock       |
+| NetworthDB   | Opaque tier-1 field blobs; `users_vault` rows; Argon2id recovery-email hash; tier-2 blobs | No (tier 1 only)        |
 
 Login `username`, roles, MFA enrollment flags, and **TOTP secrets** (server AES with
-`MFA_ENCRYPTION_KEY`) are **not** E2E. Recovery email is stored as a **hash** for
+`MFA_SECRET`) are **not** E2E. Recovery email is stored as a **hash** for
 verification only.
 
 ### Storage
@@ -43,7 +42,8 @@ verification only.
 | Location              | E2E?                         | Format                                        |
 | --------------------- | ---------------------------- | --------------------------------------------- |
 | `users_vault` rows    | Yes — wrapped DEK per slot   | `salt` (base64url) + `wrap_blob` (`nonce.ct`) |
-| `users.e2ee_name`     | Yes — sealed real name       | `nonce.ct` blob                               |
+| `users.display_name`  | Yes — sealed real name       | Opaque text from client                       |
+| `accounts.account_number` | Yes — sealed account number | Opaque text from client                  |
 
 ### Slot types (`users_vault`)
 
@@ -59,22 +59,27 @@ opaque wraps.
 
 ### Blob format
 
-Sealed blobs encode nonce and ciphertext as:
+Vault slot `wrap_blob` values and optional client-side sealed fields may encode
+nonce and ciphertext as:
 
 ```text
 {nonce_base64url}.{ciphertext_base64url}
 ```
 
-The separator `.` is outside the base64url alphabet. Pack/unpack is shared between
-NetworthDOM and NetworthDB validation
-(`src/packages/core/src/domains/user/modules/vault/embedded/vault-wrap.ts`).
+The separator `.` is outside the base64url alphabet. Pack/unpack for **vault slot
+wraps** is validated on the server
+(`VaultSlot.packWrap` / `VaultSlot.unpackWrap` in `vault-slot.ts`).
+
+Tier-1 API fields (`display_name`, `account_number`) are stored as opaque text.
+NetworthDB validates non-empty string and max length only — it does not parse blob
+shape or know whether the client encrypted the value.
 
 ### Key hierarchy
 
 1. **DEK** — random 256-bit AES-GCM key, generated in the browser.
 2. **KEK per slot** — derived from that slot's secret; wraps the DEK via AES-GCM.
-3. **Fields** — AES-GCM sealed with the DEK; stored as `e2ee_name` and additional
-   `e2ee_*` columns as needed.
+3. **Fields** — AES-GCM sealed with the DEK; stored as opaque text columns such as
+   `display_name` and `account_number`.
 
 ### Auth vs vault separation
 
@@ -102,19 +107,23 @@ leaves the browser; the server stores only opaque wraps.
 
 | Endpoint                                  | Purpose                                                       |
 | ----------------------------------------- | ------------------------------------------------------------- |
-| `GET /api/v1/users/me`                    | Returns `e2ee_vault_initialized`, `e2ee_slots[]`, `e2ee_name` |
-| `PATCH /api/v1/users/me`                  | `username`, `e2ee_name` only (no vault wrap fields)           |
-| `POST /api/v1/users/me/vault/initialize`  | First-time vault + slots                                      |
+| `GET /api/v1/users/me`                    | Returns `vault_initialized`, `vault_slots[]`, `display_name` |
+| `PATCH /api/v1/users/me`                  | `username`, `display_name` only (no vault wrap fields)        |
+| `POST /api/v1/users/me/vault/initialize`  | First-time vault + slots; optional `display_name`             |
 | `POST /api/v1/users/me/vault/slots`       | Add slot                                                      |
 | `PUT /api/v1/users/me/vault/slots/{id}`   | Rotate slot wrap                                              |
 | `DELETE /api/v1/users/me/vault/slots/{id}` | Remove slot (409 if last)                                   |
+
+Account APIs accept and return `account_number` as opaque text on create, list,
+get, patch, and account-details responses. The server does not inspect encryption
+state.
 
 ### Advanced recovery (auth + data)
 
 | Endpoint                                              | Purpose                                                                                       |
 | ----------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | `POST /api/v1/auth/recovery/advanced/begin`           | Email token when recovery email matches and user has `recovery_phrase` or `webauthn_prf` slot |
-| `POST /api/v1/auth/recovery/advanced/context`         | `e2ee_vault_initialized`, `e2ee_slots[]`, `vault_recovery_methods` for token                |
+| `POST /api/v1/auth/recovery/advanced/context`         | `vault_initialized`, `vault_slots[]`, `vault_recovery_methods` for token                      |
 | `POST /api/v1/auth/recovery/advanced/webauthn/begin`  | WebAuthn assertion for vault PRF passkeys (before complete wipes credentials)                 |
 | `POST /api/v1/auth/recovery/advanced/complete`      | New password, optional `password_slot` re-wrap, clears MFA                                    |
 
@@ -144,7 +153,8 @@ address the user typed.
 
 - Sensitive data remains confidential even with full database and config access.
 - Multi-slot vault supports password, recovery phrase, and passkey unlock paths.
-- Server stores and validates opaque blobs only — no DEK or plaintext secrets.
+- Server stores opaque text for tier-1 fields and validates vault wrap shape only
+  where required — no DEK or plaintext secrets.
 
 ### Negative
 
@@ -153,7 +163,7 @@ address the user typed.
 
 ### Neutral
 
-- Vault domain logic lives in `@ndb/core`; HTTP routes in `src/apps/api`.
+- Vault slot entities and validation live in `@ndb/core`; `VaultService` ceremonies in `@ndb/auth`; HTTP routes in `src/apps/api`.
 
 ### NetworthDOM
 
@@ -162,10 +172,10 @@ address the user typed.
 
 ### NetworthDB
 
-- `users_vault` table; slot validation in
-  `src/packages/core/src/domains/user/modules/vault/embedded/vault-wrap.ts`;
-  `VaultService` in
-  `src/packages/core/src/domains/user/modules/vault/services/vault-service.ts`;
+- `users.display_name`, `accounts.account_number` — opaque text columns;
+  `users_vault` table for slot wraps; slot validation in
+  `src/packages/core/src/domains/user/modules/vault/entities/vault-slot.ts`;
+  `VaultService` in `@ndb/auth` (`src/vault.ts`);
   vault routes in `src/apps/api/src/routes/users/vault.ts`.
 
 ## References

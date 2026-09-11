@@ -1,0 +1,38 @@
+{
+  "name": "@ndb/statements",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./exports.d.ts",
+      "default": "./index.ts"
+    }
+  },
+  "files": [
+    "index.ts",
+    "native.d.ts",
+    "exports.d.ts",
+    "src/**/*.ts",
+    "*.node"
+  ],
+  "napi": {
+    "binaryName": "statements",
+    "constEnum": false
+  },
+  "scripts": {
+    "build": "napi build --release --no-js --dts native.d.ts --manifest-path ../../../Cargo.toml --package statements",
+    "build:debug": "napi build --no-js --dts native.d.ts --manifest-path ../../../Cargo.toml --package statements",
+    "dev": "bash ../../scripts/napi.sh",
+    "test": "bun test ./tests",
+    "type-check": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@ndb/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.4.1",
+    "@types/node": "^26.4.1",
+    "typescript": "~7.0.2"
+  }
+}

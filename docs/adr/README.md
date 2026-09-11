@@ -14,3 +14,6 @@ To add a new ADR:
 - [001 - Domain-Driven Design and Clean Architecture](./001-domain-driven-design.md)
 - [002 - Authentication](./002-authentication.md)
 - [003 - End-to-end encryption](./003-end-to-end-encryption.md)
+- [004 - Data encryption policy](./004-data-encryption-policy.md)
+- [005 - Statement compute](./005-statements-compute.md)
+- [006 - TypeScript domain types; statements Rust + adapter](./006-type-ownership.md)

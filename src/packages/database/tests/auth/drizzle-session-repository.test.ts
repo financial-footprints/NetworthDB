@@ -64,7 +64,7 @@ describe("DrizzleSessionRepository", () => {
     await db.close();
   });
 
-  test("creates and finds sessions by access and refresh hashes", async () => {
+  test("creates and finds sessions by session and refresh hashes", async () => {
     if (!db) {
       throw new Error("database client was not created");
     }
@@ -81,12 +81,12 @@ describe("DrizzleSessionRepository", () => {
 
     expect(created.userId).toBe(user.id);
 
-    const [byAccess] = await sessionRepo.findByFilters(
-      { accessHash: session.accessHash },
+    const [bySession] = await sessionRepo.findByFilters(
+      { sessionHash: session.sessionHash },
       undefined,
       { limit: 1, offset: 0 }
     );
-    expect(byAccess?.id).toBe(session.id);
+    expect(bySession?.id).toBe(session.id);
 
     const [byRefresh] = await sessionRepo.findByFilters(
       { refreshHash: session.refreshHash },
@@ -113,7 +113,7 @@ describe("DrizzleSessionRepository", () => {
 
     await sessionRepo.delete({ userId: user.id });
     const [deleted] = await sessionRepo.findByFilters(
-      { accessHash: session.accessHash },
+      { sessionHash: session.sessionHash },
       undefined,
       { limit: 1, offset: 0 }
     );
@@ -136,21 +136,25 @@ describe("DrizzleSessionRepository", () => {
     await sessionRepo.create(session);
 
     const rotated = session.withRotatedTokens({
-      accessHash: `access-${crypto.randomUUID()}`,
+      sessionHash: `session-${crypto.randomUUID()}`,
       refreshHash: `refresh-${crypto.randomUUID()}`,
-      accessExpiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      sessionExpiresAt: new Date(Date.now() + 30 * 60 * 1000),
       refreshExpiresAt: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
     });
     const saved = await sessionRepo.save(rotated);
-    expect(saved.accessHash).toBe(rotated.accessHash);
+    expect(saved.sessionHash).toBe(rotated.sessionHash);
 
     const revoked = saved.withRevoked(new Date());
     await sessionRepo.save(revoked);
 
-    const [found] = await sessionRepo.findByFilters({ accessHash: rotated.accessHash }, undefined, {
-      limit: 1,
-      offset: 0,
-    });
+    const [found] = await sessionRepo.findByFilters(
+      { sessionHash: rotated.sessionHash },
+      undefined,
+      {
+        limit: 1,
+        offset: 0,
+      }
+    );
     expect(found?.revokedAt).not.toBeNull();
   });
 });

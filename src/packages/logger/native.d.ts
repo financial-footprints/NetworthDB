@@ -2,36 +2,36 @@
 /* eslint-disable */
 
 export declare class Logger {
-  debug(msg: string, context?: LogContext): void;
-  info(msg: string, context?: LogContext): void;
-  warn(msg: string, context?: LogContext): void;
-  error(msg: string, context?: LogContext): void;
-  child(context: LogContext): Logger;
+  debug(msg: string, context?: LogContext): void
+  info(msg: string, context?: LogContext): void
+  warn(msg: string, context?: LogContext): void
+  error(msg: string, context?: LogContext): void
+  child(context: LogContext): Logger
 }
-export type LoggerHandle = Logger;
+export type LoggerHandle = Logger
 
 export declare class RayManager {
-  constructor();
-  setActor(actorId: string): void;
-  current(): RayContext;
-  require(): string;
+  constructor()
+  setActor(actorId: string): void
+  current(): RayContext
+  require(): string
 }
-export type RayHandle = RayManager;
+export type RayHandle = RayManager
 
-export declare function createLogger(options: CreateLoggerOptions): Logger;
+export declare function createLogger(options: CreateLoggerOptions): Logger
 
 export interface CreateLoggerOptions {
-  level: LogLevel;
-  app: string;
-  destination?: LogDestination;
-  defaultContext?: LogContext;
+  level: LogLevel
+  app: string
+  destination?: LogDestination
+  defaultContext?: LogContext
 }
 
-export type LogDestination = "console" | "stdout" | "stderr";
+export type LogDestination = 'console' | 'stdout' | 'stderr'
 
-export type LogLevel = "debug" | "info" | "warn" | "error";
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 export interface RayContext {
-  rayId?: string;
-  actorId?: string;
+  rayId?: string
+  actorId?: string
 }

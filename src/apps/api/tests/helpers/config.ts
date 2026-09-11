@@ -1,47 +1,81 @@
 import type { ApiConfig, ApiServices, HealthService } from "@ndb/bootstrap";
 import { UserService } from "@ndb/core";
 import { API_PREFIX } from "@ndb/platform";
+import { createStatementsTestServices } from "@tests/api/helpers/statements-test-services";
 import {
   CapturingEmailSender,
   TEST_AUTH_RATE_WINDOW_MS,
+  TEST_MFA_SECRET,
   TEST_MULTIFACTOR_CONFIG,
   TEST_RECOVERY_CONFIG,
-  TEST_REFRESH_TTL_MS,
-  TEST_SESSION_TTL_MS,
+  TEST_REFRESH_TTL,
+  TEST_SESSION_TTL,
   TEST_WEBAUTHN_CONFIG,
-} from "@tests/core/helpers/auth";
-import { createInMemoryAuthRepos, wireInMemoryAuth } from "@tests/core/helpers/auth/wiring";
+} from "@tests/auth/helpers";
+import { createInMemoryAuthRepos, wireInMemoryAuth } from "@tests/auth/helpers/wiring";
+
+const TEST_FILESTORE_SECRET = Buffer.from(
+  "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "hex"
+);
 
 export function fakeConfig(): ApiConfig {
   return {
-    host: "127.0.0.1",
-    port: 8000,
-    logLevel: "info",
-    apiPrefix: API_PREFIX,
-    environment: "local",
-    sessionTtl: TEST_SESSION_TTL_MS,
-    refreshTtl: TEST_REFRESH_TTL_MS,
-    multifactor: {
-      mfaEncryptionKey: TEST_MULTIFACTOR_CONFIG.mfaEncryptionKey,
-      mfaChallengeTtl: TEST_MULTIFACTOR_CONFIG.mfaChallengeTtl,
-      mfaTotpSkew: TEST_MULTIFACTOR_CONFIG.mfaTotpSkew,
-      mfaMaxFailures: TEST_MULTIFACTOR_CONFIG.mfaMaxFailures,
-      mfaLockoutTtl: TEST_MULTIFACTOR_CONFIG.mfaLockoutTtl,
-      mfaRequiredRoles: TEST_MULTIFACTOR_CONFIG.mfaRequiredRoles,
+    ttl: {
+      session: TEST_SESSION_TTL,
+      refresh: TEST_REFRESH_TTL,
     },
-    webauthn: TEST_WEBAUTHN_CONFIG,
-    recovery: {
-      recoveryAppBaseUrl: null,
-      passwordTokenTtlMs: TEST_RECOVERY_CONFIG.passwordTokenTtlMs,
-      advancedTokenTtlMs: TEST_RECOVERY_CONFIG.advancedTokenTtlMs,
-      email: { channel: "console" },
+    auth: {
+      webauthn: {
+        rp: null,
+        ttl: TEST_WEBAUTHN_CONFIG.ttl,
+      },
+      recovery: {
+        recoveryAppBaseUrl: null,
+        ttl: TEST_RECOVERY_CONFIG.ttl,
+        email: { channel: "console" },
+      },
+      security: {
+        rate: {
+          limit: 1000,
+          windowMs: TEST_AUTH_RATE_WINDOW_MS,
+        },
+        kvstore: {
+          url: "redis://127.0.0.1:6379/0",
+        },
+      },
+      multifactor: {
+        encryptionKey: TEST_MFA_SECRET,
+        totpSkew: TEST_MULTIFACTOR_CONFIG.mfaTotpSkew,
+        ttl: TEST_MULTIFACTOR_CONFIG.ttl,
+        lockout: {
+          maxFailures: TEST_MULTIFACTOR_CONFIG.mfaMaxFailures,
+        },
+        requiredRoles: TEST_MULTIFACTOR_CONFIG.mfaRequiredRoles,
+      },
     },
-    security: {
-      authRateLimit: 1000,
-      authRateWindowMs: TEST_AUTH_RATE_WINDOW_MS,
-      kvstoreUrl: "redis://127.0.0.1:6379/0",
+    app: {
+      host: "127.0.0.1",
+      port: 8000,
+      url: API_PREFIX,
+      logLevel: "info",
+      environment: "local",
     },
-    corsAllowOrigins: [],
+    cors: {
+      allowedOrigins: [],
+    },
+    encryption: {
+      enabled: false,
+      key: TEST_FILESTORE_SECRET,
+    },
+    jobs: {
+      workers: 2,
+    },
+    advancedSecurity: {
+      disabled: false,
+      pipelineTrace: false,
+      sensitiveBackups: false,
+    },
   };
 }
 
@@ -50,11 +84,17 @@ export function fakeServices(): ApiServices {
   const emailSender = new CapturingEmailSender();
   const { auth, vault } = wireInMemoryAuth(repos, emailSender);
 
+  const pipeline = createStatementsTestServices();
+
   return {
     health: {
       check: async () => ({ ok: true }),
     } as HealthService,
-    user: new UserService(repos.users, auth, "local"),
+    user: new UserService(repos.users, auth),
+    account: pipeline.account,
+    sources: pipeline.sources,
+    job: pipeline.job,
+    jobRunner: pipeline.jobRunner,
     vault,
     auth,
   };

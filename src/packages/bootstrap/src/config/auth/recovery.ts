@@ -7,8 +7,10 @@ const emailChannelSchema = z.enum(["console", "smtp"]);
 
 export type RecoveryConfig = {
   recoveryAppBaseUrl: string | null;
-  passwordTokenTtlMs: number;
-  advancedTokenTtlMs: number;
+  ttl: {
+    password: number;
+    advanced: number;
+  };
   email: EmailDeliveryConfig;
 };
 
@@ -40,8 +42,10 @@ export function loadRecoveryConfig(env: BootstrapEnv, environment: AppEnv): Reco
 
   return {
     recoveryAppBaseUrl: getEnv(env, "RECOVERY_APP_BASE_URL", envUrl, "optional"),
-    passwordTokenTtlMs: env.RECOVERY_PASSWORD_TOKEN_TTL,
-    advancedTokenTtlMs: env.RECOVERY_ADVANCED_TOKEN_TTL,
+    ttl: {
+      password: env.RECOVERY_PASSWORD_TOKEN_TTL,
+      advanced: env.RECOVERY_ADVANCED_TOKEN_TTL,
+    },
     email,
   };
 }

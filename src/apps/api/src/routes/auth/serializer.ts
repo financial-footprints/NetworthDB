@@ -1,7 +1,9 @@
 import type {
+  AdvancedRecoveryContext,
   MultifactorChallengeResponse,
-  PublicUser,
+  PublicMultifactorState,
   SessionTokenPair,
+  User,
   VaultPublicState,
   VaultSlotPublic,
   WebAuthnBeginResponse,
@@ -12,11 +14,11 @@ import {
   meDetailsSchema,
   messageSchema,
   mfaChallengeSchema,
-  publicUserListSchema,
-  publicUserSchema,
   recoveryCodeSchema,
   sessionTokenSchema,
   totpBeginSchema,
+  userListSchema,
+  userSchema,
   vaultSlotSchema,
   vaultSlotsSchema,
   webauthnCredSchema,
@@ -28,7 +30,6 @@ export function serializeSessionTokens(pair: SessionTokenPair) {
     data: {
       session_token: pair.sessionToken,
       refresh_token: pair.refreshToken,
-      token_type: pair.tokenType,
       expires_in: pair.expiresIn,
     },
     errors: [],
@@ -47,11 +48,11 @@ export function serializeMfaChallenge(result: MultifactorChallengeResponse) {
   });
 }
 
-export function serializePublicUser(user: PublicUser) {
-  return publicUserSchema.parse({
+export function serializeUser(user: User) {
+  return userSchema.parse({
     data: {
       id: user.id,
-      username: user.username,
+      username: user.username.toString(),
       role: user.role,
       multifactor_enabled: user.multifactorEnabled,
       created_at: user.createdAt.toISOString(),
@@ -78,20 +79,24 @@ export function serializeVaultSlotData(slot: VaultSlotPublic) {
   };
 }
 
-export function serializeMeDetails(user: PublicUser, vault: VaultPublicState) {
+export function serializeMeDetails(
+  user: User,
+  vault: VaultPublicState,
+  multifactorState: PublicMultifactorState
+) {
   return meDetailsSchema.parse({
     data: {
       id: user.id,
-      username: user.username,
+      username: user.username.toString(),
       role: user.role,
       multifactor_enabled: user.multifactorEnabled,
-      multifactor_methods: user.multifactorMethods,
-      recovery_codes_enabled: user.recoveryCodesEnabled,
-      recovery_email_enabled: user.recoveryEmailEnabled,
+      multifactor_methods: multifactorState.multifactorMethods,
+      recovery_codes_enabled: multifactorState.recoveryCodesEnabled,
+      recovery_email_enabled: user.hasRecoveryEmail(),
       recovery_email_set_at: user.recoveryEmailSetAt?.toISOString() ?? null,
-      e2ee_vault_initialized: vault.e2eeVaultInitialized,
-      e2ee_slots: vault.e2eeSlots.map(serializeVaultSlotData),
-      e2ee_name: vault.e2eeName,
+      vault_initialized: vault.vaultInitialized,
+      vault_slots: vault.vaultSlots.map(serializeVaultSlotData),
+      display_name: vault.displayName,
     },
     errors: [],
   });
@@ -123,16 +128,12 @@ export function serializeRecoveryCodes(codes: string[]) {
   return recoveryCodeSchema.parse({ data: { recovery_codes: codes }, errors: [] });
 }
 
-export function serializeAdvCtx(context: {
-  e2eeVaultInitialized: boolean;
-  e2eeSlots: VaultSlotPublic[];
-  vaultRecoveryMethods: string[];
-}) {
+export function serializeAdvCtx(context: AdvancedRecoveryContext) {
   return advCtxSchema.parse({
     data: {
-      e2ee_vault_initialized: context.e2eeVaultInitialized,
-      e2ee_slots: context.e2eeSlots.map(serializeVaultSlotData),
-      vault_recovery_methods: context.vaultRecoveryMethods,
+      vault_initialized: context.vault.initialize,
+      vault_slots: context.vault.slots.map(serializeVaultSlotData),
+      vault_recovery_methods: context.vault.recoveryMethods,
     },
     errors: [],
   });
@@ -140,7 +141,7 @@ export function serializeAdvCtx(context: {
 
 export function serializeVaultSlots(slots: VaultSlotPublic[]) {
   return vaultSlotsSchema.parse({
-    data: { e2ee_slots: slots.map(serializeVaultSlotData) },
+    data: { vault_slots: slots.map(serializeVaultSlotData) },
     errors: [],
   });
 }
@@ -162,10 +163,10 @@ export function serializeWebauthnCreds(
   });
 }
 
-export function serializePublicUserList(items: PublicUser[], total: number) {
-  return publicUserListSchema.parse({
+export function serializeUserList(items: User[], total: number) {
+  return userListSchema.parse({
     data: {
-      items: items.map((user) => serializePublicUser(user).data),
+      items: items.map((item) => serializeUser(item).data),
       total,
     },
     errors: [],

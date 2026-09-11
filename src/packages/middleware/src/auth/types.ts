@@ -1,9 +1,9 @@
-import type { PublicUser, ResolvedMultifactorBearer } from "@ndb/core";
+import type { ResolvedMultifactorBearer, User } from "@ndb/core";
 
 export type Principal = {
-  user: PublicUser;
+  user: User;
   session?: { id: string };
-  jwt?: { acr: string; amr: string };
+  auth?: { acr: string; amr: string };
   multifactor?: {
     token: string;
     bearer: ResolvedMultifactorBearer;
@@ -11,13 +11,13 @@ export type Principal = {
 };
 
 export type SessionPrincipal = {
-  user: PublicUser;
+  user: User;
   session: { id: string };
-  jwt: { acr: string; amr: string };
+  auth: { acr: string; amr: string };
 };
 
 export type MultifactorPrincipal = {
-  user: PublicUser;
+  user: User;
   multifactor: { token: string; bearer: ResolvedMultifactorBearer };
-  jwt?: { acr: string; amr: string };
+  auth?: { acr: string; amr: string };
 };

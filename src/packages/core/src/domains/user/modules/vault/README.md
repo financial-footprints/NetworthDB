@@ -1,17 +1,17 @@
 # User vault module
 
-User-owned E2EE vault slots. Persisted in `users_vault` (see `packages/database/src/schema/users/vault.ts`).
+User-owned vault slots. Persisted in `users_vault` (see `packages/database/src/schema/users/vault.ts`).
 
 ## Layout
 
 | Path | Contents |
 | --- | --- |
-| [`embedded/vault-wrap.ts`](embedded/vault-wrap.ts) | Slot crypto, blob packing, validation |
-| [`entities/vault-slot.ts`](entities/vault-slot.ts) | `VaultSlot` |
-| [`repositories/vault-slot-repository.ts`](repositories/vault-slot-repository.ts) | Vault slot persistence port |
-| [`services/vault-service.ts`](services/vault-service.ts) | Initialize, add, rotate, delete slots |
-| [`types.ts`](types.ts) | `VaultSlotInput`, `VaultPublicState`, etc. |
+| `constants.ts` | Slot types, size limits, `isVaultSlotType` |
+| `entities/vault-slot.ts` | `VaultSlot` aggregate; field validation, wrap wire format, credential id encode/decode |
+| `repositories/vault-slot-repository.ts` | Vault slot persistence port |
+| `services/vault-service.ts` | `VaultService` (initialize, add, rotate, delete slots) |
+| `types.ts` | `VaultSlotInput`, `VaultPublicState`, etc. |
 
 ## Cross-domain dependency
 
-`VaultService` depends on `auth/modules/webauthn/WebAuthnCredentialRepository` to validate PRF slots against registered credentials. Composition injects `VaultService` into AuthService; HTTP uses `services.vault`.
+`VaultService` depends on `auth/repositories/webauthn-credential-repository` to validate PRF slots against registered credentials. Bootstrap constructs `VaultService` and injects it into `AuthService`; HTTP uses `services.vault`.

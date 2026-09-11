@@ -1,23 +1,45 @@
 // Paths
 
-// Auth — account
+export { API, API_PREFIX } from "@platform/endpoints";
+export {
+  ACCOUNTS_JSON_NAME,
+  backupAccountsFileSchema,
+  backupSourcesFileSchema,
+  SOURCES_JSON_NAME,
+} from "@platform/endpoints/accounts/backup";
+export {
+  accountFileDownloadParamsSchema,
+  accountFileDownloadQuerySchema,
+} from "@platform/endpoints/accounts/files";
+export {
+  accountDetailsSchema,
+  accountIdParamsSchema,
+  accountListQuerySchema,
+  accountListSchema,
+  accountSchema,
+  bankListSchema,
+  createAccountReqSchema,
+  patchAccountReqSchema,
+} from "@platform/endpoints/accounts/index";
+export {
+  statementSyncCreatedSchema,
+  statementSyncReqSchema,
+} from "@platform/endpoints/accounts/statements";
 export {
   meDetailsSchema,
   messageSchema,
   patchAdminUserReqSchema,
   patchMeReqSchema,
   patchMeSchema,
-  publicUserListSchema,
-  publicUserSchema,
   registerUserReqSchema,
-} from "@platform/auth/account";
-// Auth — admin
+  userListSchema,
+  userSchema,
+} from "@platform/endpoints/auth/account";
 export {
   type AdminUserListQuery,
-  adminUserIdParamsSchema,
   adminUserListQuerySchema,
-} from "@platform/auth/admin";
-// Auth — multifactor
+  uuidIdParamsSchema,
+} from "@platform/endpoints/auth/admin";
 export {
   mfaProofReqSchema,
   mfaVerifyReqSchema,
@@ -28,8 +50,7 @@ export {
   webauthnCredSchema,
   webauthnFinishReqSchema,
   webauthnSessionSchema,
-} from "@platform/auth/multifactor";
-// Auth — recovery
+} from "@platform/endpoints/auth/multifactor";
 export {
   advCompleteReqSchema,
   advCompleteSchema,
@@ -37,8 +58,7 @@ export {
   pwResetBeginReqSchema,
   pwResetCompleteReqSchema,
   recoveryTokenReqSchema,
-} from "@platform/auth/recovery";
-// Auth — session
+} from "@platform/endpoints/auth/recovery";
 export {
   emptySchema,
   loginReqSchema,
@@ -46,8 +66,7 @@ export {
   mfaChallengeSchema,
   refreshReqSchema,
   sessionTokenSchema,
-} from "@platform/auth/session";
-// Auth — vault
+} from "@platform/endpoints/auth/session";
 export {
   vaultAddSlotReqSchema,
   vaultInitReqSchema,
@@ -55,11 +74,22 @@ export {
   vaultSlotSchema,
   vaultSlotsSchema,
   vaultSlotUpdateReqSchema,
-} from "@platform/auth/vault";
-export { API, API_PREFIX } from "@platform/endpoints";
-// Health
-export { healthResponseSchema } from "@platform/health";
-// HTTP errors
+} from "@platform/endpoints/auth/vault";
+export { configSchema } from "@platform/endpoints/config";
+export { healthResponseSchema } from "@platform/endpoints/health";
+export {
+  jobCreatedSchema,
+  jobIdParamsSchema,
+  jobListSchema,
+  jobSchema,
+  jobsCancelQuerySchema,
+  jobsCancelSchema,
+} from "@platform/endpoints/jobs";
+export {
+  putSourcesReqSchema,
+  sourceSchema,
+  sourcesSchema,
+} from "@platform/endpoints/sources";
 export {
   type ApiErrorResponse,
   apiErrorResponseSchema,

@@ -4,11 +4,17 @@ import { RateLimiterRedis, type RateLimiterRes } from "rate-limiter-flexible";
 import { createClient, type RedisClientType } from "redis";
 
 export type KvstoreAuthLimitsConfig = {
-  kvstoreUrl: string;
-  requestLimit: number;
-  requestWindowMs: number;
-  maxPasswordFailures: number;
-  passwordLockoutDurationMs: number;
+  kvstore: {
+    url: string;
+  };
+  rate: {
+    limit: number;
+    windowMs: number;
+  };
+  lockout: {
+    maxFailures: number;
+    ttl: number;
+  };
   logger: Logger;
 };
 
@@ -104,20 +110,20 @@ export class KvstoreAuthLimits {
   }
 
   static async connect(config: KvstoreAuthLimitsConfig): Promise<KvstoreAuthLimits> {
-    const client: RedisClientType = createClient({ url: config.kvstoreUrl });
+    const client: RedisClientType = createClient({ url: config.kvstore.url });
     client.on("error", () => {
       // Per-operation fail-open; connection errors surface at consume/get time.
     });
     await client.connect();
 
-    const requestWindowSeconds = Math.max(1, Math.floor(config.requestWindowMs / 1000));
-    const lockoutSeconds = Math.max(1, Math.floor(config.passwordLockoutDurationMs / 1000));
+    const requestWindowSeconds = Math.max(1, Math.floor(config.rate.windowMs / 1000));
+    const lockoutSeconds = Math.max(1, Math.floor(config.lockout.ttl / 1000));
 
     const requestRateLimiter = new RateLimiterRedis({
       storeClient: client,
       useRedisPackage: true,
       keyPrefix: "ndb:ratelimit:",
-      points: config.requestLimit,
+      points: config.rate.limit,
       duration: requestWindowSeconds,
     });
 
@@ -125,7 +131,7 @@ export class KvstoreAuthLimits {
       storeClient: client,
       useRedisPackage: true,
       keyPrefix: "ndb:pwdlock:",
-      points: config.maxPasswordFailures,
+      points: config.lockout.maxFailures,
       duration: lockoutSeconds,
       blockDuration: lockoutSeconds,
     });

@@ -4,15 +4,15 @@ import { VAULT_SLOT_TYPE_PASSWORD, VAULT_SLOT_TYPE_RECOVERY_PHRASE } from "@ndb/
 import { API } from "@ndb/platform";
 import {
   type AdvancedRecoveryContextResponse,
-  type PublicUserResponse,
   readApiJson,
   type SessionTokenPair,
+  type UserResponse,
 } from "@tests/api/helpers/api-response";
 import { createAuthTestServices, loginAs } from "@tests/api/helpers/auth-services";
 import { fakeConfig } from "@tests/api/helpers/config";
 import { createMemoryLogger } from "@tests/api/helpers/memory.logger";
+import { tokenFromEmail } from "@tests/auth/helpers";
 import { firstElement } from "@tests/core/helpers/assert";
-import { tokenFromEmail } from "@tests/core/helpers/auth";
 
 const DUMMY_SALT = "AQIDBAUGBwgJCgsMDQ4PEA";
 const DUMMY_WRAP = "abc.def";
@@ -85,7 +85,7 @@ describe("auth advanced recovery routes", () => {
     });
     expect(contextResponse.status).toBe(200);
     const contextBody = await readApiJson<AdvancedRecoveryContextResponse>(contextResponse);
-    expect(contextBody.data.e2ee_vault_initialized).toBe(true);
+    expect(contextBody.data.vault_initialized).toBe(true);
     expect(contextBody.data.vault_recovery_methods).toEqual([VAULT_SLOT_TYPE_RECOVERY_PHRASE]);
 
     const completeResponse = await app.request(API.auth.recovery.advanced.complete, {
@@ -113,8 +113,8 @@ describe("auth advanced recovery routes", () => {
     const meResponse = await app.request(API.users.me.details, {
       headers: { Authorization: `Bearer ${loginBody.data.session_token}` },
     });
-    const meBody = await readApiJson<PublicUserResponse>(meResponse);
-    const passwordSlot = meBody.data.e2ee_slots.find(
+    const meBody = await readApiJson<UserResponse>(meResponse);
+    const passwordSlot = meBody.data.vault_slots.find(
       (slot: { slot_type: string }) => slot.slot_type === VAULT_SLOT_TYPE_PASSWORD
     );
     expect(passwordSlot?.salt).toBe(NEW_WRAP_SALT);

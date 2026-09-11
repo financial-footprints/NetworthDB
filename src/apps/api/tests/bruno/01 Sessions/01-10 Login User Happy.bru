@@ -30,7 +30,6 @@ script:post-response {
 
 assert {
   res.status: eq 200
-  res.body.data.token_type: eq Bearer
   res.body.data.session_token: isDefined
   res.body.data.refresh_token: isDefined
   res.body.errors: isEmpty

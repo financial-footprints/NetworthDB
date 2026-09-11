@@ -33,38 +33,38 @@ accountRoutes.endpoint(
   },
   async (c) => {
     const body = c.req.valid("json");
-    const { user: actor, jwt } = sessionPrincipal(c.get("principal"));
-    const authAcr = jwt.acr;
-    const authAmr = jwt.amr;
+    const { user, auth } = sessionPrincipal(c.get("principal"));
+    const authAcr = auth.acr;
+    const authAmr = auth.amr;
     let sessionPair: SessionTokenPair | undefined;
 
-    if (body.e2eeName !== undefined) {
-      await c.get("services").vault.update(actor.id, body.e2eeName);
+    if (body.displayName !== undefined) {
+      await c.get("services").vault.update(user.id, body.displayName);
     }
 
     if (body.username !== undefined) {
       const currentPassword = requireCurrentPassword(body.currentPassword);
       sessionPair = await c
         .get("services")
-        .auth.updateUsername(actor, authAcr, authAmr, body.username, currentPassword);
+        .auth.updateUsername(user, authAcr, authAmr, body.username, currentPassword);
     }
 
     if (body.newPassword !== undefined) {
       const currentPassword = requireCurrentPassword(body.currentPassword);
       sessionPair = await c
         .get("services")
-        .auth.updatePassword(actor, authAcr, authAmr, currentPassword, body.newPassword);
+        .auth.updatePassword(user, authAcr, authAmr, currentPassword, body.newPassword);
     }
 
     if (body.recoveryEmail !== undefined) {
       const currentPassword = requireCurrentPassword(body.currentPassword);
 
       if (body.recoveryEmail === null) {
-        await c.get("services").auth.recovery.deleteEmail(actor.id, currentPassword);
+        await c.get("services").auth.recovery.deleteEmail(user.id, currentPassword);
       } else {
         await c
           .get("services")
-          .auth.recovery.updateEmail(actor.id, currentPassword, body.recoveryEmail);
+          .auth.recovery.updateEmail(user.id, currentPassword, body.recoveryEmail);
       }
     }
 

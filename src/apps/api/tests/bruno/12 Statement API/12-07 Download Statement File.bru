@@ -1,0 +1,19 @@
+meta {
+  name: 12-07 Download Statement File
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/accounts/{{statementAccountId}}/files?statement_date=2024-01&format=pdf
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{statementSessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.headers['content-type']: eq application/pdf
+}

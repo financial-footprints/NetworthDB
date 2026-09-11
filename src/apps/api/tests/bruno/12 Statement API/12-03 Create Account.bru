@@ -1,0 +1,33 @@
+meta {
+  name: 12-03 Create Account
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/accounts
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{statementSessionToken}}
+}
+
+body:json {
+  {
+    "bank": "onecard",
+    "account_type": "credit_card",
+    "opening_date": "2020-01-15",
+    "account_number": "abc.def",
+    "passwords": []
+  }
+}
+
+script:post-response {
+  bru.setVar("statementAccountId", res.body.data.id);
+}
+
+assert {
+  res.status: eq 201
+}

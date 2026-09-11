@@ -1,0 +1,18 @@
+   Name :Sample Holder                       Statement for HDFC Bank Credit Card
+   Email : meera.sample@example.com        Statement Card No: 5268 73XX XXXX 3850
+   Address :123 Sample Street, Example City Date:20/06/2024 AAN : 0001010610002110000
+        EXAMPLE CITY-000000 ST
+                                    Payment Due Date  Total Dues  Minimum Amount Due
+06/2024
+   GST No :
+                                       10/07/2024      944.00          200.00
+  In case you wish to update the personal details,please write a letter
+  to The Manager, HDFC Bank Card Division, # 8, L B Road,
+  Thiruvanmiyur, Chennai   600041     Credit Limit Available Credit Limit Available Cash Limit
+                                       8,00,000        8,00,058        3,20,000
+0
+                                                   Account Summary
+                                    Opening  Payment/ Purchase/ Finance
+                                                                         Total Dues
+                                    Balance   Credits  Debits   Charges
+                                     942.36   4,110.00 4,112.00   0.00    944.00

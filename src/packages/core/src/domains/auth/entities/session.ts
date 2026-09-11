@@ -2,9 +2,9 @@ export class Session {
   constructor(
     public readonly id: string,
     public readonly userId: string,
-    public readonly accessHash: string,
+    public readonly sessionHash: string,
     public readonly refreshHash: string,
-    public readonly accessExpiresAt: Date,
+    public readonly sessionExpiresAt: Date,
     public readonly refreshExpiresAt: Date,
     public readonly createdAt: Date,
     public readonly authAmr: string,
@@ -12,8 +12,8 @@ export class Session {
     public readonly revokedAt: Date | null = null
   ) {}
 
-  isAccessValid(at: Date = new Date()): boolean {
-    return this.revokedAt === null && this.accessExpiresAt.getTime() > at.getTime();
+  isSessionValid(at: Date = new Date()): boolean {
+    return this.revokedAt === null && this.sessionExpiresAt.getTime() > at.getTime();
   }
 
   isRefreshValid(at: Date = new Date()): boolean {
@@ -24,9 +24,9 @@ export class Session {
     return new Session(
       this.id,
       this.userId,
-      this.accessHash,
+      this.sessionHash,
       this.refreshHash,
-      this.accessExpiresAt,
+      this.sessionExpiresAt,
       this.refreshExpiresAt,
       this.createdAt,
       this.authAmr,
@@ -36,17 +36,17 @@ export class Session {
   }
 
   withRotatedTokens(input: {
-    accessHash: string;
+    sessionHash: string;
     refreshHash: string;
-    accessExpiresAt: Date;
+    sessionExpiresAt: Date;
     refreshExpiresAt: Date;
   }): Session {
     return new Session(
       this.id,
       this.userId,
-      input.accessHash,
+      input.sessionHash,
       input.refreshHash,
-      input.accessExpiresAt,
+      input.sessionExpiresAt,
       input.refreshExpiresAt,
       this.createdAt,
       this.authAmr,

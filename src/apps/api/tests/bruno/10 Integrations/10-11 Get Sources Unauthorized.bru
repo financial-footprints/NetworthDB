@@ -1,0 +1,21 @@
+meta {
+  name: 10-11 Get Sources Unauthorized
+  type: http
+  seq: 11
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/sources`
+
+  **This test verifies:** Unauthenticated requests are rejected.
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/sources
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}

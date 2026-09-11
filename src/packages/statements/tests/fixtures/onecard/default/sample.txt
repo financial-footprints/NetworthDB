@@ -1,0 +1,42 @@
+(Rupees)
+OneCard Statement (01 Aug 2021 - 31 Aug 2021)
+SUMMARY
+Full Name
+RAVI KAPOOR
+OneCard Number
+4412-75XX-XXXX-3182
+Statement Date
+01 Sep 2021
+Payment Due Date
+18 Sep 2021
+Total Amount Due
+-1,250.00
+Minimum Amount Due
+0.00
+STATEMENT ILLUSTRATION
+Opening Balance (as on 01 Aug 2021) -5,000.00
+Spends (in Aug) + 1,606.25
+Interest Charges (including taxes) + 0.00
+Fees & Charges (including taxes) + 0.00
+Repayments & Refunds - 2,856.25
+New EMI - 0.00
+Paid via points - 0.00
+Total Amount Due
+=
+-1,250.00
+Minimum Amount Due 0.00
+TRANSACTION HISTORY
+75.00
+281.25
+452.00
+780.00
+Amount (Rs.)	Date Merchant Name Txn Type Reward
+Points
+30 Jul SAMPLE PARK ADMISSION Entertainment POS Metro 15.60
+30 Jul TEST DINING CORNER Food & Dining POS Metro 9.04
+31 Jul TEST FOOD DELIVERY Food & Dining ECOM 5.63
+31 Jul TEST MART SUPERMARKET Groceries POS Metro 1.50
+1,200.00	15 Aug SAMPLE REPAY Repayments TOKEN-ECOM
+IMPORTANT INFORMATION
+In case you pay only the Minimum Amount Due or any amount lesser than Total Amount Due, interest will be
+charged on a daily basis on the unpaid amount.

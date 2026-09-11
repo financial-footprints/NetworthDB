@@ -1,4 +1,4 @@
-import type { VaultSlotType } from "@core/domains/user/modules/vault/embedded/vault-wrap";
+import type { VaultSlotType } from "@core/domains/user/modules/vault/constants";
 
 export type VaultSlotInput = {
   slotType: VaultSlotType;
@@ -25,7 +25,7 @@ export type VaultSlotPublic = {
 };
 
 export type VaultPublicState = {
-  e2eeVaultInitialized: boolean;
-  e2eeSlots: VaultSlotPublic[];
-  e2eeName: string | null;
+  vaultInitialized: boolean;
+  vaultSlots: VaultSlotPublic[];
+  displayName: string | null;
 };

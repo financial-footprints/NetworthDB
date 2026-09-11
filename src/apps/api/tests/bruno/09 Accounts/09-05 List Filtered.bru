@@ -1,0 +1,24 @@
+meta {
+  name: 09-05 List Filtered
+  type: http
+  seq: 5
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/accounts?account_type=credit_card`
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/accounts?account_type=credit_card
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accountsSessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.items[0].account_type: eq credit_card
+}

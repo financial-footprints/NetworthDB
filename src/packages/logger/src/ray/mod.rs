@@ -25,6 +25,7 @@ pub fn pop() {
     });
 }
 
+#[cfg(any(feature = "napi", test))]
 pub fn set_actor_id(actor_id: String) {
     CONTEXT_STACK.with(|stack| {
         if let Some(context) = stack.borrow_mut().last_mut() {
@@ -41,6 +42,7 @@ pub fn current_ray_id() -> Option<String> {
     current().map(|context| context.ray_id)
 }
 
+#[cfg(any(feature = "napi", test))]
 pub fn require_ray_id() -> Result<String, &'static str> {
     match current() {
         Some(context) if !context.ray_id.trim().is_empty() => Ok(context.ray_id),

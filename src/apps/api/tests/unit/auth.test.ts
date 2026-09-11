@@ -2,9 +2,9 @@ import { describe, expect, test } from "bun:test";
 import { createApp } from "@ndb/api";
 import { API } from "@ndb/platform";
 import {
-  type PublicUserResponse,
   readApiJson,
   type SessionTokenPair,
+  type UserResponse,
 } from "@tests/api/helpers/api-response";
 import { createAuthTestServices } from "@tests/api/helpers/auth-services";
 import { fakeConfig } from "@tests/api/helpers/config";
@@ -28,7 +28,6 @@ describe("auth routes", () => {
     expect(response.status).toBe(200);
     const body = await readApiJson<SessionTokenPair>(response);
     expect(body.errors).toEqual([]);
-    expect(body.data.token_type).toBe("Bearer");
     expect(body.data.session_token).toMatch(/^[0-9a-f]{64}$/);
     expect(body.data.refresh_token).toMatch(/^[0-9a-f]{64}$/);
     expect(body.data.expires_in).toBe(15 * 60);
@@ -102,7 +101,7 @@ describe("auth routes", () => {
     const loginBody = await readApiJson<SessionTokenPair>(loginResponse);
 
     const resolved = await services.auth.get(loginBody.data.session_token);
-    expect(resolved.user.username).toBe("alice");
+    expect(resolved.user.username.toString()).toBe("alice");
 
     const meResponse = await app.request(API.users.me.details, {
       headers: { Authorization: `Bearer ${loginBody.data.session_token}` },
@@ -132,7 +131,7 @@ describe("auth routes", () => {
     });
 
     expect(response.status).toBe(200);
-    const body = await readApiJson<PublicUserResponse>(response);
+    const body = await readApiJson<UserResponse>(response);
     expect(body).toEqual({
       data: {
         id: expect.any(String),
@@ -143,9 +142,9 @@ describe("auth routes", () => {
         recovery_codes_enabled: false,
         recovery_email_enabled: false,
         recovery_email_set_at: null,
-        e2ee_vault_initialized: false,
-        e2ee_slots: [],
-        e2ee_name: null,
+        vault_initialized: false,
+        vault_slots: [],
+        display_name: null,
       },
       errors: [],
     });

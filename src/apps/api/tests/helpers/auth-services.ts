@@ -1,15 +1,17 @@
 import type { createApp } from "@ndb/api";
+import { createPasswordHasher } from "@ndb/auth";
 import type { ApiServices, HealthService } from "@ndb/bootstrap";
-import { hashPassword, type Role, User, Username, UserService } from "@ndb/core";
+import { type Role, User, Username, UserService } from "@ndb/core";
 import { API } from "@ndb/platform";
 import { readApiJson, type SessionTokenPair } from "@tests/api/helpers/api-response";
+import { createStatementsTestServices } from "@tests/api/helpers/statements-test-services";
 import {
   CapturingEmailSender,
   createTestSecurityStores,
   loginAsSession,
   TEST_WEBAUTHN_CONFIG,
-} from "@tests/core/helpers/auth";
-import { createInMemoryAuthRepos, wireInMemoryAuth } from "@tests/core/helpers/auth/wiring";
+} from "@tests/auth/helpers";
+import { createInMemoryAuthRepos, wireInMemoryAuth } from "@tests/auth/helpers/wiring";
 
 const WEBAUTHN_ENABLED_CONFIG = {
   ...TEST_WEBAUTHN_CONFIG,
@@ -35,7 +37,7 @@ export async function createAuthTestServices(
 ): Promise<AuthTestServices> {
   const repos = createInMemoryAuthRepos();
   const emailSender = new CapturingEmailSender();
-  const passwordHash = await hashPassword(password);
+  const passwordHash = await createPasswordHasher().hash(password);
 
   await repos.users.create(
     new User(
@@ -55,11 +57,17 @@ export async function createAuthTestServices(
     webauthnEnabled ? WEBAUTHN_ENABLED_CONFIG : TEST_WEBAUTHN_CONFIG
   );
 
+  const pipeline = createStatementsTestServices();
+
   return {
     health: {
       check: async () => ({ ok: true }),
     } as HealthService,
-    user: new UserService(repos.users, auth, "local"),
+    user: new UserService(repos.users, auth),
+    account: pipeline.account,
+    sources: pipeline.sources,
+    job: pipeline.job,
+    jobRunner: pipeline.jobRunner,
     vault,
     auth,
     users: repos.users,

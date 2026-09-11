@@ -17,7 +17,7 @@ const BASE_ENV: Record<string, string> = {
   SESSION_TTL: "15m",
   REFRESH_TTL: "720h",
   MFA_CHALLENGE_TTL: "5m",
-  MFA_ENCRYPTION_KEY: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  MFA_SECRET: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
   MFA_LOCKOUT_TTL: "15m",
   MFA_TOTP_SKEW: "1",
   MFA_MAX_FAILURES: "5",
@@ -35,6 +35,8 @@ const BASE_ENV: Record<string, string> = {
   SMTP_PORT: "587",
   SMTP_FROM: "noreply@example.com",
   KVSTORE_URL: "redis://127.0.0.1:6379/0",
+  FILESTORE_SECRET: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  FILESTORE_PATH: "/tmp/networthdb-test",
 };
 
 function withEnv(overrides: Record<string, string>, fn: () => void): void {
@@ -94,6 +96,19 @@ describe("bootstrap env schema", () => {
       );
     });
   });
+
+  test("JOBS_MAX_WORKERS defaults to 2 when unset", () => {
+    withEnv({}, () => {
+      delete process.env.JOBS_MAX_WORKERS;
+      expect(parseEnv().JOBS_MAX_WORKERS).toBe(2);
+    });
+  });
+
+  test("JOBS_MAX_WORKERS rejects non-positive values", () => {
+    withEnv({ JOBS_MAX_WORKERS: "0" }, () => {
+      expect(() => parseEnv()).toThrow("bootstrap.config.env.invalid-positive-int.value.0");
+    });
+  });
 });
 
 describe("bootstrap env helpers", () => {
@@ -115,25 +130,36 @@ describe("bootstrap env helpers", () => {
     });
   });
 
-  test("getEnv required-in-production returns null when undefined and not production", () => {
+  test("getEnv required throws when MFA_SECRET is undefined in local", () => {
     withEnv({ ENVIRONMENT: "local" }, () => {
       const env = parseEnv();
-      delete (env as { MFA_ENCRYPTION_KEY?: string }).MFA_ENCRYPTION_KEY;
+      delete (env as { MFA_SECRET?: string }).MFA_SECRET;
+
+      expect(() => getEnv(env, "MFA_SECRET", z.string(), "required")).toThrow(
+        "bootstrap.config.env.required.not-found.MFA_SECRET"
+      );
+    });
+  });
+
+  test("getEnv required-in-production returns null for FILESTORE_SECRET when undefined and not production", () => {
+    withEnv({ ENVIRONMENT: "local" }, () => {
+      const env = parseEnv();
+      delete (env as { FILESTORE_SECRET?: string }).FILESTORE_SECRET;
 
       expect(
-        getEnv(env, "MFA_ENCRYPTION_KEY", z.string(), "required-in-production", false)
+        getEnv(env, "FILESTORE_SECRET", z.string(), "required-in-production", false)
       ).toBeNull();
     });
   });
 
-  test("getEnv required-in-production throws when undefined in production", () => {
+  test("getEnv required-in-production throws when FILESTORE_SECRET is undefined in production", () => {
     withEnv({}, () => {
       const env = parseEnv();
-      delete (env as { MFA_ENCRYPTION_KEY?: string }).MFA_ENCRYPTION_KEY;
+      delete (env as { FILESTORE_SECRET?: string }).FILESTORE_SECRET;
 
       expect(() =>
-        getEnv(env, "MFA_ENCRYPTION_KEY", z.string(), "required-in-production", true)
-      ).toThrow("bootstrap.config.env.production-required.not-found.MFA_ENCRYPTION_KEY");
+        getEnv(env, "FILESTORE_SECRET", z.string(), "required-in-production", true)
+      ).toThrow("bootstrap.config.env.production-required.not-found.FILESTORE_SECRET");
     });
   });
 
@@ -205,6 +231,49 @@ describe("bootstrap config guards", () => {
       expect(() => loadConfig()).toThrow(
         "bootstrap.config.env.postgres-sslmode.cannot-be-disable.when-production"
       );
+    });
+  });
+
+  test("loadConfig throws when MFA_SECRET is missing in local", () => {
+    withEnv({ ENVIRONMENT: "local" }, () => {
+      delete process.env.MFA_SECRET;
+
+      expect(() => loadConfig()).toThrow("bootstrap.config.env.required.not-found.MFA_SECRET");
+    });
+  });
+
+  test("loadConfig succeeds when FILESTORE_SECRET is missing in local", () => {
+    withEnv({ ENVIRONMENT: "local" }, () => {
+      delete process.env.FILESTORE_SECRET;
+
+      expect(loadConfig().encryption.key).toBeNull();
+    });
+  });
+
+  test("encryption is disabled for local environment", () => {
+    withEnv({ ENVIRONMENT: "local" }, () => {
+      expect(loadConfig().encryption.enabled).toBe(false);
+    });
+  });
+
+  test("encryption is enabled for production environment", () => {
+    withEnv({ ENVIRONMENT: "production" }, () => {
+      expect(loadConfig().encryption.enabled).toBe(true);
+    });
+  });
+
+  test("jobs config loads max workers from env", () => {
+    withEnv({ JOBS_MAX_WORKERS: "4" }, () => {
+      expect(loadConfig().jobs.workers).toBe(4);
+    });
+  });
+
+  test("advanced security config disables sensitive backups and enables pipeline trace", () => {
+    withEnv({ DISABLE_ADVANCED_SECURITY: "true" }, () => {
+      const config = loadConfig();
+      expect(config.advancedSecurity.disabled).toBe(true);
+      expect(config.advancedSecurity.sensitiveBackups).toBe(true);
+      expect(config.advancedSecurity.pipelineTrace).toBe(true);
     });
   });
 });

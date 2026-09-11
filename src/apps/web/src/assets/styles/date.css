@@ -1,0 +1,119 @@
+.networth-date-picker-field .react-datepicker-wrapper {
+  display: block;
+  width: 100%;
+}
+
+.networth-date-picker-field .react-datepicker__input-container {
+  display: block;
+  position: relative;
+  width: 100%;
+}
+
+.networth-date-picker-field .react-datepicker__view-calendar-icon input {
+  width: 100%;
+  padding-right: 2.25rem;
+}
+
+.networth-date-picker-field--clearable .react-datepicker__view-calendar-icon input {
+  padding-right: 3.75rem;
+}
+
+.form-input-shell .networth-date-picker-field .react-datepicker__view-calendar-icon input {
+  padding-left: 0.75rem;
+}
+
+.networth-date-picker-field .react-datepicker__calendar-icon {
+  position: absolute;
+  top: 50%;
+  right: 0.625rem;
+  left: auto;
+  margin: 0;
+  padding: 0;
+  transform: translateY(-50%);
+  pointer-events: auto;
+}
+
+.networth-date-picker-field .react-datepicker__close-icon {
+  position: absolute;
+  top: 50%;
+  right: 2.25rem;
+  left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  margin: 0;
+  transform: translateY(-50%);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.networth-date-picker-field .react-datepicker__close-icon::after {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  margin: 0;
+  border-radius: 9999px;
+  background-color: rgb(226 232 240);
+  color: rgb(100 116 139);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  content: "×";
+}
+
+.networth-date-picker-field .react-datepicker__close-icon:hover::after {
+  background-color: rgb(203 213 225);
+  color: rgb(71 85 105);
+}
+
+.networth-date-picker-popper {
+  z-index: 60;
+}
+
+.networth-date-picker-calendar {
+  border-color: rgb(226 232 240);
+  border-radius: 0.375rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+}
+
+.networth-date-picker-calendar .react-datepicker__header {
+  background-color: rgb(248 250 252);
+  border-bottom-color: rgb(226 232 240);
+}
+
+.networth-date-picker-calendar .react-datepicker__current-month,
+.networth-date-picker-calendar .react-datepicker__day-name {
+  color: rgb(51 65 85);
+}
+
+.networth-date-picker-calendar .react-datepicker__day--selected,
+.networth-date-picker-calendar .react-datepicker__day--keyboard-selected {
+  background-color: rgb(59 130 246);
+  color: white;
+}
+
+.networth-date-picker-calendar .react-datepicker__day--selected:hover,
+.networth-date-picker-calendar .react-datepicker__day--keyboard-selected:hover {
+  background-color: rgb(37 99 235);
+}
+
+.networth-date-picker-calendar .react-datepicker__day:hover {
+  background-color: rgb(241 245 249);
+}
+
+.networth-date-picker-calendar .react-datepicker__month-select,
+.networth-date-picker-calendar .react-datepicker__year-select {
+  border-radius: 0.25rem;
+  border-color: rgb(203 213 225);
+  font-size: 0.875rem;
+  padding: 0.125rem 0.25rem;
+}

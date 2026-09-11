@@ -1,0 +1,19 @@
+meta {
+  name: 12-02 Get Banks
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/accounts/banks
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{statementSessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.total: gte 1
+}

@@ -10,7 +10,7 @@ import {
 import { createAuthTestServices } from "@tests/api/helpers/auth-services";
 import { fakeConfig } from "@tests/api/helpers/config";
 import { createMemoryLogger } from "@tests/api/helpers/memory.logger";
-import { enrollTotp, resetTotpStep, totpCode } from "@tests/core/helpers/auth";
+import { enrollTotp, resetTotpStep, totpCode } from "@tests/auth/helpers";
 
 describe("auth recovery routes", () => {
   test("POST /api/v1/users/me/codes returns ten codes", async () => {

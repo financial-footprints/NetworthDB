@@ -6,7 +6,7 @@ import {
   AUTH_AMR_RECOVERY,
   AUTH_AMR_WEBAUTHN,
 } from "@core/domains/auth/constants";
-import type { PublicUser } from "@core/domains/user/entities/public-user";
+import type { User } from "@core/domains/user/entities/user/index";
 import { UnauthorizedError } from "@core/shared/errors/domain-error";
 
 export {
@@ -21,7 +21,6 @@ export {
 export type SessionTokenPair = {
   sessionToken: string;
   refreshToken: string;
-  tokenType: "Bearer";
   expiresIn: number;
 };
 
@@ -42,7 +41,7 @@ export type PublicMultifactorState = {
 };
 
 export type ResolvedSession = {
-  user: PublicUser;
+  user: User;
   sessionId: string;
   authAmr: string;
   authAcr: string;

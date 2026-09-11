@@ -16,8 +16,8 @@ auth:bearer {
 
 assert {
   res.status: eq 200
-  res.body.data.e2ee_vault_initialized: eq true
-  res.body.data.e2ee_slots: isArray
+  res.body.data.vault_initialized: eq true
+  res.body.data.vault_slots: isArray
 }
 
 docs {

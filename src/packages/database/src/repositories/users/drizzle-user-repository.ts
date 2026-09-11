@@ -3,9 +3,9 @@ import { users } from "@database/schema/users/index";
 import type { DbClient } from "@database/types";
 import {
   ConflictError,
+  DisplayName,
   ONE,
   type Pagination,
-  parseRole,
   type Sort,
   TotpState,
   User,
@@ -19,10 +19,8 @@ import { and, count, eq, ilike, type SQL } from "drizzle-orm";
 function mapRow(row: typeof users.$inferSelect): User {
   const totp = new TotpState(
     row.totpConfirmedAt,
-    row.totpSecretCiphertext,
-    row.totpSecretNonce,
-    row.totpPendingCiphertext,
-    row.totpPendingNonce,
+    row.totpSecret,
+    row.totpPending,
     row.totpLastStep,
     row.multifactorFailedCount,
     row.multifactorLockedUntil
@@ -30,15 +28,15 @@ function mapRow(row: typeof users.$inferSelect): User {
 
   return new User(
     row.id,
-    Username.parse(row.username),
+    Username.fromPersisted(row.username),
     row.passwordHash,
-    parseRole(row.role),
+    row.role,
     row.multifactorEnabled,
     row.createdAt,
     totp,
     row.recoveryEmailHash,
     row.recoveryEmailSetAt,
-    row.e2eeName
+    row.displayName ? DisplayName.fromPersisted(row.displayName) : null
   );
 }
 
@@ -51,16 +49,14 @@ function userValues(user: User) {
     multifactorEnabled: user.multifactorEnabled,
     createdAt: user.createdAt,
     totpConfirmedAt: user.totp.totpConfirmedAt,
-    totpSecretCiphertext: user.totp.totpSecretCiphertext,
-    totpSecretNonce: user.totp.totpSecretNonce,
-    totpPendingCiphertext: user.totp.totpPendingCiphertext,
-    totpPendingNonce: user.totp.totpPendingNonce,
+    totpSecret: user.totp.totpSecret,
+    totpPending: user.totp.totpPending,
     totpLastStep: user.totp.totpLastStep,
     multifactorFailedCount: user.totp.multifactorFailedCount,
     multifactorLockedUntil: user.totp.multifactorLockedUntil,
     recoveryEmailHash: user.recoveryEmailHash,
     recoveryEmailSetAt: user.recoveryEmailSetAt,
-    e2eeName: user.e2eeName,
+    displayName: user.displayName?.toString() ?? null,
   };
 }
 

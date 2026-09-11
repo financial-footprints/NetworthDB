@@ -1,0 +1,32 @@
+meta {
+  name: 12-08 Put Sources
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{BASE_URL}}/api/v1/sources
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{statementSessionToken}}
+}
+
+body:json {
+  {
+    "sources": [
+      {
+        "id": "tb-1",
+        "type": "thunderbird",
+        "label": "Laptop",
+        "profile": "/home/user/.thunderbird/xxxx"
+      }
+    ]
+  }
+}
+
+assert {
+  res.status: eq 200
+}

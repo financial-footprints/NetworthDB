@@ -1,0 +1,23 @@
+meta {
+  name: 09-08 Delete Account
+  type: http
+  seq: 8
+}
+
+docs {
+  **Endpoint:** `DELETE /api/v1/accounts/:id`
+}
+
+delete {
+  url: {{BASE_URL}}/api/v1/accounts/{{bankAccountId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accountsSessionToken}}
+}
+
+assert {
+  res.status: eq 204
+}

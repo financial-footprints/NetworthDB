@@ -4,7 +4,7 @@ import type { Pagination, Sort } from "@core/shared/query";
 export type SessionFilters = {
   id?: string;
   userId?: string;
-  accessHash?: string;
+  sessionHash?: string;
   refreshHash?: string;
 };
 

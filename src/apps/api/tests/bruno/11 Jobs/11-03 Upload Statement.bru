@@ -1,0 +1,30 @@
+meta {
+  name: 11-03 Upload Statement
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/accounts/files/upload
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jobsSessionToken}}
+}
+
+body:multipart-form {
+  account_id: {{jobsAccountId}}
+  format: pdf
+  covered_month: 2024-01
+  file: @file(./11 Jobs/fixtures/statement.pdf)
+}
+
+script:post-response {
+  bru.setVar("uploadJobId", res.body.data.id);
+}
+
+assert {
+  res.status: eq 202
+}

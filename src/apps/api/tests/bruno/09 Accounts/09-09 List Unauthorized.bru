@@ -1,0 +1,21 @@
+meta {
+  name: 09-09 List Unauthorized
+  type: http
+  seq: 9
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/accounts`
+
+  **This test verifies:** Unauthenticated requests are rejected.
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/accounts
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}

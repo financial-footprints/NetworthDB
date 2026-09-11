@@ -6,10 +6,9 @@ Accepted
 
 ## Context
 
-NetworthDB is the consolidated backend for account metadata and authentication in
-Financial Footprints. NetworthDOM authenticates users against this service;
-NetworthSync and other backends validate session bearer tokens against the same
-API.
+NetworthDB is the consolidated backend for account metadata, authentication, and
+pipeline services in Financial Footprints. NetworthDOM authenticates users against
+this API; all authenticated routes validate session bearer tokens here.
 
 Constraints that shaped this design:
 
@@ -18,9 +17,10 @@ Constraints that shaped this design:
   opaque refresh tokens stored hashed and rotated on each use.
 - **No silent admin reset** — administrators cannot clear MFA or reset passwords via
   admin APIs; advanced recovery is self-serve when vault data-recovery slots exist.
-- **Data confidentiality boundary** — sensitive application data is encrypted in the
-  client (NetworthDOM) before it reaches NetworthSync. NetworthDB provides standard
-  authentication only.
+- **Data confidentiality boundary** — tier-1 sensitive fields are encrypted in the
+  client before persistence. NetworthDB provides standard authentication
+  only; it stores opaque E2E blobs and server-encrypted payloads per
+  [ADR-004](004-data-encryption-policy.md).
 
 ## Decision
 
@@ -53,7 +53,7 @@ Adopt **standard authentication** with **optional email-assisted recovery**:
 - Custom client-held identity signing keys
 - Guarantee that a host operator cannot edit auth rows via direct database access
 
-### Client-side data encryption (NetworthDOM / NetworthSync)
+### Client-side data encryption
 
 See **[ADR-003](003-end-to-end-encryption.md)** for the full design.
 
@@ -68,8 +68,8 @@ remains unreadable until the client re-wraps data keys.
 
 A host root or DevOps operator who can:
 
-- Read and write NetworthDB and NetworthSync databases (often co-located)
-- Read deployed configuration and key files on disk, including `MFA_ENCRYPTION_KEY`
+- Read and write the NetworthDB Postgres database, on-disk tenant storage, and
+  deployed configuration, including `MFA_SECRET`
 
 ### Assumptions
 
@@ -82,7 +82,7 @@ A host root or DevOps operator who can:
 
 | Goal                                     | Mechanism                                                                                                                   |
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Sensitive data not readable from DB/disk | Client-side encryption in DOM (password KDF and/or WebAuthn PRF) before data is stored in Sync                              |
+| Sensitive data not readable from DB/disk | Client-side encryption in DOM (password KDF and/or WebAuthn PRF) before tier-1 fields are stored in NetworthDB                |
 | Standard login and authorization         | Password (Argon2id) + MFA (TOTP, WebAuthn) + server-validated session tokens                                                |
 | Optional account recovery                | Opt-in recovery email; self-serve password reset with MFA proof; self-serve advanced recovery with vault data-recovery slot |
 
@@ -98,7 +98,7 @@ A host root or DevOps operator who can:
 | Password policy split by `ENVIRONMENT`                                         | Local accepts weak passwords for developer convenience             | `ENVIRONMENT=production` enforces ≥12 chars plus upper, lower, digit, and symbol; local is length-only (8–128)                  |
 | Lost password and all MFA factors, no recovery email                           | Permanent lockout                                                  | Default privacy posture; users opt in to recovery email                                                                         |
 | Email account compromise                                                       | Attacker may receive reset or advanced recovery links              | Self-serve reset requires MFA; advanced requires vault slot unlock client-side; short TTLs; rate limits — risk not eliminated   |
-| Auth recovery ≠ data recovery                                                  | Password reset does not decrypt client-encrypted Sync data         | DOM must re-wrap data keys separately                                                                                           |
+| Auth recovery ≠ data recovery                                                  | Password reset does not decrypt client-encrypted tier-1 data     | DOM must re-wrap data keys separately                                                                                           |
 | Root / SQL bypass                                                              | Root can edit MFA or `password_hash` directly                      | Ceremony prevents API/UI silent reset, not raw DB access                                                                        |
 | Admin social engineering                                                       | MFA can be cleared only via advanced recovery token + vault unlock | Self-serve path; vault slot required; short TTL; offline phrase/passkey unlock remains client-side                              |
 
@@ -108,13 +108,13 @@ A host root or DevOps operator who can:
 flowchart TB
   subgraph clients [Clients]
     DOM[NetworthDOM]
-    Sync[NetworthSync]
   end
 
   subgraph networthdb [NetworthDB API]
     Routes["src/apps/api routes"]
     AuthSvc["@ndb/core AuthService"]
     VaultSvc["@ndb/core VaultService"]
+    AuthCrypto["@ndb/auth createAuthCrypto"]
     Mailer[EmailSender]
     Repos["@ndb/database Drizzle repos"]
   end
@@ -130,6 +130,7 @@ flowchart TB
   DOM -->|login recovery vault API| Routes
   Routes --> AuthSvc
   Routes --> VaultSvc
+  AuthSvc --> AuthCrypto
   AuthSvc --> Mailer
   AuthSvc --> Repos
   VaultSvc --> Repos
@@ -137,7 +138,6 @@ flowchart TB
   Repos --> Sessions
   Repos --> Recovery
   Repos --> Vault
-  Sync -->|session bearer| Routes
 ```
 
 | Component                          | Responsibility                                                |
@@ -146,6 +146,7 @@ flowchart TB
 | `@ndb/core` `AuthService`          | Login, session lifecycle, password updates, recovery          |
 | `@ndb/core` `MultifactorService`   | TOTP, WebAuthn, recovery codes, lockout                       |
 | `@ndb/core` `VaultService`         | Vault slot validation and persistence orchestration           |
+| `@ndb/auth` `createAuthCrypto`     | Argon2, TOTP, WebAuthn RP, token digest, MFA secret box       |
 | `EmailSender` port                 | SMTP or console delivery for recovery emails (no persistence) |
 | `@ndb/database` Drizzle repositories | Persistence adapters for users, sessions, MFA, recovery, vault |
 
@@ -193,7 +194,7 @@ Rejected — privacy concern; unnecessary for recovery design.
 
 ### Operators
 
-- Set `MFA_ENCRYPTION_KEY` in production.
+- Set `MFA_SECRET` in all environments.
 - Configure `SMTP_*` for recovery email delivery.
 - Set `RECOVERY_APP_BASE_URL` for links in recovery emails.
 - Understand the recovery vs data-recovery distinction and residuals above.
@@ -201,14 +202,15 @@ Rejected — privacy concern; unnecessary for recovery design.
 ### NetworthDOM
 
 - Opt-in recovery email UI; password and advanced recovery flows.
-- Client-side vault and E2EE field handling per ADR-003; data-key re-wrap after
+- Client-side vault and opaque field handling per ADR-003; data-key re-wrap after
   password reset when required.
 
-### NetworthSync
+### NetworthDB (API)
 
-- Validate session bearer tokens against NetworthDB; enforce `acr=aal2` where
+- Session bearer validation on all authenticated routes; enforce `acr=aal2` where
   appropriate.
-- Stores opaque ciphertext for E2E-sealed fields; cannot decrypt.
+- Stores opaque tier-1 client field values and server-encrypted tier-2 payloads;
+  cannot decrypt tier-1 sealed data.
 
 ## References
 

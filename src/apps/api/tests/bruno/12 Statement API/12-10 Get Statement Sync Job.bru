@@ -1,0 +1,30 @@
+meta {
+  name: 12-10 Get Statement Sync Job
+  type: http
+  seq: 10
+}
+
+script:pre-request {
+  const { waitForJob } = require("./lib/bruno-jobs/wait-for-job.cjs");
+  await waitForJob({
+    baseUrl: bru.getEnvVar("BASE_URL"),
+    token: bru.getVar("statementSessionToken"),
+    jobId: bru.getVar("statementSyncJobId"),
+    acceptStatuses: ["failed", "completed", "cancelled"],
+  });
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/jobs/{{statementSyncJobId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{statementSessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.status: eq failed
+  res.body.data.error: contains profile directory not found
+}

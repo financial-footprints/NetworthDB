@@ -22,7 +22,7 @@
   "scripts": {
     "build": "napi build --release --no-js --dts native.d.ts --manifest-path ../../../Cargo.toml --package logger",
     "build:debug": "napi build --no-js --dts native.d.ts --manifest-path ../../../Cargo.toml --package logger",
-    "dev": "bash scripts/dev.sh",
+    "dev": "bash ../../scripts/napi.sh",
     "type-check": "tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": {

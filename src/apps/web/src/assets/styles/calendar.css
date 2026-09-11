@@ -1,0 +1,65 @@
+@reference "./base.css";
+
+.calendar-cell-out-of-range {
+  @apply bg-transparent text-slate-300;
+}
+
+.calendar-cell-files {
+  @apply bg-emerald-100 text-slate-800 ring-1 ring-emerald-200;
+}
+
+.calendar-cell-annual {
+  @apply bg-green-50/80 text-slate-800 ring-1 ring-green-100;
+}
+
+.calendar-cell-missing {
+  @apply bg-amber-50 text-slate-800 ring-1 ring-amber-100;
+}
+
+.calendar-cell-matched {
+  @apply bg-blue-50 text-slate-800 ring-1 ring-blue-100;
+}
+
+.calendar-cell-mismatched {
+  @apply bg-red-50 text-slate-800 ring-1 ring-red-100;
+}
+
+.calendar-cell-discontinuity {
+  @apply bg-violet-50 text-slate-800 ring-1 ring-violet-200;
+}
+
+.calendar-swatch-files {
+  @apply bg-emerald-100 ring-emerald-200;
+}
+
+.calendar-swatch-annual {
+  @apply bg-green-50/80 ring-green-100;
+}
+
+.calendar-swatch-missing {
+  @apply bg-amber-50 ring-amber-100;
+}
+
+.calendar-swatch-matched {
+  @apply bg-blue-50 ring-blue-100;
+}
+
+.calendar-swatch-mismatched {
+  @apply bg-red-50 ring-red-100;
+}
+
+.calendar-swatch-discontinuity {
+  @apply bg-violet-50 ring-violet-200;
+}
+
+.coverage-bar-covered {
+  @apply bg-emerald-400;
+}
+
+.coverage-bar-gap-matched {
+  @apply bg-blue-400;
+}
+
+.coverage-bar-gap {
+  @apply bg-amber-400;
+}

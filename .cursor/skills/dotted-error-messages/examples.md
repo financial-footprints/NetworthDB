@@ -19,7 +19,7 @@ Already largely migrated. Remaining plain messages should follow the same patter
 throw new Error(`bootstrap.config.env.required.not-found.${name}`);
 throw new Error(`bootstrap.config.env.invalid-port.value.${value}`);
 throw new Error(`bootstrap.config.env.invalid-log-level.value.${value}`);
-throw new Error("bootstrap.config.env.required.not-found.MFA_ENCRYPTION_KEY");
+throw new Error("bootstrap.config.env.required.not-found.MFA_SECRET");
 throw new Error("bootstrap.config.env.auth-rate-window.must-be-positive");
 ```
 

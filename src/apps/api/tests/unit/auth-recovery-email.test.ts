@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { createApp } from "@ndb/api";
 import { API } from "@ndb/platform";
-import { type PublicUserResponse, readApiJson } from "@tests/api/helpers/api-response";
+import { readApiJson, type UserResponse } from "@tests/api/helpers/api-response";
 import { createAuthTestServices, loginAs } from "@tests/api/helpers/auth-services";
 import { fakeConfig } from "@tests/api/helpers/config";
 import { createMemoryLogger } from "@tests/api/helpers/memory.logger";
+import { enrollTotp, resetTotpStep, tokenFromEmail, totpCode } from "@tests/auth/helpers";
 import { firstElement } from "@tests/core/helpers/assert";
-import { enrollTotp, resetTotpStep, tokenFromEmail, totpCode } from "@tests/core/helpers/auth";
 
 describe("auth recovery email routes", () => {
   test("PATCH /users/me enrolls recovery email and GET /me reflects it", async () => {
@@ -34,7 +34,7 @@ describe("auth recovery email routes", () => {
     const meResponse = await app.request(API.users.me.details, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const meBody = await readApiJson<PublicUserResponse>(meResponse);
+    const meBody = await readApiJson<UserResponse>(meResponse);
     expect(meBody.data.recovery_email_enabled).toBe(true);
     expect(meBody.data.recovery_email_set_at).not.toBeNull();
   });
@@ -127,7 +127,7 @@ describe("auth recovery email routes", () => {
     const meResponse = await app.request(API.users.me.details, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const meBody = await readApiJson<PublicUserResponse>(meResponse);
+    const meBody = await readApiJson<UserResponse>(meResponse);
     expect(meBody.data.recovery_email_enabled).toBe(false);
   });
 

@@ -1,3 +1,4 @@
+import type { DisplayName } from "@core/domains/user/entities/user/display-name";
 import { TotpState } from "@core/domains/user/entities/user/totp";
 import type { Role } from "@core/domains/user/helpers";
 import { ValidationError } from "@core/shared/errors/domain-error";
@@ -23,6 +24,10 @@ export class Username {
     return new Username(trimmed.toLowerCase());
   }
 
+  static fromPersisted(raw: string): Username {
+    return new Username(raw);
+  }
+
   toString(): string {
     return this.value;
   }
@@ -39,7 +44,7 @@ export class User {
     public readonly totp: TotpState = TotpState.empty(),
     public readonly recoveryEmailHash: string | null = null,
     public readonly recoveryEmailSetAt: Date | null = null,
-    public readonly e2eeName: string | null = null
+    public readonly displayName: DisplayName | null = null
   ) {}
 
   hasRecoveryEmail(): boolean {
@@ -57,7 +62,7 @@ export class User {
       this.totp,
       this.recoveryEmailHash,
       this.recoveryEmailSetAt,
-      this.e2eeName
+      this.displayName
     );
   }
 
@@ -72,7 +77,7 @@ export class User {
       this.totp,
       this.recoveryEmailHash,
       this.recoveryEmailSetAt,
-      this.e2eeName
+      this.displayName
     );
   }
 
@@ -87,7 +92,7 @@ export class User {
       this.totp,
       this.recoveryEmailHash,
       this.recoveryEmailSetAt,
-      this.e2eeName
+      this.displayName
     );
   }
 
@@ -102,7 +107,7 @@ export class User {
       this.totp,
       this.recoveryEmailHash,
       this.recoveryEmailSetAt,
-      this.e2eeName
+      this.displayName
     );
   }
 
@@ -117,7 +122,7 @@ export class User {
       totp,
       this.recoveryEmailHash,
       this.recoveryEmailSetAt,
-      this.e2eeName
+      this.displayName
     );
   }
 
@@ -132,7 +137,7 @@ export class User {
       this.totp,
       hash,
       setAt,
-      this.e2eeName
+      this.displayName
     );
   }
 
@@ -147,11 +152,11 @@ export class User {
       this.totp,
       null,
       null,
-      this.e2eeName
+      this.displayName
     );
   }
 
-  withE2eeName(e2eeName: string): User {
+  withDisplayName(displayName: DisplayName | null): User {
     return new User(
       this.id,
       this.username,
@@ -162,7 +167,7 @@ export class User {
       this.totp,
       this.recoveryEmailHash,
       this.recoveryEmailSetAt,
-      e2eeName
+      displayName
     );
   }
 }

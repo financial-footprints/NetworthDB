@@ -1,0 +1,29 @@
+meta {
+  name: 12-05 Get Upload Job
+  type: http
+  seq: 5
+}
+
+script:pre-request {
+  const { waitForJob } = require("./lib/bruno-jobs/wait-for-job.cjs");
+  await waitForJob({
+    baseUrl: bru.getEnvVar("BASE_URL"),
+    token: bru.getVar("statementSessionToken"),
+    jobId: bru.getVar("uploadJobId"),
+    wantStatus: "completed",
+  });
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/jobs/{{uploadJobId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{statementSessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.status: eq completed
+}

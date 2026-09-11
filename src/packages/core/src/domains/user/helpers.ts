@@ -1,26 +1,22 @@
-import type { PublicUser } from "@core/domains/user/entities/public-user";
-import { ForbiddenError, ValidationError } from "@core/shared/errors/domain-error";
+import type { User } from "@core/domains/user/entities/user/index";
+import { ForbiddenError } from "@core/shared/errors/domain-error";
 
 export const ROLES = ["user", "manager", "administrator"] as const;
 
 export type Role = (typeof ROLES)[number];
 
-export function parseRole(raw: string): Role {
-  if (raw === "user" || raw === "manager" || raw === "administrator") {
-    return raw;
-  }
-
-  throw new ValidationError("core.user.role.invalid.unknown", { field: "role", value: raw });
+export function isRole(value: string): value is Role {
+  return (ROLES as readonly string[]).includes(value);
 }
 
-export function assertAdministrator(actor: PublicUser): void {
-  if (actor.role !== "administrator") {
+export function assertAdministrator(user: User): void {
+  if (user.role !== "administrator") {
     throw new ForbiddenError("core.user.authorization.forbidden.insufficient-admin");
   }
 }
 
-export function assertAdministratorOrManager(actor: PublicUser): void {
-  if (actor.role !== "administrator" && actor.role !== "manager") {
+export function assertAdministratorOrManager(user: User): void {
+  if (user.role !== "administrator" && user.role !== "manager") {
     throw new ForbiddenError("core.user.authorization.forbidden.insufficient-permissions");
   }
 }
@@ -34,6 +30,6 @@ export type UserListQuery = {
 };
 
 export type UserListResult = {
-  items: PublicUser[];
+  items: User[];
   total: number;
 };

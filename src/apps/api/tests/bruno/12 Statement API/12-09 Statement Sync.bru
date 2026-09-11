@@ -1,0 +1,29 @@
+meta {
+  name: 12-09 Statement Sync
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/accounts/statements/sync
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{statementSessionToken}}
+}
+
+body:json {
+  {
+    "scope": {}
+  }
+}
+
+script:post-response {
+  bru.setVar("statementSyncJobId", res.body.data.id);
+}
+
+assert {
+  res.status: eq 202
+}

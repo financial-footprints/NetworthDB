@@ -8,8 +8,8 @@ import {
 import { sessionPrincipal } from "@ndb/middleware";
 import {
   API,
-  adminUserIdParamsSchema,
   emptySchema,
+  uuidIdParamsSchema,
   vaultAddSlotReqSchema,
   vaultInitReqSchema,
   vaultPasswordReqSchema,
@@ -32,10 +32,10 @@ const vaultRoutes = createSessionRouter()
     },
     async (c) => {
       const body = c.req.valid("json");
-      const { user, jwt } = sessionPrincipal(c.get("principal"));
+      const { user, auth } = sessionPrincipal(c.get("principal"));
       const slots = await c
         .get("services")
-        .vault.initialize(user.id, jwt.acr, body.slots, body.e2eeName);
+        .vault.initialize(user.id, auth.acr, body.slots, body.displayName);
       return c.json(serializeVaultSlots(slots), 201);
     }
   )
@@ -52,8 +52,8 @@ const vaultRoutes = createSessionRouter()
     },
     async (c) => {
       const slotInput = c.req.valid("json");
-      const { user, jwt } = sessionPrincipal(c.get("principal"));
-      const slot = await c.get("services").vault.create(user.id, jwt.acr, slotInput);
+      const { user, auth } = sessionPrincipal(c.get("principal"));
+      const slot = await c.get("services").vault.create(user.id, auth.acr, slotInput);
       return c.json(serializeVaultSlot(slot), 201);
     }
   )
@@ -62,7 +62,7 @@ const vaultRoutes = createSessionRouter()
       method: "put",
       path: API.users.me.vault.slots.details,
       request: {
-        params: adminUserIdParamsSchema,
+        params: uuidIdParamsSchema,
         body: jsonBody(vaultSlotUpdateReqSchema),
       },
       responses: {
@@ -74,8 +74,8 @@ const vaultRoutes = createSessionRouter()
     async (c) => {
       const body = c.req.valid("json");
       const { id } = c.req.valid("param");
-      const { user, jwt } = sessionPrincipal(c.get("principal"));
-      const slot = await c.get("services").vault.rotateWrap(user.id, jwt.acr, id, body);
+      const { user, auth } = sessionPrincipal(c.get("principal"));
+      const slot = await c.get("services").vault.rotateWrap(user.id, auth.acr, id, body);
       return c.json(serializeVaultSlot(slot), 200);
     }
   )
@@ -84,7 +84,7 @@ const vaultRoutes = createSessionRouter()
       method: "delete",
       path: API.users.me.vault.slots.details,
       request: {
-        params: adminUserIdParamsSchema,
+        params: uuidIdParamsSchema,
         body: optionalJsonBody(vaultPasswordReqSchema),
       },
       responses: {
@@ -95,8 +95,8 @@ const vaultRoutes = createSessionRouter()
     async (c) => {
       const password = c.req.valid("json");
       const { id } = c.req.valid("param");
-      const { user, jwt } = sessionPrincipal(c.get("principal"));
-      await c.get("services").vault.delete(user.id, jwt.acr, id, password);
+      const { user, auth } = sessionPrincipal(c.get("principal"));
+      await c.get("services").vault.delete(user.id, auth.acr, id, password);
       return c.json(serializeEmpty(), 200);
     }
   );

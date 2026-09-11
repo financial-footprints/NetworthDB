@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+body {
+  margin: 0;
+  color: #0f172a;
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  background-color: #f8fafc;
+}
+
+/* Primary action button — brand blue used on login and in-app chrome. */
+.btn-primary {
+  @apply inline-flex items-center gap-2 rounded-sm bg-[#1a5fb4] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1554a0];
+}
+
+.btn-primary:disabled {
+  @apply cursor-not-allowed bg-slate-300 hover:bg-slate-300;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center gap-2 rounded-sm border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50;
+}
+
+.btn-danger-outline {
+  @apply inline-flex shrink-0 items-center justify-center rounded-sm border border-red-200 bg-white px-3 py-1.5 text-sm font-medium text-red-700 transition hover:bg-red-50;
+}
+
+.btn-danger-outline:disabled {
+  @apply cursor-not-allowed opacity-60;
+}
+
+.btn-danger-solid {
+  @apply inline-flex shrink-0 items-center justify-center rounded-sm border border-red-600 bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:border-red-700 hover:bg-red-700;
+}
+
+.btn-danger-solid:disabled {
+  @apply cursor-not-allowed opacity-60;
+}
+
+/* Shared form control styles (brand focus ring matches .btn-primary). */
+.form-input {
+  @apply w-full rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition;
+}
+
+.form-input:focus {
+  @apply border-[#1a5fb4] outline-none ring-2 ring-[#1a5fb4]/20;
+}
+
+.form-input:disabled {
+  @apply cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500 shadow-none;
+}
+
+.form-input:disabled:focus {
+  @apply border-slate-200 ring-0;
+}
+
+.form-input-no-spinner {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.form-input-no-spinner::-webkit-outer-spin-button,
+.form-input-no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.form-input-shell {
+  @apply flex w-full min-w-0 items-center rounded-sm border border-slate-300 bg-white shadow-sm transition;
+}
+
+.form-input-shell:focus-within {
+  @apply border-[#1a5fb4] ring-2 ring-[#1a5fb4]/20;
+}
+
+.form-input-shell-error {
+  @apply border-red-300 ring-1 ring-red-200;
+}
+
+.form-input-shell-error:focus-within {
+  @apply border-red-500 ring-red-200;
+}
+
+.form-input-shell:has(:disabled) {
+  @apply cursor-not-allowed border-slate-200 bg-slate-100 shadow-none;
+}
+
+.form-input-inner {
+  @apply min-w-0 flex-1 border-0 bg-transparent px-3 py-2 text-sm text-slate-900 outline-none focus:ring-0;
+}
+
+.form-input-inner:disabled {
+  @apply cursor-not-allowed text-slate-500;
+}
+
+.form-input-shell > .form-input,
+.form-input-shell > select.form-input,
+.form-input-shell > textarea.form-input {
+  @apply min-w-0 flex-1 border-0 bg-transparent shadow-none outline-none ring-0;
+}
+
+.form-input-shell > .form-input:focus,
+.form-input-shell > select.form-input:focus,
+.form-input-shell > textarea.form-input:focus {
+  @apply border-0 ring-0;
+}
+
+.form-input-shell > .form-input:disabled,
+.form-input-shell > select.form-input:disabled,
+.form-input-shell > textarea.form-input:disabled {
+  @apply bg-transparent;
+}
+
+.form-input-shell > .networth-date-picker-field {
+  @apply min-w-0 flex-1;
+}
+
+.form-input-shell .networth-date-picker-field input {
+  @apply min-w-0 flex-1 border-0 bg-transparent shadow-none outline-none ring-0;
+}
+
+.form-input-shell .networth-date-picker-field input:focus {
+  @apply border-0 ring-0;
+}
+
+.form-input-shell .networth-date-picker-field input:disabled {
+  @apply bg-transparent;
+}
+
+/* Anchor-positioned hover tooltips — flip/clamp handled by the browser */
+.hover-popover-panel {
+  position: fixed;
+  position-area: block-end span-inline-start;
+  position-try-fallbacks: flip-block, flip-inline;
+  margin: 8px;
+  box-sizing: border-box;
+  width: auto;
+  min-width: 0;
+  max-width: min(22rem, calc(100vw - 2rem));
+  white-space: normal;
+  overflow-wrap: break-word;
+  overflow-x: hidden;
+  overflow-y: auto;
+  max-height: calc(100dvh - 2rem);
+}

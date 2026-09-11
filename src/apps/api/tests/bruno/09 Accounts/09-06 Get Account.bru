@@ -1,0 +1,25 @@
+meta {
+  name: 09-06 Get Account
+  type: http
+  seq: 6
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/accounts/:id`
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/accounts/{{creditCardAccountId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accountsSessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.id: eq {{creditCardAccountId}}
+  res.body.data.bank: eq HDFC
+}

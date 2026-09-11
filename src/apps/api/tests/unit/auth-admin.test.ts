@@ -2,9 +2,9 @@ import { describe, expect, test } from "bun:test";
 import { createApp } from "@ndb/api";
 import { API } from "@ndb/platform";
 import {
-  type PublicUserResponse,
   readApiJson,
   type SessionTokenPair,
+  type UserResponse,
 } from "@tests/api/helpers/api-response";
 import { createAuthTestServices, loginViaApp } from "@tests/api/helpers/auth-services";
 import { fakeConfig } from "@tests/api/helpers/config";
@@ -30,7 +30,7 @@ describe("auth admin routes", () => {
     });
 
     expect(response.status).toBe(201);
-    const body = await readApiJson<PublicUserResponse>(response);
+    const body = await readApiJson<UserResponse>(response);
     expect(body.data.username).toBe("bob");
     expect(body.data.role).toBe("user");
     expect(body.data.created_at).toBeDefined();
@@ -86,7 +86,7 @@ describe("auth admin routes", () => {
     const me = await app.request(API.users.me.details, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const meBody = await readApiJson<PublicUserResponse>(me);
+    const meBody = await readApiJson<UserResponse>(me);
 
     const response = await app.request(API.users.details.replace(":id", meBody.data.id), {
       method: "DELETE",
@@ -186,7 +186,7 @@ describe("auth admin routes", () => {
       },
       body: JSON.stringify({ username: "carol", password: "password123" }),
     });
-    const registerBody = await readApiJson<PublicUserResponse>(registerResponse);
+    const registerBody = await readApiJson<UserResponse>(registerResponse);
 
     const response = await app.request(API.users.details.replace(":id", registerBody.data.id), {
       method: "PATCH",
@@ -198,7 +198,7 @@ describe("auth admin routes", () => {
     });
 
     expect(response.status).toBe(200);
-    const body = await readApiJson<PublicUserResponse>(response);
+    const body = await readApiJson<UserResponse>(response);
     expect(body.data.role).toBe("manager");
   });
 });

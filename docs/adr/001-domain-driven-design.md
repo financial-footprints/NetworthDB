@@ -2,150 +2,101 @@
 
 ## Status
 
-Accepted
+Accepted (updated for TypeScript-only core — see ADR-006)
 
 ## Context
 
-NetworthDB is the backend for account metadata and authentication. Business logic
-must stay independent of HTTP (Hono, Bun) and infrastructure (Postgres, NAPI).
-Dependencies point inward: adapters depend on the domain, never the reverse.
+NetworthDB is the backend for account metadata, statement compute, and authentication.
+Business rules for accounts, statements, sources, and jobs must stay independent of HTTP
+(Hono) and persistence (Drizzle). Dependencies point inward: adapters depend on domain
+code, never the reverse.
 
-The domain layer is **TypeScript** (`@ndb/core`). Layout mirrors Argus
-`@argus/core`: bounded contexts under `domains/`, shared cross-cutting utilities,
-and repository ports separate from Drizzle adapters.
-
-Rust is used only where native performance or single-writer semantics matter:
-`@ndb/logger` today; future compute packages (e.g. NetworthCSV) follow the
-same NAPI pattern. All application and library code lives under `src/`.
+Domain entities are defined in TypeScript (`@ndb/core` `src/domains/`). Statement compute
+runs in Rust (`@ndb/statements`) behind `StatementEngine`. Auth ceremonies run in
+`@ndb/auth` (see ADR-006).
 
 ## Decision
 
-We use the following layers and dependency direction:
-
 ```mermaid
 flowchart TB
-  subgraph apps [Apps - adapters]
-    API["src/apps/api (Bun + Hono)"]
+  subgraph apps [Apps]
+    API["src/apps/api (Hono)"]
+    Web["src/apps/web"]
   end
 
-  subgraph packages [Packages under src/]
-    PlatformPkg["src/packages/platform - shared TS schemas and paths"]
-    Core["src/packages/core - domain entities, services, ports (TS)"]
-    Logger["src/packages/logger - JSON logging (Rust + NAPI)"]
-    Middleware["src/packages/middleware - HTTP cross-cutting (TS)"]
-    DB["src/packages/database - Drizzle repositories (TS)"]
-    Bootstrap["src/packages/bootstrap - composition root (TS only)"]
+  subgraph ts [TypeScript packages]
+    Platform["@ndb/platform — HTTP Zod schemas"]
+    CoreTS["@ndb/core — entities, ports, pure services"]
+    AuthTS["@ndb/auth — AuthCrypto + rate limits"]
+    Bootstrap["@ndb/bootstrap — composition root"]
+    DB["@ndb/database — Drizzle adapters"]
+    StmtTS["@ndb/statements — TS adapter + NAPI"]
   end
 
-  API --> PlatformPkg
+  subgraph rust [Rust workspace]
+    Statements["statements rlib — domain + compute"]
+    StmtNapi["statements cdylib — NAPI exports"]
+    Statements --> StmtNapi
+  end
+
   API --> Bootstrap
-  API --> Middleware
-  Bootstrap --> PlatformPkg
-  Bootstrap --> Core
-  Bootstrap --> Logger
+  Web --> Platform
+  Bootstrap --> CoreTS
+  Bootstrap --> AuthTS
   Bootstrap --> DB
-  Middleware --> Logger
-  DB --> Core
+  Bootstrap --> StmtTS
+  AuthTS --> CoreTS
+  StmtTS --> CoreTS
+  StmtTS --> StmtNapi
+  DB --> CoreTS
 ```
 
 ### Layer responsibilities
 
-- **`src/packages/core`** — the domain center. Organized as bounded contexts under
-  `src/domains/` (`user/`, `auth/`, …), each with `entities/`, `repositories/`,
-  `services/`, and optional `embedded/` for pure protocol logic. Cross-cutting
-  domain errors live in `src/shared/errors/`. No Drizzle, Hono, env parsing, or
-  logging.
+- **`@ndb/core` TypeScript** — bounded contexts for `user`, `auth`, `account`, `jobs`,
+  `sources`. Entities, value objects, repository ports, pure application services
+  (`AccountService`, `UserService`, …), and ports (`StatementEngine`). **No runtime
+  npm dependencies.** See ADR-006.
 
-- **`src/packages/logger`** — the single JSON log writer (Rust + NAPI). Callers use
-  `createLogger()` from `@ndb/logger`. Console routing
-  lives in Rust `backend/`. Rejects empty messages, attaches `rayId`, writes one JSON object per line. Other Rust workspace members use the `logger` crate via Cargo.
+- **`@ndb/auth` TypeScript** — crypto adapters: `createAuthCrypto()` implements
+  `AuthCrypto` ports (Argon2, TOTP, WebAuthn RP, token digest, MFA secret box) plus Redis
+  rate limits. Depends on `@ndb/core` and crypto libraries.
 
-- **`src/packages/database`** — persistence infrastructure. Drizzle schema and
-  repository implementations. Depends on `@ndb/core`. Layout: `drizzle/` holds
-  migrations; `src/schema/` holds Drizzle table definitions;
-  `src/repositories/` holds adapters that map rows into core entities.
+- **`@ndb/statements`** — statement compute (Rust rlib + `statements.node` cdylib) and
+  TypeScript adapter (`createStatementEngine()` implements `StatementEngine`).
 
-- **`src/packages/middleware`** — HTTP cross-cutting concerns (CORS, error handler,
-  request logging, request context). Depends on `@ndb/logger` and
-  `@ndb/platform`.
+- **`statements` (rlib)** — NetworthCSV port: file layout, bank handlers, pipeline
+  stages. `statements::domain` is internal Rust vocabulary; `domain::convert` maps vault
+  JSON to domain read models.
 
-- **`src/packages/platform`** — transport-agnostic TypeScript contracts: Zod
-  schemas, API path constants, client-safe types. Must never import native addons.
+- **`@ndb/platform`** — shared HTTP paths and Zod request/response schemas (snake_case
+  JSON mapping only at the API boundary).
 
-- **`src/packages/bootstrap`** — composition root. TypeScript only: `loadConfig`,
-  `loadApiRuntime`, and service handles. Wires database pool, logger, and domain
-  services.
+- **`src/apps/api`** — thin Hono routes: validate with platform schemas, call bootstrap
+  services, serialize responses.
 
-- **`src/apps/api`** — HTTP adapter. Calls `loadApiRuntime()` from bootstrap.
-  Maps routes to services, applies middleware, translates domain errors to HTTP.
+### Bounded contexts
 
-### NAPI compute packages (future)
-
-Packages like NetworthCSV are self-contained Rust + NAPI workspace members:
-
-- Accept collected input, run heavy computation, return typed output
-- No database connections, no HTTP
-- Other packages import `@ndb/<package>` normally
+| Context | Owner | Notes |
+| --- | --- | --- |
+| User | `@ndb/core` | Entities, admin CRUD via `UserService` |
+| Auth / Vault | `@ndb/core` | `AuthService`, MFA, WebAuthn, recovery, `VaultService`; crypto via `@ndb/auth` |
+| Account | `@ndb/core` | Entity + `AccountService`; Drizzle maps rows → `Account` |
+| Sources | `@ndb/core` | Independent; not nested under account |
+| Statements (compute) | Rust rlib + `@ndb/statements` adapter | Vault-backed; no SQL table for `Statement` |
+| Jobs | `@ndb/core` | Entity + runner; `JobScope` references `accountId` |
 
 ### Dependency rules
 
-| From | May depend on | Must not depend on |
-| ---- | ------------- | ------------------ |
-| `core` | (stdlib, crypto npm libs) | `database`, `logger`, `middleware`, Hono, apps |
-| `database` | `core` | `bootstrap`, `middleware`, Hono, apps |
-| `logger` | (Rust stdlib) | `core`, `database`, Hono |
-| `middleware` | `logger`, `platform`, Hono | `database`, apps |
-| `bootstrap` | `core`, `database`, `logger`, `middleware`, `platform` | Hono, apps |
-| `platform` | (TS stdlib / Zod) | native addons, Hono |
-| `apps/api` | `bootstrap`, `middleware`, `platform`, Hono | `@ndb/logger` |
-
-Pool and connection wiring belong in bootstrap (`loadApiRuntime`), not in route
-handlers or `core`.
-
-### Adding a new domain feature
-
-1. **Model in `core`** — entities, value objects, domain errors, repository ports,
-   application services under `src/domains/<name>/`.
-2. **Implement in `database`** — Drizzle adapters that satisfy core repository ports.
-3. **Expose through `bootstrap`** — register services in `src/services/`.
-4. **Adapt in `apps/api`** — Hono routes call `loadApiRuntime().services`.
+- Apps import `@ndb/bootstrap` and `@ndb/platform`, not Drizzle or NAPI internals.
+- `@ndb/core` does not import `@ndb/statements`, `@ndb/auth`, or `@ndb/database`.
+- Bootstrap wires port implementations (`createStatementEngine`, `createAuthService`).
+- `@ndb/database` implements core repository ports; no domain logic in repositories.
 
 ## Consequences
 
-### Positive
-
-- Consistent Argus-style structure: thin HTTP apps, one composition root.
-- Domain logic unit-testable with bun test — no database or HTTP for core tests.
-- Logger and future compute packages stay in native code without coupling to HTTP/DB.
-- `@ndb/platform` stays safe for future frontend imports.
-
-### Negative
-
-- NAPI packages require a Rust rebuild (`make install`) when native code changes.
-- Splitting domain (TS) from compute (Rust NAPI) requires clear input/output contracts.
-
-### Neutral
-
-- Auth middleware can move to `@ndb/middleware` as features grow.
-
-## Alternatives Considered
-
-### Rust domain layer (previous design)
-
-Rust `kernel` + `database` crates with a single bootstrap NAPI addon. Replaced because
-most application logic benefits from Bun/TypeScript velocity; only logger and future
-compute workloads need native code.
-
-### TypeScript-only logger
-
-Rejected: Rust logger provides single-writer JSON semantics and prepares for
-CloudWatch backend without blocking the event loop.
-
-## References
-
-- [ADR-002](002-authentication.md) — authentication, MFA, sessions, recovery
-- [ADR-003](003-end-to-end-encryption.md) — client-side end-to-end encryption
-- [DEV.md](../DEV.md) — setup, make targets, bootstrap wiring
-- [NAPI-RS](https://napi.rs/)
-- [Hono](https://hono.dev/)
-- [Drizzle ORM](https://orm.drizzle.team/)
+- Domain type changes start in TypeScript `@ndb/core` `src/domains/`, then update
+  `statements::domain`, `napi/convert.rs`, and `@ndb/statements/src/convert/` when
+  compute shapes change.
+- Auth service changes stay in `@ndb/core`; crypto adapter changes stay in `@ndb/auth`.
+- See ADR-005 for pipeline invocation and ADR-006 for the full type-ownership model.
