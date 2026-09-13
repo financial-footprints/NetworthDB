@@ -2,6 +2,7 @@ import { readBearerToken } from "@middleware/auth/bearer";
 import type { Principal } from "@middleware/auth/types";
 import type { AuthService } from "@ndb/core";
 import { UnauthorizedError } from "@ndb/core";
+import { setRequestActorId } from "@ndb/logger";
 import type { Env, MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
 
@@ -24,6 +25,7 @@ export function requireSession<
       session: { id: bearer.sessionId },
       auth: { acr: bearer.authAcr, amr: bearer.authAmr },
     });
+    setRequestActorId(bearer.user.id);
     await next();
   });
 }

@@ -7,7 +7,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!src/packages/logger/*.node", "!**/native.d.ts"]
+    "includes": ["**"]
   },
   "formatter": {
     "enabled": true,
@@ -17,16 +17,6 @@
     "lineWidth": 100
   },
   "overrides": [
-    {
-      "includes": ["src/packages/logger/**"],
-      "linter": {
-        "rules": {
-          "style": {
-            "noRestrictedImports": "off"
-          }
-        }
-      }
-    },
     {
       "includes": ["src/apps/web/**"],
       "css": {

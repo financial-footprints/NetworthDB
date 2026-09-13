@@ -27,7 +27,7 @@ throw new Error("bootstrap.config.env.auth-rate-window.must-be-positive");
 
 ## Database (`database`)
 
-### Repositories — ConflictError / plain Error
+### Repositories — ConflictError / Plain Error
 
 | Before | After |
 |--------|-------|
@@ -54,7 +54,7 @@ throw new Error("database.auth.recovery-code.create.error.no-row");
 throw new Error("database.auth.recovery-code.save.error.no-row");
 ```
 
-### Config / env
+### Config / Env
 
 | Before | After |
 |--------|-------|
@@ -64,7 +64,7 @@ throw new Error("database.auth.recovery-code.save.error.no-row");
 
 ## Core (`core`)
 
-### Auth service
+### Auth Service
 
 | Before | After |
 |--------|-------|
@@ -75,7 +75,7 @@ throw new Error("database.auth.recovery-code.save.error.no-row");
 | `throw new ValidationError("username unchanged")` | `throw new ValidationError("core.auth.username.invalid.unchanged")` |
 | `throw new ConflictError("username taken", { username })` | `throw new ConflictError("core.auth.username.conflict.taken", { username })` |
 
-### MFA service
+### MFA Service
 
 | Before | After |
 |--------|-------|
@@ -90,7 +90,7 @@ throw new Error("database.auth.recovery-code.save.error.no-row");
 | `throw new ValidationError("webauthn not configured")` | `throw new ValidationError("core.auth.mfa.webauthn.invalid.not-configured")` |
 | `throw new ValidationError("password required", { field: "password" })` | `throw new ValidationError("core.auth.mfa.invalid.password-required", { field: "password" })` |
 
-### Vault service
+### Vault Service
 
 | Before | After |
 |--------|-------|
@@ -104,7 +104,7 @@ throw new Error("database.auth.recovery-code.save.error.no-row");
 | `throw new ConflictError("duplicate slot")` | `throw new ConflictError("core.auth.vault.slot.conflict.duplicate")` |
 | `throw new EntityNotFoundError("VaultSlot", slotIdRaw)` | `throw new EntityNotFoundError("core.auth.vault.slot.not-found", slotIdRaw)` *(after constructor refactor)* |
 
-### WebAuthn service
+### WebAuthn Service
 
 | Before | After |
 |--------|-------|
@@ -115,7 +115,7 @@ throw new Error("database.auth.recovery-code.save.error.no-row");
 | `throw new ValidationError("webauthn not configured")` | `throw new ValidationError("core.auth.webauthn.invalid.not-configured")` |
 | `throw new EntityNotFoundError("WebAuthnCredential", credentialIdRaw)` | `throw new EntityNotFoundError("core.auth.webauthn.credential.not-found", credentialIdRaw)` *(after constructor refactor)* |
 
-### Recovery service
+### Recovery Service
 
 | Before | After |
 |--------|-------|
@@ -124,7 +124,7 @@ throw new Error("database.auth.recovery-code.save.error.no-row");
 | `throw new ValidationError("password_slot required")` | `throw new ValidationError("core.auth.recovery.advanced.invalid.password-slot-required")` |
 | `throw new ValidationError("username and email required")` | `throw new ValidationError("core.auth.recovery.email.invalid.missing-fields")` |
 
-### User service / entities
+### User Service / Entities
 
 | Before | After |
 |--------|-------|
@@ -134,7 +134,7 @@ throw new Error("database.auth.recovery-code.save.error.no-row");
 | `throw new ConflictError("username taken", { username })` | `throw new ConflictError("core.user.register.conflict.username-taken", { username })` |
 | `throw new ValidationError("unknown role", { field: "role", value: raw })` | `throw new ValidationError("core.user.role.invalid.unknown", { field: "role", value: raw })` |
 
-### Auth context
+### Auth Context
 
 | Before | After |
 |--------|-------|
@@ -194,7 +194,7 @@ throw new DomainError("notifications.email.smtp.send.error", {
 
 ---
 
-## Test helpers (lower priority)
+## Test Helpers (Lower Priority)
 
 Optional migration — not required for production correctness.
 
@@ -206,7 +206,7 @@ Optional migration — not required for production correctness.
 
 ---
 
-## Consistency notes
+## Consistency Notes
 
 1. **Same semantic error, same key** — `"invalid credentials"` in login, MFA verify, and recovery should share one key when the meaning is identical: `core.auth.login.unauthorized.invalid-credentials` or a shared `core.auth.unauthorized.invalid-credentials` if truly global.
 2. **Layer-specific keys** — API route validation uses `api.*`; domain logic uses `core.*`; persistence uses `database.*`. Do not reuse `core.*` in API parse helpers.

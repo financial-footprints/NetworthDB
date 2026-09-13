@@ -6,216 +6,162 @@ Accepted
 
 ## Context
 
-NetworthDB is the consolidated backend for account metadata, authentication, and
-pipeline services in Financial Footprints. NetworthDOM authenticates users against
-this API; all authenticated routes validate session bearer tokens here.
+NetworthDB is the consolidated backend for Financial Footprints. Clients authenticate against this API; every protected route validates session tokens here.
 
-Constraints that shaped this design:
+Design constraints:
 
 - **Privacy** — username-only identity by default; recovery email is opt-in.
-- **Defense in depth** — MFA for production roles; TOTP secrets encrypted at rest;
-  opaque refresh tokens stored hashed and rotated on each use.
-- **No silent admin reset** — administrators cannot clear MFA or reset passwords via
-  admin APIs; advanced recovery is self-serve when vault data-recovery slots exist.
-- **Data confidentiality boundary** — tier-1 sensitive fields are encrypted in the
-  client before persistence. NetworthDB provides standard authentication
-  only; it stores opaque E2E blobs and server-encrypted payloads per
-  [ADR-004](004-data-encryption-policy.md).
+- **Defense in depth** — MFA for production roles; TOTP encrypted at rest; refresh tokens hashed and rotated.
+- **No silent admin reset** — operators cannot clear MFA or reset passwords through admin APIs.
+- **Auth ≠ data confidentiality** — tier-1 application data is client-encrypted per [ADR-003](003-end-to-end-encryption.md) and [ADR-004](004-data-encryption-policy.md).
 
 ## Decision
 
-Adopt **standard authentication** with **optional email-assisted recovery**:
+Adopt **standard server-side authentication** with **optional email-assisted recovery**:
 
-1. **Primary factor** — password login over TLS (`POST /api/v1/auth/login`). Server
-   stores an Argon2id hash (`password_hash` on `users`) and verifies credentials on
-   each login.
-2. **Second factors** — TOTP and WebAuthn (hardware keys). Enforcement via
-   `ENVIRONMENT` and `MFA_REQUIRED_ROLES`.
-3. **MFA recovery codes** — optional one-time codes for lost authenticator scenarios.
-4. **Optional recovery email** — stored as Argon2id hash of the normalized address
-   (`recovery_email_hash`; never plaintext; never server-decryptable). Enrollment
-   status on `GET /api/v1/users/me` only. See [ADR-003](003-end-to-end-encryption.md).
-5. **Self-serve password reset** — for users who forgot their password but retain MFA.
-   Email token plus MFA proof required.
-6. **Advanced recovery** — for users who lost MFA (and optionally password).
-   Self-serve when recovery email and a vault `recovery_phrase` or `webauthn_prf`
-   slot exist: email token, client unlocks DEK, re-wraps password slot, MFA cleared,
-   forced re-enrollment when policy requires.
-7. **Sessions** — opaque `session_token` and `refresh_token` pairs stored hashed in
-   `auth_sessions`; refresh rotated on each use; short `SESSION_TTL` on access tokens.
-8. **Session revocation** — credential, role, username, MFA, and recovery-completion
-   events revoke all sessions for the affected user.
+1. **Primary factor** — password verified with Argon2id on each login.
+2. **Second factors** — TOTP and WebAuthn; enforced by environment and role policy.
+3. **MFA recovery codes** — optional one-time codes when the authenticator is lost.
+4. **Optional recovery email** — stored as a hash only; never plaintext; used to deliver recovery tokens.
+5. **Self-serve password reset** — email token plus existing MFA proof required.
+6. **Advanced recovery** — for lost MFA (and optionally password): email token, client unlocks the data-encryption key via a vault recovery slot, re-wraps the password slot, MFA cleared, forced re-enrollment when policy requires.
+7. **Sessions** — opaque access and refresh token pairs, stored hashed, short TTL on access tokens, refresh rotated on each use.
+8. **Revocation** — credential, role, username, MFA, and recovery-completion events revoke all sessions for the user.
 
-### Non-goals
-
-- Silent administrator MFA or password reset
-- Email or SMS as a login OTP factor (email is recovery-only)
-- Custom client-held identity signing keys
-- Guarantee that a host operator cannot edit auth rows via direct database access
-
-### Client-side data encryption
-
-See **[ADR-003](003-end-to-end-encryption.md)** for the full design.
-
-Sensitive payloads are encrypted in the browser before upload. Keys derive from the
-user password (client KDF, separate from the login hash) and/or WebAuthn PRF vault
-slots. Password reset restores login only; ciphertext sealed to prior data keys
-remains unreadable until the client re-wraps data keys.
-
-## Threat model
-
-### Adversary
-
-A host root or DevOps operator who can:
-
-- Read and write the NetworthDB Postgres database, on-disk tenant storage, and
-  deployed configuration, including `MFA_SECRET`
-
-### Assumptions
-
-- Application builds ship via reviewed, immutable CI/CD; root does not substitute
-  malicious binaries
-- NetworthDOM pipeline is separate and honest
-- End-user devices are outside this model
-
-### Security goals
-
-| Goal                                     | Mechanism                                                                                                                   |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Sensitive data not readable from DB/disk | Client-side encryption in DOM (password KDF and/or WebAuthn PRF) before tier-1 fields are stored in NetworthDB                |
-| Standard login and authorization         | Password (Argon2id) + MFA (TOTP, WebAuthn) + server-validated session tokens                                                |
-| Optional account recovery                | Opt-in recovery email; self-serve password reset with MFA proof; self-serve advanced recovery with vault data-recovery slot |
-
-### Acceptable residuals
-
-| Residual                                                                       | Consequence                                                        | Mitigation / rationale                                                                                                          |
-| ------------------------------------------------------------------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| Password sent over TLS on login                                                | TLS compromise exposes credentials                                 | TLS is baseline; rate limiting and lockout reduce brute force                                                                    |
-| Step-up password in JSON body                                                  | Infrequent re-auth sends password over TLS                         | Accepted residual for high-impact mutations                                                                                     |
-| Auth rebinding — root rewrites `password_hash` and/or WebAuthn credential rows | Can obtain auth sessions as that user                              | Cannot decrypt application data sealed to the original user password or authenticator PRF secrets (ADR-003)                     |
-| Stolen session token from DB or logs                                           | Attacker can act as user until token expires or is revoked         | Tokens stored hashed; short `SESSION_TTL`; logout and revocation events invalidate sessions                                     |
-| Stale session after role demotion                                              | Brief window where session `acr` / role is outdated                | Sessions revoked on role change; short `SESSION_TTL` (accepted residual)                                                        |
-| Password policy split by `ENVIRONMENT`                                         | Local accepts weak passwords for developer convenience             | `ENVIRONMENT=production` enforces ≥12 chars plus upper, lower, digit, and symbol; local is length-only (8–128)                  |
-| Lost password and all MFA factors, no recovery email                           | Permanent lockout                                                  | Default privacy posture; users opt in to recovery email                                                                         |
-| Email account compromise                                                       | Attacker may receive reset or advanced recovery links              | Self-serve reset requires MFA; advanced requires vault slot unlock client-side; short TTLs; rate limits — risk not eliminated   |
-| Auth recovery ≠ data recovery                                                  | Password reset does not decrypt client-encrypted tier-1 data     | DOM must re-wrap data keys separately                                                                                           |
-| Root / SQL bypass                                                              | Root can edit MFA or `password_hash` directly                      | Ceremony prevents API/UI silent reset, not raw DB access                                                                        |
-| Admin social engineering                                                       | MFA can be cleared only via advanced recovery token + vault unlock | Self-serve path; vault slot required; short TTL; offline phrase/passkey unlock remains client-side                              |
-
-## Architecture
+### Architecture
 
 ```mermaid
 flowchart TB
-  subgraph clients [Clients]
-    DOM[NetworthDOM]
+  Client[Browser client]
+
+  subgraph api [NetworthDB]
+    Routes[HTTP routes]
+    AuthSvc[Auth ceremonies]
+    VaultSvc[Vault ceremonies]
+    Crypto[Auth crypto]
+    Mail[Email delivery]
   end
 
-  subgraph networthdb [NetworthDB API]
-    Routes["src/apps/api routes"]
-    AuthSvc["@ndb/core AuthService"]
-    VaultSvc["@ndb/core VaultService"]
-    AuthCrypto["@ndb/auth createAuthCrypto"]
-    Mailer[EmailSender]
-    Repos["@ndb/database Drizzle repos"]
-  end
+  DB[(Postgres)]
 
-  subgraph authdata [Postgres]
-    Users[users]
-    Sessions[auth_sessions]
-    Recovery[auth_recovery]
-    MFA[auth_multifactor / webauthn]
-    Vault[users_vault]
-  end
-
-  DOM -->|login recovery vault API| Routes
+  Client -->|login, recovery, vault| Routes
   Routes --> AuthSvc
   Routes --> VaultSvc
-  AuthSvc --> AuthCrypto
-  AuthSvc --> Mailer
-  AuthSvc --> Repos
-  VaultSvc --> Repos
-  Repos --> Users
-  Repos --> Sessions
-  Repos --> Recovery
-  Repos --> Vault
+  AuthSvc --> Crypto
+  AuthSvc --> Mail
+  AuthSvc --> DB
+  VaultSvc --> DB
 ```
 
-| Component                          | Responsibility                                                |
-| ---------------------------------- | ------------------------------------------------------------- |
-| `src/apps/api` routes              | HTTP endpoints for login, MFA, recovery, and user management  |
-| `@ndb/core` `AuthService`          | Login, session lifecycle, password updates, recovery          |
-| `@ndb/core` `MultifactorService`   | TOTP, WebAuthn, recovery codes, lockout                       |
-| `@ndb/core` `VaultService`         | Vault slot validation and persistence orchestration           |
-| `@ndb/auth` `createAuthCrypto`     | Argon2, TOTP, WebAuthn RP, token digest, MFA secret box       |
-| `EmailSender` port                 | SMTP or console delivery for recovery emails (no persistence) |
-| `@ndb/database` Drizzle repositories | Persistence adapters for users, sessions, MFA, recovery, vault |
+### Login and Session Flow
 
-## Key design choices
+```mermaid
+sequenceDiagram
+  participant Client
+  participant API
+  participant Auth as Auth service
+  participant DB
 
-| Choice                                       | Pros                                                               | Cons                                                             |
-| -------------------------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| Optional recovery email                      | Users can recover from single-factor loss                          | Privacy trade-off; email compromise risk                         |
-| Self-serve advanced recovery with vault gate | No silent admin reset; data recovery when client unlocks DEK       | Requires vault `recovery_phrase` or `webauthn_prf` slot at begin |
-| Self-serve reset requires MFA                | Stolen inbox alone is insufficient                                 | Useless if MFA is also lost (advanced path required)             |
-| Hashed recovery email at rest                | DB leak does not expose addresses; begin requires re-entered email | User must supply email on each recovery start                    |
-| No email by default                          | Strong username-only privacy                                       | No recovery without opt-in                                       |
-| Opaque server-side sessions                  | Immediate revocation; no signing key exposure                      | Requires session lookup on each authenticated request            |
+  Client->>API: Login with password
+  API->>Auth: Verify credentials
+  Auth->>DB: Lookup user, verify Argon2id hash
+  alt MFA required
+    Auth-->>Client: MFA challenge
+    Client->>API: Submit TOTP or WebAuthn
+    Auth->>DB: Verify second factor
+  end
+  Auth->>DB: Store hashed session and refresh tokens
+  Auth-->>Client: Access token and refresh token
+  Note over Client,DB: Each authenticated request validates session hash in DB
+```
+
+### Recovery Flows
+
+```mermaid
+flowchart TB
+  subgraph reset [Password reset — MFA still available]
+    R1[User requests reset]
+    R2[Email token if recovery email enrolled]
+    R3[MFA proof required]
+    R4[New password set, all sessions revoked]
+    R1 --> R2 --> R3 --> R4
+  end
+
+  subgraph advanced [Advanced recovery — MFA lost]
+    A1[User requests advanced recovery]
+    A2[Email token if recovery email enrolled]
+    A3[Client unlocks DEK via vault recovery slot]
+    A4[Re-wrap password slot, clear MFA]
+    A5[Forced MFA re-enrollment if policy requires]
+    A1 --> A2 --> A3 --> A4 --> A5
+  end
+```
+
+Password reset restores **login only**. Advanced recovery is the path when MFA is lost; it may also restore access to client-encrypted data when a vault recovery slot survives.
+
+### Non-Goals
+
+- Silent administrator MFA or password reset
+- Email or SMS as a login OTP (email is recovery-only)
+- Client-held identity signing keys
+- Guarantee that a host operator cannot edit auth rows via direct database access
+
+## Threat Model
+
+### Adversary
+
+A host operator with read/write access to the database, on-disk storage, and deployed configuration (including server encryption keys).
+
+### Assumptions
+
+- Application builds are reviewed and immutable; operators do not substitute malicious binaries.
+- End-user devices are outside this model.
+
+### Security Goals
+
+| Goal | Mechanism |
+| ---- | --------- |
+| Sensitive application data not readable from DB/disk | Client-side encryption before tier-1 fields are stored (ADR-003) |
+| Standard login and authorization | Password + MFA + server-validated sessions |
+| Optional account recovery | Opt-in recovery email; self-serve flows with MFA or vault proof |
+
+### Acceptable Residuals
+
+| Residual | Rationale |
+| -------- | --------- |
+| Password sent over TLS on login | Baseline transport; rate limiting reduces brute force |
+| Auth rebinding via DB access | Operator can obtain sessions but not decrypt E2E data sealed to original secrets |
+| Stolen session token | Mitigated by hashing, short TTL, and revocation |
+| Password reset ≠ data recovery | By design; client must re-wrap data keys separately |
+| Root / SQL bypass of ceremonies | API prevents silent reset; raw DB access is out of scope |
 
 ## Alternatives Considered
 
-### No recovery (lockout only)
-
-Rejected as sole option — optional email recovery added with documented risks.
-
-### Admin MFA reset without user proof
-
-Rejected — creates a support backdoor.
-
-### Email/SMS login OTP
-
-Rejected — privacy concern; unnecessary for recovery design.
+| Alternative | Why rejected |
+| ----------- | ------------ |
+| No recovery (lockout only) | Too harsh as the only option; optional email recovery added with documented risks |
+| Admin MFA reset without user proof | Creates a support backdoor |
+| Email/SMS login OTP | Privacy concern; unnecessary for recovery design |
 
 ## Consequences
 
 ### Positive
 
-- Privacy-first username-only identity with opt-in recovery.
-- Defense in depth via MFA, encrypted TOTP secrets, and session rotation.
-- Clear separation between authentication recovery and data recovery (ADR-003).
+- Privacy-first default with opt-in recovery.
+- Clear separation between authentication recovery and data recovery.
 
 ### Negative
 
-- Operators must configure recovery email delivery and understand residual risks.
-- Session-based auth requires database lookup on each request (vs stateless JWT).
+- Session auth requires a database lookup per request (vs stateless JWT).
+- Operators must configure SMTP and understand recovery residuals.
 
 ### Neutral
 
-- API path constants live in `src/packages/platform/src/endpoints.ts`.
-
-### Operators
-
-- Set `MFA_SECRET` in all environments.
-- Configure `SMTP_*` for recovery email delivery.
-- Set `RECOVERY_APP_BASE_URL` for links in recovery emails.
-- Understand the recovery vs data-recovery distinction and residuals above.
-
-### NetworthDOM
-
-- Opt-in recovery email UI; password and advanced recovery flows.
-- Client-side vault and opaque field handling per ADR-003; data-key re-wrap after
-  password reset when required.
-
-### NetworthDB (API)
-
-- Session bearer validation on all authenticated routes; enforce `acr=aal2` where
-  appropriate.
-- Stores opaque tier-1 client field values and server-encrypted tier-2 payloads;
-  cannot decrypt tier-1 sealed data.
+- Password policy strictness varies by environment (strict in production, relaxed locally).
 
 ## References
 
-- [ADR-001](001-domain-driven-design.md) — domain and package layout
-- [ADR-003](003-end-to-end-encryption.md) — client-side end-to-end encryption
-- [DEV.md](../DEV.md) — setup, make targets, bootstrap wiring
-- [`src/packages/platform/src/endpoints.ts`](../../src/packages/platform/src/endpoints.ts) — API path constants
-- [`src/apps/api/.env.example`](../../src/apps/api/.env.example) — environment variable reference
+- [ADR-001](001-domain-driven-design.md) — domain layout
+- [ADR-003](003-end-to-end-encryption.md) — client-side encryption
+- [ADR-004](004-data-encryption-policy.md) — tier classification
+- [DEV.md](../DEV.md) — local setup

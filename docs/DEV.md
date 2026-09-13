@@ -1,75 +1,86 @@
-# Developer docs
+# Developer Guide
 
 ## Prerequisites
 
-Rust, Bun, Docker.
+- [Bun](https://bun.sh)
+- [Docker](https://www.docker.com) (Postgres)
 
-## Quick start
+## Quick Start
 
 ```bash
 make setup
 make dev
 ```
 
-- API health: `http://127.0.0.1:8000/health`
-- Web UI: `http://127.0.0.1:3000` (Rsbuild dev server; proxies `/api` to the API)
-- Postgres: `localhost:5451` (`networthdb` / `networthdb`)
+| Service  | URL / connection                                      |
+| -------- | ----------------------------------------------------- |
+| API      | <http://127.0.0.1:8000/health>                          |
+| Web UI   | <http://127.0.0.1:3000> (proxies `/api` to the API)     |
+| Postgres | `localhost:5451` — database/user/password: `networthdb` |
 
-`make dev` starts the API, NAPI watchers, and the web app in parallel (`bun run --parallel --workspaces --if-present dev`).
+Local config: copy `src/apps/api/.env.example` → `src/apps/api/.env` (also done by `make setup`).
 
-## Database Migrations
+## Parallel Statement Sync
 
-Migrations run automatically during `make setup`. When `ENVIRONMENT=local`, seed applies dev fixtures (`admin`, `manasi`, `usher` — password `admin`).
+Bulk **sync all credit cards** in the UI fires one HTTP job per card. Up to `JOBS_MAX_WORKERS` pipelines run at once (default **10** in `.env.example`; Bruno/tests use `2` in `.env.tests`).
 
-To apply migrations manually when Postgres is already running:
+| Layer | Role |
+| ----- | ---- |
+| `JobRunnerService` | Schedules up to N job callbacks concurrently |
+| `createPool({ threads: N })` | Runs pipeline compute in `worker_threads` |
+
+During `make dev`, pipeline workers write tagged JSON log lines to the terminal (`jobId`, `accountId`). Lines from multiple workers interleave — that is expected. The API `/health` endpoint stays responsive while sync jobs run.
+
+Set `JOBS_MAX_WORKERS=10` (or higher) in `src/apps/api/.env` when testing parallel sync locally.
+
+## Database
+
+Migrations run during `make setup`. With `ENVIRONMENT=local`, seed creates dev users (`admin`, `manasi`, `usher`; password `admin`).
+
+Apply migrations manually:
 
 ```bash
 bun run --filter @ndb/database migrate
 ```
 
-Generate new migrations after schema changes: `make migrations name=<name>`.
+Generate migrations after schema changes:
 
-## Make
+```bash
+make migrations name=<name>
+```
 
-| Target       | Description                                              |
-| ------------ | -------------------------------------------------------- |
-| `help`       | List make targets                                        |
-| `install`    | `bun install`, NAPI debug builds for logger and statements |
-| `setup`      | Copy `.env`, install, start Postgres, and migrate       |
-| `migrations` | Generate Drizzle migrations from schema (`name=<name>`) |
-| `update`     | `cargo update` and `bun update` within current ranges    |
-| `upgrade`    | Latest stable Rust, Bun, and all dependencies            |
-| `dev`        | Postgres + parallel API/logger/statements/web watch      |
-| `kill`       | Free app ports and stop Postgres                         |
-| `check`      | fmt, clippy, tests, biome, tsc, bun test, bruno          |
-| `ci`         | Same as check, no writes                                 |
-| `clean`      | Remove `target/` and NAPI artifacts (logger, statements) |
+Schema lives in `src/packages/database/src/schema/`. Do not hand-edit files under `drizzle/migrations/`.
 
-Config: [src/apps/api/.env.example](../src/apps/api/.env.example) → `src/apps/api/.env`.
+## Make Targets
 
-Architecture: [adr/001-domain-driven-design.md](adr/001-domain-driven-design.md),
-[adr/002-authentication.md](adr/002-authentication.md),
-[adr/003-end-to-end-encryption.md](adr/003-end-to-end-encryption.md),
-[adr/004-data-encryption-policy.md](adr/004-data-encryption-policy.md),
-[adr/005-statements-compute.md](adr/005-statements-compute.md).
+| Target       | Description                                    |
+| ------------ | ---------------------------------------------- |
+| `help`       | List targets                                   |
+| `install`    | `bun install`                                  |
+| `setup`      | Env files, install, Postgres, migrate          |
+| `migrations` | Generate Drizzle migrations (`name=<name>`)    |
+| `update`     | `bun update` within current ranges             |
+| `upgrade`    | Latest Bun and dependencies                    |
+| `dev`        | Postgres + parallel API/web watch              |
+| `kill`       | Free app ports and stop Postgres               |
+| `check`      | biome, type-check, bun test, bruno             |
+| `ci`         | Same as `check`, no writes                     |
+| `clean`      | Remove `dist/` and stop Postgres               |
 
-## Observability
+## Statement Compute
 
-All operational logs are JSON lines written by the Rust `logger` crate and exposed
-through `@ndb/logger`. Each HTTP request gets
-a `rayId` on the `X-Request-Id` response header and in every log line for that
-request.
+`@ndb/statements` is pure TypeScript: extract, cleanup, metadata, parse, vault I/O, and a worker pool. Bootstrap wires `wrap(createPool(...), config)` at API startup. See [ADR-005](adr/005-statements-compute.md).
 
-Log messages must not be empty. Prefer stable keys like `middleware.http.ok` for
-operational events and plain sentences for user-facing errors. Put variable data in
-log context, not in the message string.
+Regenerate the Bruno upload PDF fixture (rare):
 
-## NAPI compute packages
+```bash
+bun run --filter @ndb/statements gen:bruno-pdf
+```
 
-Heavy computation lives in `@ndb/statements` (Rust + NAPI) — the NetworthCSV port for
-statement extract, cleanup, metadata, parse, and on-disk vault I/O (`FILESTORE_PATH`).
-`@ndb/logger` is the other NAPI package. Statements reads process env for storage roots;
-callers pass `userId`, data keys, and domain payloads. No database or HTTP inside NAPI
-packages. The sibling `../NetworthCSV` checkout is a read-only behavior reference;
-runtime behavior is defined by `@ndb/statements`. Port progress:
-[PLAN.md](../PLAN.md) at the repo root.
+## Further Reading
+
+Architecture decisions: [docs/adr/](adr/README.md).
+
+Agent and coding conventions: [AGENT.md](../AGENT.md).
+
+Environment variables: `src/apps/api/.env.example`.

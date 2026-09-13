@@ -15,7 +15,6 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.13",
     "@usebruno/cli": "^4.1.0",
-    "@napi-rs/cli": "^3.9.1",
     "@tsconfig/node22": "^22.0.6",
     "@types/bun": "^1.4.2",
     "@types/node": "^26.5.1",

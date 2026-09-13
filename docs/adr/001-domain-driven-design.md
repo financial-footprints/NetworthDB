@@ -2,101 +2,102 @@
 
 ## Status
 
-Accepted (updated for TypeScript-only core — see ADR-006)
+Accepted
 
 ## Context
 
-NetworthDB is the backend for account metadata, statement compute, and authentication.
-Business rules for accounts, statements, sources, and jobs must stay independent of HTTP
-(Hono) and persistence (Drizzle). Dependencies point inward: adapters depend on domain
-code, never the reverse.
-
-Domain entities are defined in TypeScript (`@ndb/core` `src/domains/`). Statement compute
-runs in Rust (`@ndb/statements`) behind `StatementEngine`. Auth ceremonies run in
-`@ndb/auth` (see ADR-006).
+NetworthDB owns account metadata, authentication, statement processing, and background jobs. Business rules must stay independent of HTTP, databases, and third-party integrations. Dependencies must point inward: outer layers depend on the domain, never the reverse.
 
 ## Decision
+
+Adopt **Domain-Driven Design** with **Clean Architecture**. The domain package (`@ndb/core`) sits at the center; apps and infrastructure adapters wrap it.
 
 ```mermaid
 flowchart TB
   subgraph apps [Apps]
-    API["src/apps/api (Hono)"]
-    Web["src/apps/web"]
+    API[HTTP API]
+    Web[Web UI]
   end
 
-  subgraph ts [TypeScript packages]
-    Platform["@ndb/platform — HTTP Zod schemas"]
-    CoreTS["@ndb/core — entities, ports, pure services"]
-    AuthTS["@ndb/auth — AuthCrypto + rate limits"]
-    Bootstrap["@ndb/bootstrap — composition root"]
-    DB["@ndb/database — Drizzle adapters"]
-    StmtTS["@ndb/statements — TS adapter + NAPI"]
+  subgraph composition [Composition]
+    Bootstrap[@ndb/bootstrap]
+    Platform[@ndb/platform]
   end
 
-  subgraph rust [Rust workspace]
-    Statements["statements rlib — domain + compute"]
-    StmtNapi["statements cdylib — NAPI exports"]
-    Statements --> StmtNapi
+  subgraph domain [Domain center]
+    Core[@ndb/core]
+  end
+
+  subgraph infra [Infrastructure]
+    DB[@ndb/database]
+    Stmt[@ndb/statements]
+    Auth[@ndb/auth]
+    MW[@ndb/middleware]
   end
 
   API --> Bootstrap
   Web --> Platform
-  Bootstrap --> CoreTS
-  Bootstrap --> AuthTS
+  Bootstrap --> Core
   Bootstrap --> DB
-  Bootstrap --> StmtTS
-  AuthTS --> CoreTS
-  StmtTS --> CoreTS
-  StmtTS --> StmtNapi
-  DB --> CoreTS
+  Bootstrap --> Stmt
+  Bootstrap --> Auth
+  DB --> Core
+  Stmt --> Core
+  Auth --> Core
+  API --> MW
 ```
 
-### Layer responsibilities
+### Bounded Contexts
 
-- **`@ndb/core` TypeScript** — bounded contexts for `user`, `auth`, `account`, `jobs`,
-  `sources`. Entities, value objects, repository ports, pure application services
-  (`AccountService`, `UserService`, …), and ports (`StatementEngine`). **No runtime
-  npm dependencies.** See ADR-006.
+```mermaid
+flowchart LR
+  User[User]
+  Auth[Auth / Vault]
+  Account[Account]
+  Sources[Sources]
+  Stmt[Statements]
+  Jobs[Jobs]
 
-- **`@ndb/auth` TypeScript** — crypto adapters: `createAuthCrypto()` implements
-  `AuthCrypto` ports (Argon2, TOTP, WebAuthn RP, token digest, MFA secret box) plus Redis
-  rate limits. Depends on `@ndb/core` and crypto libraries.
+  Account --> Stmt
+  Account --> Jobs
+  Account --> Sources
+  User --> Auth
+  Auth --> User
+```
 
-- **`@ndb/statements`** — statement compute (Rust rlib + `statements.node` cdylib) and
-  TypeScript adapter (`createStatementEngine()` implements `StatementEngine`).
+| Context | Scope |
+| ------- | ----- |
+| User | Identity and profile |
+| Auth / Vault | Login, MFA, sessions, recovery, vault slots |
+| Account | Account metadata and statement orchestration |
+| Sources | Mail and statement source configuration |
+| Statements | Vault-backed statement artifacts (no SQL entity for individual statements) |
+| Jobs | Background work tied to accounts and pipelines |
 
-- **`statements` (rlib)** — NetworthCSV port: file layout, bank handlers, pipeline
-  stages. `statements::domain` is internal Rust vocabulary; `domain::convert` maps vault
-  JSON to domain read models.
+### Dependency Rules
 
-- **`@ndb/platform`** — shared HTTP paths and Zod request/response schemas (snake_case
-  JSON mapping only at the API boundary).
-
-- **`src/apps/api`** — thin Hono routes: validate with platform schemas, call bootstrap
-  services, serialize responses.
-
-### Bounded contexts
-
-| Context | Owner | Notes |
-| --- | --- | --- |
-| User | `@ndb/core` | Entities, admin CRUD via `UserService` |
-| Auth / Vault | `@ndb/core` | `AuthService`, MFA, WebAuthn, recovery, `VaultService`; crypto via `@ndb/auth` |
-| Account | `@ndb/core` | Entity + `AccountService`; Drizzle maps rows → `Account` |
-| Sources | `@ndb/core` | Independent; not nested under account |
-| Statements (compute) | Rust rlib + `@ndb/statements` adapter | Vault-backed; no SQL table for `Statement` |
-| Jobs | `@ndb/core` | Entity + runner; `JobScope` references `accountId` |
-
-### Dependency rules
-
-- Apps import `@ndb/bootstrap` and `@ndb/platform`, not Drizzle or NAPI internals.
-- `@ndb/core` does not import `@ndb/statements`, `@ndb/auth`, or `@ndb/database`.
-- Bootstrap wires port implementations (`createStatementEngine`, `createAuthService`).
-- `@ndb/database` implements core repository ports; no domain logic in repositories.
+- Apps depend on bootstrap and platform schemas, not on adapter internals.
+- Domain does not import persistence, HTTP, or compute packages.
+- Bootstrap wires port implementations; cross-cutting HTTP concerns stay in middleware.
 
 ## Consequences
 
-- Domain type changes start in TypeScript `@ndb/core` `src/domains/`, then update
-  `statements::domain`, `napi/convert.rs`, and `@ndb/statements/src/convert/` when
-  compute shapes change.
-- Auth service changes stay in `@ndb/core`; crypto adapter changes stay in `@ndb/auth`.
-- See ADR-005 for pipeline invocation and ADR-006 for the full type-ownership model.
+### Positive
+
+- Business rules are testable without HTTP or a database.
+- Adapters (storage, compute, auth) can be swapped behind ports.
+
+### Negative
+
+- Shared type changes start in the domain and propagate to adapters.
+- More packages and explicit wiring than a monolith.
+
+### Neutral
+
+- API request/response shapes are defined separately from domain entities and mapped at the boundary.
+
+## References
+
+- [ADR-002](002-authentication.md) — auth bounded context
+- [ADR-004](004-data-encryption-policy.md) — field classification
+- [ADR-005](005-statements-compute.md) — statement compute

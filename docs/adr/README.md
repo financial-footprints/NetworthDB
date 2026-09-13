@@ -1,19 +1,19 @@
 # Architecture Decision Records
 
-This directory captures significant technical decisions for NetworthDB.
+Significant technical decisions for NetworthDB. Each ADR records **why** a choice was made — not how it is implemented today.
 
-To add a new ADR:
+## Adding an ADR
 
-1. Copy [000-template.md](./000-template.md) to a new file with the next number
-   in sequence (e.g. `002-my-decision.md`).
-2. Fill in the sections and set the status.
-3. Update the status of any ADRs this one supersedes.
+1. Copy [000-template.md](./000-template.md) to the next number (e.g. `006-my-decision.md`).
+2. Fill in context, decision, and consequences.
+3. Mark any superseded ADRs in their status section.
 
 ## Index
 
-- [001 - Domain-Driven Design and Clean Architecture](./001-domain-driven-design.md)
-- [002 - Authentication](./002-authentication.md)
-- [003 - End-to-end encryption](./003-end-to-end-encryption.md)
-- [004 - Data encryption policy](./004-data-encryption-policy.md)
-- [005 - Statement compute](./005-statements-compute.md)
-- [006 - TypeScript domain types; statements Rust + adapter](./006-type-ownership.md)
+| ADR | Title |
+| --- | ----- |
+| [001](./001-domain-driven-design.md) | Domain-Driven Design and Clean Architecture |
+| [002](./002-authentication.md) | Authentication |
+| [003](./003-end-to-end-encryption.md) | End-to-end encryption |
+| [004](./004-data-encryption-policy.md) | Data encryption policy |
+| [005](./005-statements-compute.md) | Statement compute architecture |

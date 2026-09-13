@@ -12,6 +12,8 @@
       "@bootstrap/*": ["./src/packages/bootstrap/src/*"],
       "@core/*": ["./src/packages/core/src/*"],
       "@database/*": ["./src/packages/database/src/*"],
+      "@encryption/*": ["./src/packages/encryption/src/*"],
+      "@logger/*": ["./src/packages/logger/src/*"],
       "@auth/*": ["./src/packages/auth/src/*"],
       "@middleware/*": ["./src/packages/middleware/src/*"],
       "@notifications/*": ["./src/packages/notifications/src/*"],
@@ -23,7 +25,14 @@
       "@tests/core/*": ["./src/packages/core/tests/*"],
       "@tests/auth/*": ["./src/packages/auth/tests/*"],
       "@tests/bootstrap/*": ["./src/packages/bootstrap/tests/*"],
-      "@tests/database/*": ["./src/packages/database/tests/*"]
+      "@tests/database/*": ["./src/packages/database/tests/*"],
+      "@tests/encryption/*": ["./src/packages/encryption/tests/*"],
+      "@tests/logger/*": ["./src/packages/logger/tests/*"],
+      "@tests/middleware/*": ["./src/packages/middleware/tests/*"],
+      "@tests/notifications/*": ["./src/packages/notifications/tests/*"],
+      "@tests/platform/*": ["./src/packages/platform/tests/*"],
+      "@tests/statements/*": ["./src/packages/statements/tests/*"],
+      "@tests/web/*": ["./src/apps/web/tests/*"]
     }
   },
   "include": ["src/**/*.ts"]

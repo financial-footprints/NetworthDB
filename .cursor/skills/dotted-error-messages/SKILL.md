@@ -23,7 +23,7 @@ All backend `throw new …Error(…)` and intentional `throw new Error(…)` mes
 - Append **dynamic values** as a final segment (e.g. `` `bootstrap.config.env.required.not-found.${name}` ``).
 - Minimum: at least **two** dot-separated segments; prefer **4–5** when possible.
 
-## Package prefix map
+## Package Prefix Map
 
 | Source path | Prefix |
 |-------------|--------|
@@ -42,7 +42,7 @@ All backend `throw new …Error(…)` and intentional `throw new Error(…)` mes
 - **status** — outcome bucket: `error`, `invalid`, `not-found`, `conflict`, `unauthorized`, `forbidden`, …
 - **message** — specific slug (kebab-case, no spaces)
 
-## Error class selection
+## Error Class Selection
 
 Match existing types in `src/packages/core/src/shared/errors/domain-error.ts`:
 
@@ -59,7 +59,7 @@ Match existing types in `src/packages/core/src/shared/errors/domain-error.ts`:
 
 Put structured data in `context` / constructor options — **not** in the message string.
 
-## Canonical examples (from this repo)
+## Canonical Examples (from This Repo)
 
 ```typescript
 // database — ConflictError
@@ -81,7 +81,7 @@ throw new DomainError("notifications.email.smtp.send.error", {
 throw new Error(`bootstrap.config.env.required.not-found.${name}`);
 ```
 
-## Naming recipe
+## Naming Recipe
 
 When writing or converting a throw:
 
@@ -114,18 +114,18 @@ Target pattern:
 throw new EntityNotFoundError("core.user.find.not-found", { entityName: "User", id: userIdRaw });
 ```
 
-## API impact
+## API Impact
 
 `src/packages/middleware/src/http/error.ts` returns `error.message` in JSON for most domain errors. Migrating messages **changes API responses** (e.g. `"username taken"` → `"core.user.register.conflict.username-taken"`). Update tests that assert on `error.message` or response JSON in the same pass.
 
-## Exceptions (no dotted key required)
+## Exceptions (No Dotted Key Required)
 
 - **Future frontend** user-facing copy (explicit exception).
 - **Test-only helpers** (`"database client was not created"`, `"missing secret"`) — lower priority; migrate optionally.
 - **Re-thrown errors** (`throw error`) — leave unchanged.
 - **Default empty constructors** — replace defaults with explicit dotted keys when touching the file (e.g. `UnauthorizedError()` → `UnauthorizedError("middleware.auth.bearer.missing")`).
 
-## Migration workflow
+## Migration Workflow
 
 1. Inventory: `rg 'throw new \w+Error\(' src/` and `rg 'throw new Error\(' src/`
 2. Skip or defer test helpers / fakes if desired.
@@ -138,7 +138,7 @@ throw new EntityNotFoundError("core.user.find.not-found", { entityName: "User", 
 5. Update unit + Bruno tests that match on message strings.
 6. User runs tests (workspace hook blocks agent execution).
 
-## Validation grep
+## Validation Grep
 
 ```bash
 cd /path/to/NetworthDB
@@ -150,6 +150,6 @@ rg 'throw new (Validation|Unauthorized|Conflict|Forbidden|TooManyRequests)Error\
 rg 'throw new \w+Error\("(?!.*\.).*"\)' src/
 ```
 
-## Additional resources
+## Additional Resources
 
 - Extended before/after conversions: [examples.md](examples.md)

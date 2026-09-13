@@ -3,41 +3,24 @@ description: Drizzle pgTable column order — fixed-width then variable-length, 
 globs: src/packages/database/src/schema/**
 alwaysApply: false
 ---
-# PostgreSQL Column Alignment (Drizzle Schema)
+# PostgreSQL column alignment
 
-Edit column order in `src/packages/database/src/schema/` only. Migrations are generated from these files — do not hand-edit SQL to fix alignment.
+Edit column order in `src/packages/database/src/schema/` only. Migrations are generated from schema — do not hand-edit SQL for alignment.
 
 Read `src/packages/database/src/schema/README.md` before adding or reordering columns.
 
-## Rule
+## Order within each `pgTable`
 
-Within each `pgTable` object, list columns in this order:
+1. **8-byte** — `timestamp`, `bigint`, `doublePrecision`, …
+2. **4-byte** — `integer`, `real`, `date`, `pgEnum`, …
+3. **16-byte** — `uuid`
+4. **1-byte** — `boolean`
+5. **Variable-length last** — `text`, `varchar`, `bytea`, `json`, `jsonb`, …
 
-1. **8-byte**: `timestamp`, `bigint`, `doublePrecision`, …
-2. **4-byte**: `integer`, `real`, `date`, `pgEnum`, …
-3. **16-byte**: `uuid`
-4. **1-byte**: `boolean`
-5. **Variable-length last**: `text`, `varchar`, `bytea`, `json`, `jsonb`, …
-
-When adding, removing, or reordering columns, **re-sort the whole column list** — do not append new columns at the end if that breaks alignment.
+When changing columns, re-sort the **whole** list — do not append if it breaks alignment.
 
 ## Why
 
-Drizzle preserves `pgTable` property order in generated `CREATE TABLE` SQL. PostgreSQL pads shorter fixed-width types to alignment boundaries; mixing widths (e.g. `boolean` before `timestamp`) wastes bytes in every row.
+PostgreSQL pads fixed-width types to alignment boundaries. Mixed column widths waste space in every row.
 
-## Example
-
-```typescript
-export const authSessions = pgTable("auth_sessions", {
-  sessionExpiresAt: timestamp("session_expires_at").notNull(),
-  refreshExpiresAt: timestamp("refresh_expires_at").notNull(),
-  revokedAt: timestamp("revoked_at"),
-  createdAt: timestamp("created_at").notNull(),
-  id: text("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  sessionHash: text("session_hash").notNull(),
-  refreshHash: text("refresh_hash").notNull(),
-});
-```
-
-Reference: `src/packages/database/src/schema/auth/sessions.ts`.
+See [docs/DEV.md](../../docs/DEV.md) for migration workflow.

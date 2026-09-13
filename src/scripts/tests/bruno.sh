@@ -5,7 +5,6 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 API_DIR="$ROOT/src/apps/api"
 DATABASE_PACKAGE_DIR="$ROOT/src/packages/database"
 ENV_TESTS="$API_DIR/.env.tests"
-STATEMENTS_NODE="$ROOT/src/packages/statements/statements.node"
 BRUNO_DIR="$API_DIR/tests/bruno"
 LOG_FILE="$BRUNO_DIR/.run/api.log"
 PID_FILE="$BRUNO_DIR/.run/api.pid"
@@ -26,12 +25,6 @@ trap cleanup EXIT
 cd "$ROOT"
 
 docker compose up -d --wait
-
-if [ ! -f "$STATEMENTS_NODE" ]; then
-	echo "Missing $STATEMENTS_NODE — build NAPI artifacts first:" >&2
-	echo "  bun run --filter @ndb/statements build:debug" >&2
-	exit 1
-fi
 
 bun --cwd "$DATABASE_PACKAGE_DIR" --env-file "$ENV_TESTS" node_modules/.bin/drizzle-kit migrate
 bun --cwd "$DATABASE_PACKAGE_DIR" --env-file "$ENV_TESTS" scripts/seed.ts

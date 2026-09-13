@@ -6,34 +6,31 @@ Proposed | Accepted | Deprecated | Superseded by [ADR-XXX](./XXX-title.md)
 
 ## Context
 
-What is the issue that we're seeing that is motivating this decision or change?
+What problem or constraint motivates this decision?
 
 ## Decision
 
-What is the change that we're proposing and/or doing?
+What we chose. Record the **policy or architecture**, not implementation details or file paths.
 
 ## Consequences
 
-What becomes easier or more difficult to do because of this change?
-
 ### Positive
 
-- List of positive outcomes
+-
 
 ### Negative
 
-- List of negative outcomes or tradeoffs
+-
 
 ### Neutral
 
-- List of neutral observations
+-
 
 ## Alternatives Considered
 
-### Alternative 1
-
-Description and why it was not chosen.
+| Alternative | Why rejected |
+| ----------- | ------------ |
 
 ## References
 
-- Links to relevant documentation, articles, or discussions
+- Other ADRs or [DEV.md](../DEV.md) only — not source code paths

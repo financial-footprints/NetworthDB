@@ -1,0 +1,30 @@
+---
+description: Use title case for Markdown headings
+globs: **/*.md
+alwaysApply: false
+---
+
+# Markdown Title Case
+
+Use **title case** for all Markdown headings (`#` through `######`).
+
+## Rules
+
+- Capitalize major words (nouns, verbs, adjectives, adverbs).
+- Lowercase short articles, conjunctions, and prepositions (`a`, `an`, `the`, `and`, `but`, `or`, `for`, `in`, `of`, `on`, `to`, `with`, `vs`) unless they are the first or last word.
+- Capitalize both parts of hyphenated compounds (`End-to-End`, `Non-Goals`).
+- Keep acronyms and package names as written (`ADR`, `HTTP`, `@ndb/statements`, `TypeScript`).
+
+## Examples
+
+```markdown
+<!-- ❌ BAD -->
+## Parallel statement sync
+### Auth vs vault
+## Further reading
+
+<!-- ✅ GOOD -->
+## Parallel Statement Sync
+### Auth vs Vault
+## Further Reading
+```

@@ -35,15 +35,10 @@ export default {
       name: "platform-no-infrastructure",
       severity: "error",
       comment:
-        "src/packages/platform must stay transport-agnostic (no bootstrap, logger addon, Hono, or apps)",
+        "src/packages/platform must stay transport-agnostic (no bootstrap, logger, Hono, or apps)",
       from: { path: "^src/packages/platform" },
       to: {
-        path: [
-          "^src/packages/bootstrap",
-          "^src/packages/logger/(index\\.(js|d\\.ts)|.*\\.node$)",
-          "^src/apps/",
-          "node_modules/hono",
-        ],
+        path: ["^src/packages/bootstrap", "^src/apps/", "node_modules/hono"],
       },
     },
     {

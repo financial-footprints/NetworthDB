@@ -2,6 +2,7 @@ import { readBearerToken } from "@middleware/auth/bearer";
 import type { Principal } from "@middleware/auth/types";
 import type { MultifactorService, ResolvedMultifactorBearer } from "@ndb/core";
 import { UnauthorizedError } from "@ndb/core";
+import { setRequestActorId } from "@ndb/logger";
 import type { Env, MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
 
@@ -29,6 +30,7 @@ export function requireMultifactor<
     const token = readBearerToken(c.req.header("Authorization"));
     const bearer = await c.get("services").auth.multifactor.resolve(token);
     c.set("principal", bearerPrincipal(token, bearer));
+    setRequestActorId(bearer.user.id);
     await next();
   });
 }
@@ -46,6 +48,7 @@ export function requireMultifactorChallenge<
     }
 
     c.set("principal", bearerPrincipal(token, bearer));
+    setRequestActorId(bearer.user.id);
     await next();
   });
 }
