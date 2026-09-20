@@ -11,22 +11,19 @@
 
 .networth-date-picker-field .react-datepicker__view-calendar-icon input {
   width: 100%;
-  padding-right: 2.25rem;
+  /* Match .form-input-leading-icon (search fields): room for icon at left-3 */
+  padding-left: 2.5rem;
 }
 
 .networth-date-picker-field--clearable .react-datepicker__view-calendar-icon input {
-  padding-right: 3.75rem;
-}
-
-.form-input-shell .networth-date-picker-field .react-datepicker__view-calendar-icon input {
-  padding-left: 0.75rem;
+  padding-right: 2.25rem;
 }
 
 .networth-date-picker-field .react-datepicker__calendar-icon {
   position: absolute;
   top: 50%;
-  right: 0.625rem;
-  left: auto;
+  left: 0.75rem;
+  right: auto;
   margin: 0;
   padding: 0;
   transform: translateY(-50%);
@@ -36,7 +33,7 @@
 .networth-date-picker-field .react-datepicker__close-icon {
   position: absolute;
   top: 50%;
-  right: 2.25rem;
+  right: 0.625rem;
   left: auto;
   display: inline-flex;
   align-items: center;

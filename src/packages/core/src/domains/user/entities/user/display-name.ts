@@ -8,13 +8,13 @@ export class DisplayName {
   static parse(raw: string): DisplayName {
     const trimmed = raw.trim();
     if (trimmed.length === 0) {
-      throw new ValidationError("core.user.display-name.invalid.required", {
+      throw new ValidationError("Display name is required.", {
         field: "display_name",
       });
     }
 
     if (trimmed.length > MAX_DISPLAY_NAME_LEN) {
-      throw new ValidationError("core.user.display-name.invalid.too-long", {
+      throw new ValidationError("Display name is too long.", {
         field: "display_name",
       });
     }

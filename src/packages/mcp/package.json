@@ -1,0 +1,25 @@
+{
+  "name": "@ndb/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "bun test ./tests",
+    "type-check": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
+    "@ndb/core": "workspace:*",
+    "@ndb/database": "workspace:*",
+    "@ndb/platform": "workspace:*",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.1",
+    "@types/node": "^26.4.1",
+    "typescript": "~7.0.2"
+  }
+}

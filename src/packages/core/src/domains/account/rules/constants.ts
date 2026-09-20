@@ -1,0 +1,96 @@
+export const MAX_RULE_GROUPS_PER_USER = 50;
+export const MAX_RULES_PER_GROUP = 50;
+export const MAX_TRIGGERS_PER_RULE = 20;
+export const MAX_WHEN_DEPTH = 4;
+export const MAX_ACTIONS_PER_RULE = 20;
+export const MAX_RULE_TITLE_LEN = 128;
+export const MAX_RULE_DESCRIPTION_LEN = 2048;
+export const MAX_TRIGGER_STRING_LEN = 512;
+export const MAX_RULES_APPLY_PAGE = 500;
+
+export const RULE_TRIGGER_TYPES = [
+  "description_contains",
+  "description_not_contains",
+  "description_is",
+  "description_is_not",
+  "description_starts",
+  "description_ends",
+  "description_matches_regex",
+  "ref_contains",
+  "ref_not_contains",
+  "ref_is",
+  "ref_is_not",
+  "ref_starts",
+  "ref_ends",
+  "ref_matches_regex",
+  "ref_is_empty",
+  "ref_is_set",
+  "amount_exactly",
+  "amount_not",
+  "amount_less",
+  "amount_less_or_equal",
+  "amount_greater",
+  "amount_greater_or_equal",
+  "amount_between",
+  "date_is",
+  "date_is_not",
+  "date_before",
+  "date_after",
+  "date_on_or_before",
+  "date_on_or_after",
+  "date_between",
+  "date_weekday_is",
+  "date_month_is",
+  "source_account_is",
+  "source_account_is_not",
+  "destination_account_is",
+  "destination_account_is_not",
+  "either_account_is",
+  "either_account_is_not",
+  "source_account_type_is",
+  "destination_account_type_is",
+  "either_account_type_is",
+  "source_is_system",
+  "destination_is_system",
+  "source_is_instrument",
+  "destination_is_instrument",
+  "pair_is_transfer",
+  "pair_is_spend",
+  "pair_is_income",
+  "category_is",
+  "category_is_not",
+  "has_category",
+  "has_no_category",
+  "subcategory_is",
+  "subcategory_is_not",
+  "tag_is",
+  "tag_is_not",
+  "has_no_tags",
+  "has_any_tag",
+  "has_import",
+  "has_no_import",
+  "import_id_is",
+] as const;
+
+export const RULE_ACTION_TYPES = [
+  "set_category",
+  "clear_category",
+  "add_tag",
+  "remove_tag",
+  "clear_tags",
+  "set_tags",
+  "set_description",
+  "append_description",
+  "prepend_description",
+  "replace_in_description",
+  "set_ref_no",
+  "clear_ref_no",
+  "set_source_account",
+  "set_destination_account",
+  "set_source_system",
+  "set_destination_system",
+  "delete_transaction",
+] as const;
+
+export type RuleTriggerType = (typeof RULE_TRIGGER_TYPES)[number];
+export type RuleActionType = (typeof RULE_ACTION_TYPES)[number];

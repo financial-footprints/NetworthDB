@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "registry_key": "indusind/auraedge",
+  "bank": "indusind",
+  "variant": "auraedge",
+  "display_name": "Platinum Aura Edge",
+  "default_kind": "named",
+  "networks": ["Visa", "Mastercard"],
+  "reward_kind": "points",
+  "official_product_url": "https://www.indusind.com/in/en/personal/cards/credit-card/platinum-aura-edge-visa-and-mastercard-credit-card-easy-credit.html",
+  "mitc_url": "https://www.indusind.com/content/dam/indusind-corporate/credit-cards/MITC_Premium.pdf",
+  "researched_at": "2026-10-04",
+  "updated_at": "2026-10-04",
+  "sources": [
+    {
+      "url": "https://www.indusind.com/in/en/personal/cards/credit-card/platinum-aura-edge-visa-and-mastercard-credit-card-easy-credit.html",
+      "retrieved_at": "2026-10-04",
+      "label": "Product page"
+    },
+    {
+      "url": "https://www.indusind.com/content/dam/indusind-corporate/credit-cards/MITC_Premium.pdf",
+      "retrieved_at": "2026-10-04",
+      "label": "Premium MITC"
+    }
+  ],
+  "tags": ["rewards", "lifetime_free"],
+  "conflicts": [
+    "Marketing says up to 8X on select merchants. The published plan table maxes at 4 points per \u20b9100."
+  ],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. Government-sector Aura Edge is a separate discontinued product.",
+  "fees": {
+    "joining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc"
+    },
+    "annual_waiver": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc"
+    },
+    "forex": {
+      "status": "yes",
+      "summary": "Foreign-currency markup is 3.5 percent for Platinum Aura Edge under the standard IndusInd MITC tier.",
+      "confidence": "verified_mitc"
+    },
+    "fuel_surcharge": {
+      "status": "conditional",
+      "summary": "A 1 percent fuel surcharge waiver applies on transactions between \u20b9400 and \u20b94,000 at petrol pumps in India. Fuel earns no reward points.",
+      "confidence": "verified_mitc",
+      "conditions": [
+        {
+          "type": "txn_range",
+          "summary": "The waiver band is \u20b9400 to \u20b94,000."
+        }
+      ]
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "conditional",
+      "summary": "Holders choose one of four plans and earn savings points per \u20b9100. One point historically equals \u20b90.50 cash credit or 0.5 airline mile. Other-category earn is 0.5 points per \u20b9100 on each plan. Fuel earns no points from 1 April 2018.",
+      "confidence": "verified_product_page"
+    },
+    "accelerated": {
+      "status": "conditional",
+      "summary": "Shop plan: department stores 4, durables 2, restaurants 1.5, books 1.5. Home plan: grocery 4, cellphone electricity insurance 1.4, medical 1.5. Travel plan: hotel 4, air 2.5, car rental 1.5, rail 1.5. Party plan: restaurants 4, department 2, bars 2, movies 1.5. Marketing also says up to 8X on select merchants. The 8X merchant list was not recovered from the 2019 revision page.",
+      "confidence": "conflict"
+    },
+    "upi": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "redemption": {
+      "status": "conditional",
+      "summary": "Points redeem as cash credit, miles on changing partners, or Indusmoments. InterMiles redemption ended on 21 January 2025. Club Vistara redemption ended on 31 October 2024. Cash redemption is capped at 2,500 points per calendar month from 1 September 2024.",
+      "confidence": "verified_product_page"
+    },
+    "expiry": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Premium MITC lists Platinum Aura Edge among cards where Priority Pass is not available and does not grant complimentary lounge visits."
+    },
+    "domestic": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Premium MITC excludes Platinum Aura Edge from complimentary lounge programmes."
+    },
+    "international": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Priority Pass is not available on Platinum Aura Edge per IndusInd Premium MITC."
+    },
+    "railway": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "conditional",
+      "summary": "Dining value is through the Shop and Party plan restaurant multipliers, not a separate discount programme.",
+      "confidence": "verified_product_page"
+    },
+    "movies": {
+      "status": "conditional",
+      "summary": "The Party plan earns 1.5 points per \u20b9100 on movies.",
+      "confidence": "verified_product_page"
+    },
+    "golf": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "concierge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "yes",
+      "summary": "Travel Plus from Oriental lists lost baggage \u20b91 lakh, delayed baggage \u20b925,000, passport \u20b950,000, lost ticket \u20b925,000, and missed connection \u20b925,000.",
+      "confidence": "verified_product_page"
+    },
+    "accident": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "card_protect": {
+      "status": "yes",
+      "summary": "Total Protect covers counterfeit and unauthorised use up to the credit limit, subject to T&Cs on the bank site.",
+      "confidence": "verified_product_page"
+    }
+  },
+  "milestones": {
+    "status": "NA",
+    "summary": "NA",
+    "confidence": "verified_mitc",
+    "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+  },
+  "welcome": {
+    "status": "NA",
+    "summary": "NA",
+    "confidence": "verified_product_page",
+    "notes": "The Aura Edge product page does not describe a separate welcome voucher beyond lifetime-free positioning."
+  }
+}

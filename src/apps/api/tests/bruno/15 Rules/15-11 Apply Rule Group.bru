@@ -1,0 +1,30 @@
+meta {
+  name: 15-11 Apply Rule Group
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/rule-groups/{{RULE_GROUP_ID}}/apply
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+body:json {
+  {
+    "dryRun": true
+  }
+}
+
+script:post-response {
+  bru.setVar("rulesApplyJobId", res.body.data.jobId);
+}
+
+assert {
+  res.status: eq 202
+  res.body.data.jobId: isDefined
+}

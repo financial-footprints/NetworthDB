@@ -21,7 +21,7 @@ export function rateLimit(auth: Pick<AuthService, "allowRequest">): MiddlewareHa
   return async (c, next) => {
     const allowed = await auth.allowRequest(clientIp(c));
     if (!allowed) {
-      throw new TooManyRequestsError("middleware.auth.ratelimit.error.too-many-requests");
+      throw new TooManyRequestsError("Too many requests.");
     }
 
     await next();

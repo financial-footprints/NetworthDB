@@ -1,0 +1,26 @@
+meta {
+  name: 11-07 Cancel Job Unknown
+  type: http
+  seq: 7
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/jobs/cancel?jobId=...`
+
+  **This test verifies:** Unknown job id returns 404.
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/jobs/cancel?jobId=00000000-0000-4000-8000-000000000099
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jobsSessionToken}}
+}
+
+assert {
+  res.status: eq 404
+  res.body.error: isDefined
+}

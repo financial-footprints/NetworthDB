@@ -1,0 +1,260 @@
+import { useFileViewer } from "@web/contexts/FileViewer/Context";
+import { useNotifications } from "@web/contexts/Notifications/Context";
+import { submitStatementUpload } from "@web/routes/accounts/_parts/upload";
+import { Coverage } from "@web/routes/accounts/statements/_parts/calendar/Coverage";
+import {
+  openAccountStatementFile,
+  type PendingUpload,
+  prepareUploadFileInput,
+} from "@web/routes/accounts/statements/_parts/calendar/helpers";
+import { Section } from "@web/routes/accounts/statements/_parts/calendar/Section";
+import {
+  type AnnualFileSelection,
+  annualStatementUploadKey,
+  type FileSelection,
+  statementUploadKey,
+} from "@web/routes/accounts/statements/_parts/calendar/YearGrid";
+import type { AccountDetails, CalendarYearSection } from "@web/utils/api/routes/accounts/types";
+import {
+  annualAvailabilityFromStatements,
+  monthlyAvailabilityFromStatements,
+} from "@web/utils/api/routes/accounts/types";
+import { errorMessage } from "@web/utils/errors";
+import {
+  accountDateToMonthYear,
+  currentMonthYear,
+  formatYearMonthLabel,
+  type MonthYear,
+} from "@web/utils/time";
+import { useMemo, useRef, useState } from "react";
+
+type StatementCalendarProps = {
+  details: AccountDetails;
+  onUploadSuccess?: () => void;
+};
+
+function monthYearRangeFromSections(
+  sections: CalendarYearSection[]
+): { start: MonthYear; end: MonthYear } | null {
+  if (sections.length === 0) {
+    return null;
+  }
+
+  const firstMonth = sections[0]?.months[0];
+  const lastSection = sections[sections.length - 1];
+  const lastMonths = lastSection?.months;
+  const lastMonth =
+    lastMonths && lastMonths.length > 0 ? lastMonths[lastMonths.length - 1] : undefined;
+  if (!firstMonth || !lastMonth) {
+    return null;
+  }
+
+  return {
+    start: { year: firstMonth.year, month: firstMonth.month },
+    end: { year: lastMonth.year, month: lastMonth.month },
+  };
+}
+
+export function Calendar({ details, onUploadSuccess }: StatementCalendarProps) {
+  const { account } = details;
+  const { openFileViewer } = useFileViewer();
+  const { pushNotification } = useNotifications();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingUpload, setPendingUpload] = useState<PendingUpload | null>(null);
+  const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+
+  const sectionRange = useMemo(
+    () => monthYearRangeFromSections(details.calendarYearSections),
+    [details.calendarYearSections]
+  );
+
+  const calendarStart =
+    (details.calendarStart ? accountDateToMonthYear(details.calendarStart) : null) ??
+    sectionRange?.start ??
+    null;
+  const calendarEnd: MonthYear =
+    (details.calendarEnd ? accountDateToMonthYear(details.calendarEnd) : null) ??
+    sectionRange?.end ??
+    currentMonthYear();
+
+  const showCalendarGrid = details.calendarYearSections.length > 0 && calendarStart !== null;
+  const monthsByKey = useMemo(
+    () => monthlyAvailabilityFromStatements(details.statements),
+    [details.statements]
+  );
+  const annualStatementsByKey = useMemo(
+    () => annualAvailabilityFromStatements(details.statements),
+    [details.statements]
+  );
+  const balanceGapsByKey = useMemo(
+    () => new Map((details.statements.balanceGaps ?? []).map((gap) => [gap.month, gap.status])),
+    [details.statements.balanceGaps]
+  );
+
+  function openTextStatementFile(params: { title: string; url: string; downloadFilename: string }) {
+    openFileViewer({ ...params, format: "text" });
+  }
+
+  function openStatementFile(selection: FileSelection) {
+    void openAccountStatementFile({
+      accountId: account.id,
+      statementDate: selection.statementDate,
+      format: selection.format,
+      titleLabel: formatYearMonthLabel(selection.month),
+      openTextFile: openTextStatementFile,
+    }).catch((error: unknown) => {
+      pushNotification(errorMessage(error, "Failed to open statement file."), "error");
+    });
+  }
+
+  function openAnnualStatementFile(selection: AnnualFileSelection) {
+    void openAccountStatementFile({
+      accountId: account.id,
+      statementDate: selection.statementDate,
+      format: selection.format,
+      titleLabel: `${selection.yearKey} · Annual`,
+      openTextFile: openTextStatementFile,
+    }).catch((error: unknown) => {
+      pushNotification(errorMessage(error, "Failed to open statement file."), "error");
+    });
+  }
+
+  function handleSelectFile(selection: FileSelection) {
+    if (selection.available) {
+      openStatementFile(selection);
+      return;
+    }
+
+    if (selection.format !== "pdf" && selection.format !== "csv") {
+      return;
+    }
+
+    setPendingUpload({
+      kind: "monthly",
+      month: selection.month,
+      format: selection.format,
+    });
+    prepareUploadFileInput(fileInputRef, selection.format);
+  }
+
+  function handleSelectAnnualFile(selection: AnnualFileSelection) {
+    if (selection.available) {
+      openAnnualStatementFile(selection);
+      return;
+    }
+
+    if (selection.format !== "pdf" && selection.format !== "csv") {
+      return;
+    }
+
+    setPendingUpload({
+      kind: "annual",
+      yearKey: selection.yearKey,
+      format: selection.format,
+    });
+    prepareUploadFileInput(fileInputRef, selection.format);
+  }
+
+  async function handleFileSelected(fileList: FileList | null) {
+    if (!fileList?.length) {
+      setPendingUpload(null);
+      return;
+    }
+
+    const file = fileList[0];
+    const upload = pendingUpload;
+    setPendingUpload(null);
+
+    if (!upload) {
+      return;
+    }
+
+    if (upload.kind === "annual") {
+      const { yearKey, format } = upload;
+      await submitStatementUpload({
+        accountId: account.id,
+        request: {
+          yearKey,
+          statementKind: "annual",
+          format,
+          file,
+        },
+        onUploadSuccess,
+        pushNotification,
+        onBusyChange: (busy) => {
+          setUploadingKey(busy ? annualStatementUploadKey(yearKey, format) : null);
+        },
+      });
+      return;
+    }
+
+    const { month, format } = upload;
+    await submitStatementUpload({
+      accountId: account.id,
+      request: {
+        coveredMonth: month,
+        statementKind: "monthly",
+        format,
+        file,
+      },
+      onUploadSuccess,
+      pushNotification,
+      onBusyChange: (busy) => {
+        setUploadingKey(busy ? statementUploadKey(month, format) : null);
+      },
+    });
+  }
+
+  function handleOpenMetadata() {
+    if (!details.statements.available) {
+      return;
+    }
+    const blob = new Blob([JSON.stringify(details.statements, null, 2)], {
+      type: "application/json",
+    });
+    openFileViewer({
+      title: "Statements",
+      url: URL.createObjectURL(blob),
+      format: "json",
+    });
+  }
+
+  const metadataUrl = details.statements.available ? "available" : undefined;
+
+  return (
+    <div className="space-y-8">
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        onChange={(event) => {
+          void handleFileSelected(event.target.files);
+        }}
+      />
+
+      <Coverage
+        periodCovered={details.statements.coverage}
+        statementCount={details.statements.statementCount}
+        calendarStart={details.calendarStart ?? null}
+        calendarEnd={details.calendarEnd ?? null}
+        calendarEndSource={details.calendarEndSource}
+        metadataUrl={metadataUrl}
+        onOpenMetadata={handleOpenMetadata}
+      />
+
+      {showCalendarGrid ? (
+        <Section
+          details={details}
+          calendarStart={calendarStart}
+          calendarEnd={calendarEnd}
+          monthsByKey={monthsByKey}
+          annualStatementsByKey={annualStatementsByKey}
+          balanceGapsByKey={balanceGapsByKey}
+          uploadingKey={uploadingKey}
+          onSelectFile={handleSelectFile}
+          onSelectAnnualFile={handleSelectAnnualFile}
+        />
+      ) : null}
+    </div>
+  );
+}

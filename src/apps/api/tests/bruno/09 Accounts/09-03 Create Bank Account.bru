@@ -21,9 +21,9 @@ auth:bearer {
 body:json {
   {
     "bank": "ICICI",
-    "account_type": "bank_account",
-    "opening_date": "2019-03-01",
-    "account_number": "abc.def",
+    "accountType": "bank",
+    "openingDate": "2019-03-01",
+    "accountNumber": "abc.def",
     "passwords": []
   }
 }
@@ -34,5 +34,5 @@ script:post-response {
 
 assert {
   res.status: eq 201
-  res.body.data.account_type: eq bank_account
+  res.body.data.accountType: eq bank
 }

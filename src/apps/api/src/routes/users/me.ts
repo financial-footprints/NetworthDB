@@ -1,5 +1,5 @@
+import { jsonMedia } from "@api/config/http";
 import { createSessionRouter, errorResponses } from "@api/config/router";
-import { jsonMedia } from "@api/routes/auth/helpers";
 import { serializeMeDetails } from "@api/routes/auth/serializer";
 import { API, meDetailsSchema } from "@ndb/platform";
 
@@ -8,7 +8,7 @@ const meRoutes = createSessionRouter();
 meRoutes.endpoint(
   {
     method: "get",
-    path: API.users.me.details,
+    path: API.users.me.get,
     responses: {
       200: { content: jsonMedia(meDetailsSchema), description: "Current user profile" },
       401: errorResponses[401],
@@ -16,11 +16,12 @@ meRoutes.endpoint(
   },
   async (c) => {
     const user = c.get("principal").user;
-    const [vault, multifactorState] = await Promise.all([
-      c.get("services").vault.get(user.id),
-      c.get("services").auth.multifactor.buildState(user),
+    const [vault, multifactorState, clientSettings] = await Promise.all([
+      c.get("services").vaultService.get(user.id),
+      c.get("services").authService.multifactor.buildState(user),
+      c.get("services").userService.getClientSettings(user.id),
     ]);
-    return c.json(serializeMeDetails(user, vault, multifactorState), 200);
+    return c.json(serializeMeDetails(user, vault, multifactorState, clientSettings), 200);
   }
 );
 

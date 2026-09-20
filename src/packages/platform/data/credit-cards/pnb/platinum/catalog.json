@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "registry_key": "pnb/platinum",
+  "bank": "pnb",
+  "variant": "platinum",
+  "display_name": "Platinum",
+  "default_kind": "named",
+  "networks": ["Visa", "RuPay"],
+  "reward_kind": "points",
+  "official_product_url": "https://www.pnbindia.in/PreQualified-Credit-Card.html",
+  "mitc_url": "https://pnbcard.in/PDF/MITC.PDF",
+  "researched_at": "2026-10-04",
+  "updated_at": "2026-10-04",
+  "sources": [
+    {
+      "url": "https://pnbcard.in/PDF/MITC.PDF",
+      "retrieved_at": "2026-10-04",
+      "label": "PNB MITC"
+    },
+    {
+      "url": "https://www.pnbindia.in/PreQualified-Credit-Card.html",
+      "retrieved_at": "2026-10-04",
+      "label": "PQCC programme"
+    }
+  ],
+  "tags": ["rewards"],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. This key covers PNB Visa Platinum and PNB RuPay Platinum, including Wave n Pay Global Platinum packaging. It is not Luxura.",
+  "fees": {
+    "joining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "yes",
+      "summary": "Visa Platinum and RuPay Platinum list an annual fee of \u20b9500. Visa Platinum add-on cards are \u20b9500 each.",
+      "confidence": "verified_mitc"
+    },
+    "annual_waiver": {
+      "status": "conditional",
+      "summary": "RuPay Platinum waives the annual fee if the card is used at least once each quarter in the previous year. The Visa Platinum waiver row in the PDF is fragmented, so do not invent a spend threshold for Visa Platinum.",
+      "confidence": "verified_mitc"
+    },
+    "forex": {
+      "status": "yes",
+      "summary": "Foreign-currency markup is 3.5 percent over the network conversion rate for non-Luxura cards including Visa and RuPay Platinum.",
+      "confidence": "verified_mitc"
+    },
+    "fuel_surcharge": {
+      "status": "conditional",
+      "summary": "PNB MITC describes a 1 percent fuel surcharge waiver on eligible fuel transactions with caps that vary by card variant; Platinum-specific bands were not isolated in the extract.",
+      "confidence": "verified_mitc"
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "conditional",
+      "summary": "Visa Platinum earns 2 reward points per \u20b9150 spent. RuPay Platinum earns 1 reward point per \u20b9100 spent.",
+      "confidence": "verified_product_page"
+    },
+    "accelerated": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "upi": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "redemption": {
+      "status": "conditional",
+      "summary": "Redeem from 1,000 points via 1800-572-9500, creditcard.pnb.bank.in, or support@pnbrewardz.com. Points forfeit on closure or delinquency. \u20b90.25 per point is cited only in a negative-balance closure example.",
+      "confidence": "verified_mitc"
+    },
+    "expiry": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "PNB MITC lounge benefits are documented for Luxura, not Visa or RuPay Platinum."
+    },
+    "domestic": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "international": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "railway": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "movies": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "golf": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "concierge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "accident": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "card_protect": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    }
+  },
+  "milestones": {
+    "status": "conditional",
+    "summary": "RuPay Platinum uses quarterly usage for the fee waiver. Other MITC rows mention \u20b91.5 lakh in 3 cycles or \u20b92.5 lakh for some products and are not clearly labeled Platinum.",
+    "confidence": "unknown"
+  },
+  "welcome": {
+    "status": "conditional",
+    "summary": "PQCC issues nil joining for eligible existing PNB customers. A welcome voucher amount is not described.",
+    "confidence": "verified_product_page"
+  }
+}

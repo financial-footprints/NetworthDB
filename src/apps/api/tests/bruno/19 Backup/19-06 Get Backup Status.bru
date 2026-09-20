@@ -1,0 +1,20 @@
+meta {
+  name: 19-06 Get Backup Status
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/backup
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{backupSessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.current: isDefined
+}

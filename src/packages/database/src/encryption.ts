@@ -3,17 +3,16 @@ import { parseStorageEnv } from "@database/env";
 import { users } from "@database/schema/users/index";
 import type { DbClient } from "@database/types";
 import { EntityNotFoundError } from "@ndb/core";
-import {
-  DATA_KEY_LEN,
-  decrypt as decryptBlob,
-  encrypt as encryptBlob,
-  isEncrypted,
-} from "@ndb/encryption";
+import { decrypt as decryptBlob, encrypt as encryptBlob, isEncrypted } from "@ndb/encryption";
 import { eq } from "drizzle-orm";
 
+const DATA_KEY_LEN = 32;
+
 export class Cryptography {
+  constructor(private readonly storage = parseStorageEnv()) {}
+
   private _getKey(): Buffer {
-    const { encryption } = parseStorageEnv();
+    const { encryption } = this.storage;
     if (!encryption.key) {
       throw new Error("database.storage.blob.invalid.master-key-required");
     }
@@ -25,17 +24,14 @@ export class Cryptography {
     const rows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
     const row = rows[0];
     if (!row) {
-      throw new EntityNotFoundError("database.user.find.not-found", {
-        entityName: "User",
-        id: userId,
-      });
+      throw new EntityNotFoundError("User", userId);
     }
 
     return row;
   }
 
   async encrypt(db: DbClient, userId: string, plaintext: Buffer): Promise<Buffer> {
-    const { encryption } = parseStorageEnv();
+    const { encryption } = this.storage;
     if (!encryption.enabled) {
       return plaintext;
     }
@@ -45,7 +41,7 @@ export class Cryptography {
   }
 
   async decrypt(db: DbClient, userId: string, blob: Buffer): Promise<Buffer> {
-    const { encryption } = parseStorageEnv();
+    const { encryption } = this.storage;
     if (!encryption.enabled) {
       return blob;
     }
@@ -82,4 +78,8 @@ export class Cryptography {
   }
 }
 
-export const cryptography = new Cryptography();
+export function createCryptography(storage = parseStorageEnv()): Cryptography {
+  return new Cryptography(storage);
+}
+
+export const cryptography = createCryptography();

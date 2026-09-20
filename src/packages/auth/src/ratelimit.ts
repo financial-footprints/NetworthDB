@@ -1,5 +1,4 @@
-import type { PasswordLockout, RateLimiter } from "@ndb/core";
-import type { Logger } from "@ndb/logger";
+import type { Logger, PasswordLockout, RateLimiter } from "@ndb/core";
 import { RateLimiterRedis, type RateLimiterRes } from "rate-limiter-flexible";
 import { createClient, type RedisClientType } from "redis";
 

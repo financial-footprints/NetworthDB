@@ -1,0 +1,21 @@
+meta {
+  name: 15-07 List Rules
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/rules?groupId={{RULE_GROUP_ID}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.items: isArray
+  res.body.total: eq 1
+}

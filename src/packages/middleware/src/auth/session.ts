@@ -11,13 +11,13 @@ export type SessionContext = {
 };
 
 export function requireSession<
-  E extends Env & { Variables: SessionContext & { services: { auth: AuthService } } },
+  E extends Env & { Variables: SessionContext & { services: { authService: AuthService } } },
 >(): MiddlewareHandler<E> {
   return createMiddleware<E>(async (c, next) => {
     const token = readBearerToken(c.req.header("Authorization"));
-    const bearer = await c.get("services").auth.multifactor.resolve(token);
+    const bearer = await c.get("services").authService.multifactor.resolve(token);
     if (bearer.kind !== "session") {
-      throw new UnauthorizedError("middleware.auth.session.unauthorized.missing");
+      throw new UnauthorizedError("Session is missing.");
     }
 
     c.set("principal", {

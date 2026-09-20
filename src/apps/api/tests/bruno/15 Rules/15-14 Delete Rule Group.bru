@@ -1,0 +1,19 @@
+meta {
+  name: 15-14 Delete Rule Group
+  type: http
+  seq: 14
+}
+
+delete {
+  url: {{BASE_URL}}/api/v1/rule-groups/{{RULE_GROUP_ID}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+assert {
+  res.status: eq 204
+}

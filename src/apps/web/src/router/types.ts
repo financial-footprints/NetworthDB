@@ -13,7 +13,10 @@ export type RouteConfig = {
   sidebar?: {
     show: true;
     icon: ReactNode;
-    group?: string;
-    groupIcon?: ReactNode;
+    group?: {
+      id: string;
+      label: string;
+      icon: ReactNode;
+    };
   };
 };

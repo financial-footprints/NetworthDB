@@ -35,8 +35,6 @@ export type MultifactorServiceConfig = {
   appEnv: AppEnv;
 };
 
-export type MultifactorBearerKind = "session" | "challenge";
-
 export type ResolvedMultifactorBearer =
   | { kind: "session"; user: User; sessionId: string; authAcr: string; authAmr: string }
   | { kind: "challenge"; user: User; challengeId: string };
@@ -94,7 +92,7 @@ export class MultifactorService {
 
   async createChallenge(user: User): Promise<MultifactorChallengeResponse> {
     if (user.totp.isLocked()) {
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
 
     const enrollment =
@@ -132,8 +130,10 @@ export class MultifactorService {
   }
 
   async buildState(user: User): Promise<PublicMultifactorState> {
-    const webauthnCount = await this.webauthnCredentials.aggregate({ userId: user.id });
-    const unusedRecovery = await this.recoveryCodes.aggregate({ userId: user.id, unused: true });
+    const [webauthnCount, unusedRecovery] = await Promise.all([
+      this.webauthnCredentials.aggregate({ userId: user.id }),
+      this.recoveryCodes.aggregate({ userId: user.id, unused: true }),
+    ]);
     const methods: string[] = [];
 
     if (user.totp.hasTotp()) {
@@ -154,7 +154,7 @@ export class MultifactorService {
     if (session) {
       const user = await this.users.findById(session.userId);
       if (!user) {
-        throw new UnauthorizedError("core.auth.session.unauthorized.invalid-or-expired");
+        throw new UnauthorizedError("Session is invalid or expired.");
       }
 
       return {
@@ -170,12 +170,12 @@ export class MultifactorService {
       tokenHash: this.tokens.sha256Hex(token),
     });
     if (!challenge?.isValid()) {
-      throw new UnauthorizedError("core.auth.session.unauthorized.invalid-or-expired");
+      throw new UnauthorizedError("Session is invalid or expired.");
     }
 
     const user = await this.users.findById(challenge.userId);
     if (!user) {
-      throw new UnauthorizedError("core.auth.session.unauthorized.invalid-or-expired");
+      throw new UnauthorizedError("Session is invalid or expired.");
     }
 
     return {
@@ -188,16 +188,16 @@ export class MultifactorService {
   async verifyTotp(multifactorToken: string, code: string): Promise<SessionTokenPair> {
     const bearer = await this.resolve(multifactorToken);
     if (bearer.kind !== "challenge") {
-      throw new UnauthorizedError("core.auth.session.unauthorized.invalid-or-expired");
+      throw new UnauthorizedError("Session is invalid or expired.");
     }
 
     const user = bearer.user;
     if (user.totp.isLocked()) {
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
 
     if (!user.totp.hasTotp()) {
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
 
     const secret = this._decryptConfirmedSecret(user);
@@ -209,12 +209,12 @@ export class MultifactorService {
     );
     if (!result.valid) {
       await this._recordLoginFailure(user);
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
 
     const challenge = await this.challenges.findById(bearer.challengeId);
     if (!challenge) {
-      throw new UnauthorizedError("core.auth.session.unauthorized.invalid-or-expired");
+      throw new UnauthorizedError("Session is invalid or expired.");
     }
 
     const updated = await this.users.save(
@@ -229,12 +229,12 @@ export class MultifactorService {
   async verifyRecoveryCode(multifactorToken: string, code: string): Promise<SessionTokenPair> {
     const bearer = await this.resolve(multifactorToken);
     if (bearer.kind !== "challenge") {
-      throw new UnauthorizedError("core.auth.session.unauthorized.invalid-or-expired");
+      throw new UnauthorizedError("Session is invalid or expired.");
     }
 
     const user = bearer.user;
     if (user.totp.isLocked()) {
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
 
     const stored = await findFirst(this.recoveryCodes.findByFilters.bind(this.recoveryCodes), {
@@ -244,12 +244,12 @@ export class MultifactorService {
     });
     if (!stored) {
       await this._recordLoginFailure(user);
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
 
     const challenge = await this.challenges.findById(bearer.challengeId);
     if (!challenge) {
-      throw new UnauthorizedError("core.auth.session.unauthorized.invalid-or-expired");
+      throw new UnauthorizedError("Session is invalid or expired.");
     }
 
     await this.recoveryCodes.save(stored.withUsed(new Date()));
@@ -262,7 +262,7 @@ export class MultifactorService {
 
   async generateCodes(user: User, proof: MultifactorProofInput): Promise<string[]> {
     if (!user.multifactorEnabled) {
-      throw new ValidationError("core.auth.multifactor.invalid.not-enabled");
+      throw new ValidationError("Multifactor authentication is not enabled.");
     }
 
     const stored = await this._get(user.id);
@@ -285,7 +285,7 @@ export class MultifactorService {
 
     const unused = await this.recoveryCodes.aggregate({ userId: stored.id, unused: true });
     if (unused === 0) {
-      throw new ValidationError("core.auth.multifactor.invalid.recovery-codes-not-enrolled");
+      throw new ValidationError("Recovery codes are not enrolled.");
     }
 
     await this.recoveryCodes.delete({ userId: stored.id });
@@ -294,7 +294,7 @@ export class MultifactorService {
 
   async verifyProof(user: User, input: MultifactorProofInput): Promise<void> {
     if (countProofFields(input) !== 1) {
-      throw new ValidationError("core.auth.multifactor.verify.invalid.proof-count");
+      throw new ValidationError("Invalid proof count.");
     }
 
     if (input.totp) {
@@ -306,7 +306,7 @@ export class MultifactorService {
         user.totp.totpLastStep
       );
       if (!result.valid) {
-        throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+        throw new UnauthorizedError("Invalid username or password.");
       }
 
       await this.users.save(user.withTotp(user.totp.withLastStep(result.step)));
@@ -320,7 +320,7 @@ export class MultifactorService {
         unused: true,
       });
       if (!stored) {
-        throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+        throw new UnauthorizedError("Invalid username or password.");
       }
 
       await this.recoveryCodes.save(stored.withUsed(new Date()));
@@ -329,14 +329,14 @@ export class MultifactorService {
 
     if (input.webauthnSessionId && input.webauthnResponse) {
       if (!this.webauthnProofVerifier) {
-        throw new ValidationError("core.auth.multifactor.webauthn.invalid.not-configured");
+        throw new ValidationError("Passkeys are not configured.");
       }
 
       await this.webauthnProofVerifier(user, input.webauthnSessionId, input.webauthnResponse);
       return;
     }
 
-    throw new ValidationError("core.auth.multifactor.verify.invalid.proof-required");
+    throw new ValidationError("A proof is required.");
   }
 
   async recordFailure(user: User): Promise<void> {
@@ -365,7 +365,7 @@ export class MultifactorService {
   async confirmTotp(bearer: ResolvedMultifactorBearer, code: string): Promise<SessionTokenPair> {
     const user = await this._get(bearer.user.id);
     if (!user.totp.hasPending()) {
-      throw new ValidationError("core.auth.multifactor.totp.invalid.not-started");
+      throw new ValidationError("TOTP enrollment has not started.");
     }
 
     const pendingSecret = this._decryptPendingSecret(user);
@@ -379,12 +379,12 @@ export class MultifactorService {
         user.totp.totpLastStep
       );
       if (enrolled.valid) {
-        throw new UnauthorizedError("core.auth.multifactor.totp.unauthorized.stale-code");
+        throw new UnauthorizedError("That authentication code is no longer valid.");
       }
     }
 
     if (!result.valid) {
-      throw new UnauthorizedError("core.auth.multifactor.totp.unauthorized.invalid-code");
+      throw new UnauthorizedError("That authentication code is invalid.");
     }
 
     const confirmedBlob = this.secrets.encrypt(pendingSecret);
@@ -410,7 +410,7 @@ export class MultifactorService {
     assertAal2(user.multifactorEnabled, authAcr);
     const stored = await this._get(user.id);
     if (!stored.totp.hasTotp()) {
-      throw new ValidationError("core.auth.multifactor.totp.invalid.not-started");
+      throw new ValidationError("TOTP enrollment has not started.");
     }
 
     const secret = this._decryptConfirmedSecret(stored);
@@ -421,7 +421,7 @@ export class MultifactorService {
       stored.totp.totpLastStep
     );
     if (!result.valid) {
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
 
     const webauthnCount = await this.webauthnCredentials.aggregate({ userId: stored.id });
@@ -431,7 +431,7 @@ export class MultifactorService {
       this.config.appEnv
     );
     if (webauthnCount === 0 && roleRequired) {
-      throw new ValidationError("core.auth.multifactor.disable.invalid.last-method");
+      throw new ValidationError("Cannot disable the last authentication method.");
     }
 
     const enabled = webauthnCount > 0;
@@ -464,12 +464,13 @@ export class MultifactorService {
       methods.push("totp");
     }
 
-    const webauthnCount = await this.webauthnCredentials.aggregate({ userId: user.id });
+    const [webauthnCount, unusedRecovery] = await Promise.all([
+      this.webauthnCredentials.aggregate({ userId: user.id }),
+      this.recoveryCodes.aggregate({ userId: user.id, unused: true }),
+    ]);
     if (webauthnCount > 0) {
       methods.push("webauthn");
     }
-
-    const unusedRecovery = await this.recoveryCodes.aggregate({ userId: user.id, unused: true });
     if (unusedRecovery > 0) {
       methods.push("recovery");
     }
@@ -501,7 +502,7 @@ export class MultifactorService {
 
   private _decryptConfirmedSecret(user: User): string {
     if (!user.totp.totpSecret) {
-      throw new ValidationError("core.auth.multifactor.totp.invalid.not-started");
+      throw new ValidationError("TOTP enrollment has not started.");
     }
 
     return this.secrets.decrypt(user.totp.totpSecret);
@@ -509,7 +510,7 @@ export class MultifactorService {
 
   private _decryptPendingSecret(user: User): string {
     if (!user.totp.totpPending) {
-      throw new ValidationError("core.auth.multifactor.totp.invalid.not-started");
+      throw new ValidationError("TOTP enrollment has not started.");
     }
 
     return this.secrets.decrypt(user.totp.totpPending);
@@ -527,14 +528,14 @@ export class MultifactorService {
 
     if (!user.multifactorEnabled) {
       if (!input.password) {
-        throw new ValidationError("core.auth.multifactor.invalid.password-required", {
+        throw new ValidationError("Password is required.", {
           field: "password",
         });
       }
 
       const valid = await this.password.verify(input.password, user.passwordHash);
       if (!valid) {
-        throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+        throw new UnauthorizedError("Invalid username or password.");
       }
 
       return;
@@ -555,7 +556,7 @@ export class MultifactorService {
   private async _get(userId: string): Promise<User> {
     const user = await this.users.findById(userId);
     if (!user) {
-      throw new UnauthorizedError("core.auth.session.unauthorized.invalid-or-expired");
+      throw new UnauthorizedError("Session is invalid or expired.");
     }
 
     return user;

@@ -10,10 +10,10 @@ import type {
 } from "@ndb/core";
 import {
   advCtxSchema,
-  emptySchema,
   meDetailsSchema,
   messageSchema,
   mfaChallengeSchema,
+  nullableSessionResponseSchema,
   recoveryCodeSchema,
   sessionTokenSchema,
   totpBeginSchema,
@@ -28,53 +28,45 @@ import {
 export function serializeSessionTokens(pair: SessionTokenPair) {
   return sessionTokenSchema.parse({
     data: {
-      session_token: pair.sessionToken,
-      refresh_token: pair.refreshToken,
-      expires_in: pair.expiresIn,
+      sessionToken: pair.sessionToken,
+      refreshToken: pair.refreshToken,
+      expiresIn: pair.expiresIn,
     },
-    errors: [],
   });
+}
+
+export function serializeNullableSessionResponse() {
+  return nullableSessionResponseSchema.parse({ data: null });
 }
 
 export function serializeMfaChallenge(result: MultifactorChallengeResponse) {
   return mfaChallengeSchema.parse({
     data: {
       status: result.status,
-      multifactor_token: result.multifactorToken,
-      expires_in: result.expiresIn,
+      multifactorToken: result.multifactorToken,
+      expiresIn: result.expiresIn,
       methods: result.methods,
     },
-    errors: [],
   });
 }
 
 export function serializeUser(user: User) {
-  return userSchema.parse({
-    data: {
-      id: user.id,
-      username: user.username.toString(),
-      role: user.role,
-      multifactor_enabled: user.multifactorEnabled,
-      created_at: user.createdAt.toISOString(),
-    },
-    errors: [],
-  });
+  return userSchema.parse({ data: serializeUserData(user) });
 }
 
 export function serializeVaultSlot(slot: VaultSlotPublic) {
   return vaultSlotSchema.parse({
     data: serializeVaultSlotData(slot),
-    errors: [],
   });
 }
 
-export function serializeVaultSlotData(slot: VaultSlotPublic) {
+function serializeVaultSlotData(slot: VaultSlotPublic) {
   return {
     id: slot.id,
-    slot_type: slot.slotType,
+    slotType: slot.slotType,
     salt: slot.salt,
-    wrap_blob: slot.wrapBlob,
-    credential_id: slot.credentialId,
+    wrapBlob: slot.wrapBlob,
+    credentialId: slot.credentialId,
     label: slot.label,
   };
 }
@@ -82,32 +74,29 @@ export function serializeVaultSlotData(slot: VaultSlotPublic) {
 export function serializeMeDetails(
   user: User,
   vault: VaultPublicState,
-  multifactorState: PublicMultifactorState
+  multifactorState: PublicMultifactorState,
+  clientSettings: Record<string, unknown> | null
 ) {
   return meDetailsSchema.parse({
     data: {
       id: user.id,
       username: user.username.toString(),
       role: user.role,
-      multifactor_enabled: user.multifactorEnabled,
-      multifactor_methods: multifactorState.multifactorMethods,
-      recovery_codes_enabled: multifactorState.recoveryCodesEnabled,
-      recovery_email_enabled: user.hasRecoveryEmail(),
-      recovery_email_set_at: user.recoveryEmailSetAt?.toISOString() ?? null,
-      vault_initialized: vault.vaultInitialized,
-      vault_slots: vault.vaultSlots.map(serializeVaultSlotData),
-      display_name: vault.displayName,
+      multifactorEnabled: user.multifactorEnabled,
+      multifactorMethods: multifactorState.multifactorMethods,
+      recoveryCodesEnabled: multifactorState.recoveryCodesEnabled,
+      recoveryEmailEnabled: user.hasRecoveryEmail(),
+      recoveryEmailSetAt: user.recoveryEmailSetAt?.toISOString() ?? null,
+      vaultInitialized: vault.vaultInitialized,
+      vaultSlots: vault.vaultSlots.map(serializeVaultSlotData),
+      displayName: user.displayName?.toString() ?? null,
+      clientSettings,
     },
-    errors: [],
   });
 }
 
-export function serializeEmpty() {
-  return emptySchema.parse({ data: null, errors: [] });
-}
-
 export function serializeMessage(message: string) {
-  return messageSchema.parse({ data: { message }, errors: [] });
+  return messageSchema.parse({ data: { message } });
 }
 
 export function serializeWebauthnSession(
@@ -115,34 +104,31 @@ export function serializeWebauthnSession(
   options: WebAuthnBeginResponse["options"]
 ) {
   return webauthnSessionSchema.parse({
-    data: { session_id: sessionId, options },
-    errors: [],
+    data: { sessionId, options },
   });
 }
 
 export function serializeTotpBegin(uri: string) {
-  return totpBeginSchema.parse({ data: { uri }, errors: [] });
+  return totpBeginSchema.parse({ data: { uri } });
 }
 
 export function serializeRecoveryCodes(codes: string[]) {
-  return recoveryCodeSchema.parse({ data: { recovery_codes: codes }, errors: [] });
+  return recoveryCodeSchema.parse({ data: { recoveryCodes: codes } });
 }
 
-export function serializeAdvCtx(context: AdvancedRecoveryContext) {
+export function serializeAdvancedContext(context: AdvancedRecoveryContext) {
   return advCtxSchema.parse({
     data: {
-      vault_initialized: context.vault.initialize,
-      vault_slots: context.vault.slots.map(serializeVaultSlotData),
-      vault_recovery_methods: context.vault.recoveryMethods,
+      vaultInitialized: context.vault.initialize,
+      vaultSlots: context.vault.slots.map(serializeVaultSlotData),
+      vaultRecoveryMethods: context.vault.recoveryMethods,
     },
-    errors: [],
   });
 }
 
 export function serializeVaultSlots(slots: VaultSlotPublic[]) {
   return vaultSlotsSchema.parse({
-    data: { vault_slots: slots.map(serializeVaultSlotData) },
-    errors: [],
+    data: { vaultSlots: slots.map(serializeVaultSlotData) },
   });
 }
 
@@ -151,24 +137,28 @@ export function serializeWebauthnCreds(
   total: number
 ) {
   return webauthnCredSchema.parse({
-    data: {
-      items: items.map((item) => ({
-        id: item.id,
-        name: item.name,
-        created_at: item.createdAt.toISOString(),
-      })),
-      total,
-    },
-    errors: [],
+    items: items.map((item) => ({
+      id: item.id,
+      name: item.name,
+      createdAt: item.createdAt.toISOString(),
+    })),
+    total,
   });
+}
+
+function serializeUserData(user: User) {
+  return {
+    id: user.id,
+    username: user.username.toString(),
+    role: user.role,
+    multifactorEnabled: user.multifactorEnabled,
+    createdAt: user.createdAt.toISOString(),
+  };
 }
 
 export function serializeUserList(items: User[], total: number) {
   return userListSchema.parse({
-    data: {
-      items: items.map((item) => serializeUser(item).data),
-      total,
-    },
-    errors: [],
+    items: items.map((item) => serializeUserData(item)),
+    total,
   });
 }

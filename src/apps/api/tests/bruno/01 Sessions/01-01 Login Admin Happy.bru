@@ -24,13 +24,12 @@ body:json {
 }
 
 script:post-response {
-  bru.setVar("sessionToken", res.body.data.session_token);
-  bru.setVar("refreshToken", res.body.data.refresh_token);
+  bru.setVar("sessionToken", res.body.data.sessionToken);
+  bru.setVar("refreshToken", res.body.data.refreshToken);
 }
 
 assert {
   res.status: eq 200
-  res.body.data.session_token: isDefined
-  res.body.data.refresh_token: isDefined
-  res.body.errors: isEmpty
+  res.body.data.sessionToken: isDefined
+  res.body.data.refreshToken: isDefined
 }

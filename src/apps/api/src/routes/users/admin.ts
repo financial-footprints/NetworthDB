@@ -1,16 +1,16 @@
+import { jsonBody, jsonMedia } from "@api/config/http";
 import { createSessionRouter, errorResponses } from "@api/config/router";
-import { jsonBody, jsonMedia, toUserListQuery } from "@api/routes/auth/helpers";
-import { serializeEmpty, serializeUser, serializeUserList } from "@api/routes/auth/serializer";
+import { serializeUser, serializeUserList } from "@api/routes/auth/serializer";
+import { toUserListQuery } from "@api/routes/users/helpers";
 import { sessionPrincipal } from "@ndb/middleware";
 import {
   API,
   adminUserListQuerySchema,
-  emptySchema,
   patchAdminUserReqSchema,
   registerUserReqSchema,
+  userIdParamsSchema,
   userListSchema,
   userSchema,
-  uuidIdParamsSchema,
 } from "@ndb/platform";
 
 const adminRoutes = createSessionRouter()
@@ -29,7 +29,11 @@ const adminRoutes = createSessionRouter()
     async (c) => {
       const body = c.req.valid("json");
       const { user, auth } = sessionPrincipal(c.get("principal"));
-      const created = await c.get("services").auth.register(user, auth.acr, body);
+      const created = await c.get("services").authService.register(user, auth.acr, body);
+      await Promise.all([
+        c.get("services").accountService.ensureSystemAccounts(created.id),
+        c.get("services").categoryService.ensureDefaultCategories(created.id),
+      ]);
       return c.json(serializeUser(created), 201);
     }
   )
@@ -48,16 +52,16 @@ const adminRoutes = createSessionRouter()
       const { user, auth } = sessionPrincipal(c.get("principal"));
       const result = await c
         .get("services")
-        .user.list(user, auth.acr, toUserListQuery(c.req.valid("query")));
+        .userService.list(user, auth.acr, toUserListQuery(c.req.valid("query")));
       return c.json(serializeUserList(result.items, result.total), 200);
     }
   )
   .endpoint(
     {
       method: "patch",
-      path: API.users.details,
+      path: API.users.patch,
       request: {
-        params: uuidIdParamsSchema,
+        params: userIdParamsSchema,
         body: jsonBody(patchAdminUserReqSchema),
       },
       responses: {
@@ -69,28 +73,28 @@ const adminRoutes = createSessionRouter()
     },
     async (c) => {
       const body = c.req.valid("json");
-      const { id } = c.req.valid("param");
+      const { userId } = c.req.valid("param");
       const { user, auth } = sessionPrincipal(c.get("principal"));
-      const updated = await c.get("services").user.update(user, auth.acr, id, body);
+      const updated = await c.get("services").userService.update(user, auth.acr, userId, body);
       return c.json(serializeUser(updated), 200);
     }
   )
   .endpoint(
     {
       method: "delete",
-      path: API.users.details,
-      request: { params: uuidIdParamsSchema },
+      path: API.users.delete,
+      request: { params: userIdParamsSchema },
       responses: {
-        200: { content: jsonMedia(emptySchema), description: "User deleted" },
+        204: { description: "User deleted" },
         401: errorResponses[401],
         403: errorResponses[403],
       },
     },
     async (c) => {
-      const { id } = c.req.valid("param");
+      const { userId } = c.req.valid("param");
       const { user, auth } = sessionPrincipal(c.get("principal"));
-      await c.get("services").user.delete(user, auth.acr, id);
-      return c.json(serializeEmpty(), 200);
+      await c.get("services").userService.delete(user, auth.acr, userId);
+      return c.body(null, 204);
     }
   );
 

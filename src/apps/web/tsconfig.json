@@ -3,8 +3,9 @@
   "compilerOptions": {
     "lib": ["DOM", "ES2021"],
     "jsx": "react-jsx",
+    "jsxImportSource": "react",
     "types": ["@rsbuild/core/types", "bun", "node", "react", "react-dom"]
   },
-  "include": ["src", "tests"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts"],
   "exclude": []
 }

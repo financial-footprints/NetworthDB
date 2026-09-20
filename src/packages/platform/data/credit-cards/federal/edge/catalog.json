@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "registry_key": "federal/edge",
+  "bank": "federal",
+  "variant": "edge",
+  "display_name": "Jupiter Edge",
+  "default_kind": "named",
+  "cobrand": "Jupiter",
+  "networks": [],
+  "reward_kind": "points",
+  "official_product_url": "https://www.federalbank.co.in/documents/d/guest/mitc-federal-edge-co-branded-credit-card",
+  "mitc_url": "https://www.federalbank.co.in/documents/d/guest/mitc-federal-edge-co-branded-credit-card",
+  "researched_at": "2026-10-04",
+  "updated_at": "2026-10-04",
+  "sources": [
+    {
+      "url": "https://www.federalbank.co.in/documents/d/guest/mitc-federal-edge-co-branded-credit-card",
+      "retrieved_at": "2026-10-04",
+      "label": "Edge-Federal MITC"
+    },
+    {
+      "url": "https://www.federalbank.co.in/documents/d/guest/kfs-federal-edge-co-branded-credit-card",
+      "retrieved_at": "2026-10-04",
+      "label": "Edge-Federal KFS"
+    }
+  ],
+  "tags": ["rewards", "jupiter"],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. Charges in the MITC are exclusive of GST. The network is not stated in the MITC heading.",
+  "fees": {
+    "joining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "yes",
+      "summary": "The primary annual fee is \u20b9999.",
+      "confidence": "verified_mitc"
+    },
+    "annual_waiver": {
+      "status": "conditional",
+      "summary": "The annual fee is waived on \u20b91.2 lakh of eligible spends in the preceding year.",
+      "confidence": "verified_mitc"
+    },
+    "forex": {
+      "status": "yes",
+      "summary": "Forex markup is 2 percent.",
+      "confidence": "verified_mitc"
+    },
+    "fuel_surcharge": {
+      "status": "conditional",
+      "summary": "Fuel surcharge is 1 percent of the transaction or \u20b910, whichever is higher. A waiver applies on fuel spends up to \u20b94,000 per billing cycle.",
+      "confidence": "verified_mitc",
+      "conditions": [
+        {
+          "type": "cap",
+          "summary": "The fuel waiver applies up to \u20b94,000 per billing cycle."
+        }
+      ]
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "conditional",
+      "summary": "Qualified spends earn 2 Jewels per \u20b9100 on the Jupiter app, with a minimum transaction of \u20b9100. The billing-cycle cap is 15,000 Jewels. Five Jewels equal \u20b91.",
+      "confidence": "verified_mitc",
+      "conditions": [
+        {
+          "type": "txn_range",
+          "summary": "The minimum transaction to earn Jewels is \u20b9100."
+        },
+        {
+          "type": "cap",
+          "summary": "Jewels are capped at 15,000 per billing cycle."
+        }
+      ]
+    },
+    "accelerated": {
+      "status": "conditional",
+      "summary": "An optional booster pack earns 10 Jewels per \u20b9100 on a chosen MCC category and still sits inside the 15,000 cycle cap.",
+      "confidence": "verified_mitc"
+    },
+    "upi": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Edge-Federal MITC does not describe a separate UPI earn rate."
+    },
+    "redemption": {
+      "status": "yes",
+      "summary": "Redeem as digital gold on Jupiter or as cash to a Federal Bank account at 5 Jewels equals \u20b91. Unpaid minimum amount due locks Jewels and pauses earning.",
+      "confidence": "verified_mitc"
+    },
+    "expiry": {
+      "status": "conditional",
+      "summary": "Jewels do not expire except when unused for more than 365 days, plus clawback cases in the MITC.",
+      "confidence": "verified_mitc"
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "domestic": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "international": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "railway": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "movies": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "golf": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "concierge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "accident": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "card_protect": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    }
+  },
+  "milestones": {
+    "status": "conditional",
+    "summary": "The annual-fee waiver unlocks at \u20b91.2 lakh eligible spend in the preceding year. Fuel waiver applies up to \u20b94,000 per cycle.",
+    "confidence": "verified_mitc"
+  },
+  "welcome": {
+    "status": "NA",
+    "summary": "NA",
+    "confidence": "verified_mitc"
+  }
+}

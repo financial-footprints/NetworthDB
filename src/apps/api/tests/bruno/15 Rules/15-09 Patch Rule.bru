@@ -1,0 +1,26 @@
+meta {
+  name: 15-09 Patch Rule
+  type: http
+  seq: 9
+}
+
+patch {
+  url: {{BASE_URL}}/api/v1/rules/{{ruleId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+body:json {
+  {
+    "title": "Bruno Rule Renamed"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.title: eq Bruno Rule Renamed
+}

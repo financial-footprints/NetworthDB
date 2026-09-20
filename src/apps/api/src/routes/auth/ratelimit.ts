@@ -1,21 +1,21 @@
 import type { AuthEnv } from "@api/config/hono-env";
+import { jsonBody, jsonMedia } from "@api/config/http";
 import { ApiRouter, errorResponses } from "@api/config/router";
-import { jsonBody, jsonMedia, withRateLimit } from "@api/routes/auth/helpers";
+import { withRateLimit } from "@api/routes/auth/helpers";
 import {
-  serializeAdvCtx,
-  serializeEmpty,
+  serializeAdvancedContext,
   serializeMessage,
   serializeMfaChallenge,
   serializeSessionTokens,
   serializeWebauthnSession,
 } from "@api/routes/auth/serializer";
-import { isSessionTokenPair } from "@ndb/core";
+import type { MultifactorProofInput } from "@ndb/core";
+import { isSessionTokenPair, ValidationError } from "@ndb/core";
 import {
   API,
   advCompleteReqSchema,
   advCompleteSchema,
   advCtxSchema,
-  emptySchema,
   loginReqSchema,
   loginSchema,
   messageSchema,
@@ -26,6 +26,22 @@ import {
   sessionTokenSchema,
   webauthnSessionSchema,
 } from "@ndb/platform";
+
+function buildMultifactorProof(body: {
+  password?: string;
+  totp?: string;
+  recoveryCode?: string;
+  webauthnSessionId?: string;
+  webauthnResponse?: Record<string, unknown>;
+}): MultifactorProofInput {
+  return {
+    password: body.password,
+    totp: body.totp,
+    recoveryCode: body.recoveryCode,
+    webauthnSessionId: body.webauthnSessionId,
+    webauthnResponse: body.webauthnResponse,
+  };
+}
 
 const rateLimitedRoutes = new ApiRouter<AuthEnv>();
 rateLimitedRoutes.applyRouteMiddleware(withRateLimit());
@@ -48,7 +64,7 @@ rateLimitedRoutes
     },
     async (c) => {
       const { username, password } = c.req.valid("json");
-      const result = await c.get("services").auth.login(username, password);
+      const result = await c.get("services").authService.login(username, password);
 
       if (isSessionTokenPair(result)) {
         return c.json(serializeSessionTokens(result), 200);
@@ -70,8 +86,12 @@ rateLimitedRoutes
       },
     },
     async (c) => {
-      const { refresh_token } = c.req.valid("json");
-      const pair = await c.get("services").auth.refresh(refresh_token);
+      const { refreshToken } = c.req.valid("json");
+      const token = refreshToken?.trim() ?? "";
+      if (token.length === 0) {
+        throw new ValidationError("Refresh token is required.");
+      }
+      const pair = await c.get("services").authService.refresh(token);
       return c.json(serializeSessionTokens(pair), 200);
     }
   )
@@ -88,7 +108,9 @@ rateLimitedRoutes
     },
     async (c) => {
       const { username, email } = c.req.valid("json");
-      const result = await c.get("services").auth.recovery.beginReset(username, email);
+      const result = await c
+        .get("services")
+        .authService.recovery.beginReset(username ?? "", email ?? "");
       return c.json(serializeMessage(result.message), 200);
     }
   )
@@ -98,22 +120,24 @@ rateLimitedRoutes
       path: API.auth.recovery.password.complete,
       request: { body: jsonBody(pwResetCompleteReqSchema) },
       responses: {
-        200: {
-          content: jsonMedia(emptySchema),
-          description: "Password reset complete",
-        },
+        204: { description: "Password reset complete" },
         400: errorResponses[400],
         429: errorResponses[429],
       },
     },
     async (c) => {
-      const { token, newPassword, multifactorProof } = c.req.valid("json");
-      await c.get("services").auth.recovery.completeReset({
+      const body = c.req.valid("json");
+      const token = body.token?.trim() ?? "";
+      const newPassword = body.newPassword ?? "";
+      if (token.length === 0 || newPassword.length === 0) {
+        throw new ValidationError("Required fields are missing.");
+      }
+      await c.get("services").authService.recovery.completeReset({
         token,
         newPassword,
-        multifactorProof,
+        multifactorProof: buildMultifactorProof(body),
       });
-      return c.json(serializeEmpty(), 200);
+      return c.body(null, 204);
     }
   )
   .endpoint(
@@ -132,7 +156,11 @@ rateLimitedRoutes
     },
     async (c) => {
       const { token } = c.req.valid("json");
-      const result = await c.get("services").auth.recovery.beginResetWebAuthn(token);
+      const tokenPlain = token.trim();
+      if (tokenPlain.length === 0) {
+        throw new ValidationError("Token is required.");
+      }
+      const result = await c.get("services").authService.recovery.beginResetWebAuthn(tokenPlain);
       return c.json(serializeWebauthnSession(result.sessionId, result.options), 200);
     }
   )
@@ -152,7 +180,9 @@ rateLimitedRoutes
     },
     async (c) => {
       const { username, email } = c.req.valid("json");
-      const result = await c.get("services").auth.recovery.beginAdvanced(username, email);
+      const result = await c
+        .get("services")
+        .authService.recovery.beginAdvanced(username ?? "", email ?? "");
       return c.json(serializeMessage(result.message), 200);
     }
   )
@@ -172,8 +202,12 @@ rateLimitedRoutes
     },
     async (c) => {
       const { token } = c.req.valid("json");
-      const context = await c.get("services").auth.recovery.getContext(token);
-      return c.json(serializeAdvCtx(context), 200);
+      const tokenPlain = token?.trim() ?? "";
+      if (tokenPlain.length === 0) {
+        throw new ValidationError("Token is required.");
+      }
+      const context = await c.get("services").authService.recovery.getContext(tokenPlain);
+      return c.json(serializeAdvancedContext(context), 200);
     }
   )
   .endpoint(
@@ -192,7 +226,11 @@ rateLimitedRoutes
     },
     async (c) => {
       const { token } = c.req.valid("json");
-      const result = await c.get("services").auth.recovery.beginAdvancedWebAuthn(token);
+      const tokenPlain = token?.trim() ?? "";
+      if (tokenPlain.length === 0) {
+        throw new ValidationError("Token is required.");
+      }
+      const result = await c.get("services").authService.recovery.beginAdvancedWebAuthn(tokenPlain);
       return c.json(serializeWebauthnSession(result.sessionId, result.options), 200);
     }
   )
@@ -204,22 +242,33 @@ rateLimitedRoutes
       responses: {
         200: {
           content: jsonMedia(advCompleteSchema),
-          description: "Advanced recovery complete",
+          description: "Advanced recovery MFA enrollment required",
         },
+        204: { description: "Advanced recovery complete" },
         400: errorResponses[400],
         429: errorResponses[429],
       },
     },
     async (c) => {
-      const enrollment = await c
-        .get("services")
-        .auth.recovery.completeAdvanced(c.req.valid("json"));
+      const body = c.req.valid("json");
+      const token = body.token?.trim() ?? "";
+      const newPassword = body.newPassword ?? "";
+      if (token.length === 0 || newPassword.length === 0) {
+        throw new ValidationError("Required fields are missing.");
+      }
+      const enrollment = await c.get("services").authService.recovery.completeAdvanced({
+        token,
+        newPassword,
+        passwordSlot: body.passwordSlot,
+        webauthnSessionId: body.webauthnSessionId,
+        webauthnResponse: body.webauthnResponse,
+      });
 
       if (enrollment) {
         return c.json(serializeMfaChallenge(enrollment), 200);
       }
 
-      return c.json(serializeEmpty(), 200);
+      return c.body(null, 204);
     }
   );
 

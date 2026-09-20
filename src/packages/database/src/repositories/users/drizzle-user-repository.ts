@@ -74,7 +74,7 @@ export class DrizzleUserRepository implements UserRepository {
       return mapRow(row);
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictError("database.user.create.conflict.username-taken", {
+        throw new ConflictError("Username is already taken.", {
           username: user.username.toString(),
         });
       }
@@ -124,7 +124,7 @@ export class DrizzleUserRepository implements UserRepository {
       return mapRow(row);
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictError("database.user.save.conflict.username-taken", {
+        throw new ConflictError("Username is already taken.", {
           username: user.username.toString(),
         });
       }
@@ -147,6 +147,35 @@ export class DrizzleUserRepository implements UserRepository {
     if (where) {
       await this.db.delete(users).where(where);
     }
+  }
+
+  async getClientSettings(userId: string): Promise<Record<string, unknown> | null> {
+    const rows = await this.db
+      .select({ clientSettings: users.clientSettings })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+    const row = rows[0];
+    if (!row) {
+      throw new Error("database.user.client-settings.error.not-found");
+    }
+    return row.clientSettings ?? null;
+  }
+
+  async saveClientSettings(
+    userId: string,
+    value: Record<string, unknown> | null
+  ): Promise<Record<string, unknown> | null> {
+    const rows = await this.db
+      .update(users)
+      .set({ clientSettings: value })
+      .where(eq(users.id, userId))
+      .returning({ clientSettings: users.clientSettings });
+    const row = rows[0];
+    if (!row) {
+      throw new Error("database.user.client-settings.error.not-found");
+    }
+    return row.clientSettings ?? null;
   }
 
   private _filter(filters: UserFilters): SQL | undefined {

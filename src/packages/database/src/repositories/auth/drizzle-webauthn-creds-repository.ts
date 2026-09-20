@@ -4,7 +4,7 @@ import {
   bufferToText,
   textToBuffer,
 } from "@database/repositories/helpers";
-import { authWebauthnCreds } from "@database/schema/auth/webauthn-creds";
+import { authWebauthnCreds } from "@database/schema/auth/webauthn-credentials";
 import type { DbClient } from "@database/types";
 import {
   ONE,

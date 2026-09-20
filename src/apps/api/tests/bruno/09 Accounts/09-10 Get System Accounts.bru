@@ -1,0 +1,35 @@
+meta {
+  name: 09-10 Get System Accounts
+  type: http
+  seq: 10
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/accounts/system`
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/accounts/system
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accountsSessionToken}}
+}
+
+script:post-response {
+  const items = res.getBody().data?.items ?? [];
+  if (items.length !== 4) {
+    throw new Error(`expected 4 system accounts, got ${items.length}`);
+  }
+  const expense = items.find((row) => row.accountType === "expense");
+  const unknown = items.find((row) => row.accountType === "unknown");
+  bru.setVar("systemExpenseAccountId", expense?.id ?? "");
+  bru.setVar("systemUnknownAccountId", unknown?.id ?? "");
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.items: isArray
+}

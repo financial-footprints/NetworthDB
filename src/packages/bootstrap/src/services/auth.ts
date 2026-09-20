@@ -1,5 +1,6 @@
 import type { MultifactorConfig, RecoveryConfig, WebAuthnConfig } from "@bootstrap/config/api";
 import { createAuthCrypto, type KvstoreAuthLimits } from "@ndb/auth";
+import type { Logger } from "@ndb/core";
 import { type AppEnv, AuthService, type AuthServiceConfig, VaultService } from "@ndb/core";
 import type { DbClient } from "@ndb/database";
 import {
@@ -12,7 +13,6 @@ import {
   DrizzleWebAuthnCredsRepository,
   DrizzleWebAuthnSessionRepository,
 } from "@ndb/database";
-import type { Logger } from "@ndb/logger";
 import { createEmailSender } from "@ndb/notifications";
 
 export type CreateAuthServicesConfig = {
@@ -55,7 +55,6 @@ export function createAuthServices(db: DbClient, config: CreateAuthServicesConfi
 
   const vault = new VaultService(users, vaultSlots, webauthnCredentials, crypto.password);
   const emailSender = createEmailSender({
-    environment,
     email: config.auth.recovery.email,
     logger: config.logger,
   });

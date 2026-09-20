@@ -24,7 +24,7 @@ body:json {
 }
 
 script:post-response {
-  bru.setVar("badMfaChallengeToken", res.body.data.multifactor_token);
+  bru.setVar("badMfaChallengeToken", res.body.data.multifactorToken);
 }
 
 assert {

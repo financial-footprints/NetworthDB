@@ -27,10 +27,10 @@ body:json {
 }
 
 script:post-response {
-  bru.setVar("mfaSessionToken", res.body.data.session_token);
+  bru.setVar("mfaSessionToken", res.body.data.sessionToken);
 }
 
 assert {
   res.status: eq 200
-  res.body.data.session_token: isDefined
+  res.body.data.sessionToken: isDefined
 }

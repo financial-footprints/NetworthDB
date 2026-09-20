@@ -15,6 +15,10 @@ out/
 !.env.example
 !**/.env.example
 !**/.env.tests
+deploy/env/.env
+deploy/env/api.env
+deploy/env/copilot.env
+deploy/env/postgres.env
 .local
 
 # Editor
@@ -30,3 +34,7 @@ out/
 .#*
 *.tmp
 *.temp
+
+# Python
+__pycache__/
+*.pyc

@@ -11,13 +11,20 @@ import type { JobRepository } from "@core/domains/jobs/repositories/job-reposito
 import { ConflictError } from "@core/shared/errors/domain-error";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const LOG_FLUSH_MS = 300;
 
 export type JobFnResult = {
   output?: JobOutput;
   logs?: JobLogs;
 };
 
-export type JobFn = (jobId: string, shouldCancel: () => boolean) => Promise<JobFnResult>;
+export type AppendLogFn = (line: string) => Promise<void>;
+
+export type JobFn = (
+  jobId: string,
+  shouldCancel: () => boolean,
+  appendLog: AppendLogFn
+) => Promise<JobFnResult>;
 
 export class JobRunnerService {
   private readonly cancelFlags = new Map<string, { cancelled: boolean }>();
@@ -33,12 +40,12 @@ export class JobRunnerService {
 
   async submit(userId: string, stage: JobStage, scope: JobScope, fn: JobFn): Promise<Job> {
     if (this.shuttingDown) {
-      throw new ConflictError("core.jobs.create.conflict.shutting-down");
+      throw new ConflictError("The job runner is shutting down.");
     }
 
     const conflict = await this.jobs.findConflict(userId, stage, scope);
     if (conflict) {
-      throw new ConflictError("core.jobs.create.conflict.active-job", {
+      throw new ConflictError("A job is already running.", {
         id: conflict.id,
         status: conflict.status,
       });
@@ -140,7 +147,44 @@ export class JobRunnerService {
     const shouldCancel = () => this.cancelFlags.get(job.id)?.cancelled === true;
     let current = job;
     let lastOutput = EMPTY_JOB_OUTPUT;
-    let lastLogs: JobLogs | undefined;
+    const pendingLines: string[] = [];
+    let flushTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const flushLogs = async (): Promise<void> => {
+      if (pendingLines.length === 0) {
+        return;
+      }
+
+      const chunk = pendingLines.join("\n");
+      pendingLines.length = 0;
+      current = current.appendLogs(chunk);
+      const saved = await this.jobs.save(current);
+      if (saved) {
+        const savedLogLen = saved.logs?.length ?? 0;
+        const currentLogLen = current.logs?.length ?? 0;
+        if (savedLogLen >= currentLogLen) {
+          current = saved;
+        }
+      }
+    };
+
+    const flushNow = async (): Promise<void> => {
+      if (flushTimer) {
+        clearTimeout(flushTimer);
+        flushTimer = undefined;
+      }
+      await flushLogs();
+    };
+
+    const appendLog: AppendLogFn = async (line: string) => {
+      pendingLines.push(line);
+      if (!flushTimer) {
+        flushTimer = setTimeout(() => {
+          flushTimer = undefined;
+          void flushLogs();
+        }, LOG_FLUSH_MS);
+      }
+    };
 
     try {
       const started = await this.tryStartJob(current, shouldCancel);
@@ -149,13 +193,14 @@ export class JobRunnerService {
       }
       current = started;
 
-      const result = await fn(current.id, shouldCancel);
+      const result = await fn(current.id, shouldCancel, appendLog);
+      await flushNow();
       lastOutput = result?.output ?? EMPTY_JOB_OUTPUT;
-      lastLogs = result?.logs;
 
-      await this.finishJob(current, shouldCancel, lastOutput, lastLogs);
+      await this.finishJob(current, shouldCancel, lastOutput);
     } catch (error) {
-      await this.failJob(current, error, lastOutput, lastLogs);
+      await flushNow();
+      await this.failJob(current, error, lastOutput);
     } finally {
       this.cancelFlags.delete(job.id);
       this.releaseWorker();
@@ -186,26 +231,19 @@ export class JobRunnerService {
   private async finishJob(
     current: Job,
     shouldCancel: () => boolean,
-    output: JobOutput,
-    logs?: JobLogs
+    output: JobOutput
   ): Promise<void> {
     if (shouldCancel()) {
-      await this.jobs.save(current.cancel(output, logs));
+      await this.jobs.save(current.cancel(output));
       return;
     }
 
-    await this.jobs.save(current.complete(output, logs));
+    await this.jobs.save(current.complete(output));
   }
 
-  private async failJob(
-    current: Job,
-    error: unknown,
-    lastOutput: JobOutput,
-    lastLogs?: JobLogs
-  ): Promise<void> {
+  private async failJob(current: Job, error: unknown, lastOutput: JobOutput): Promise<void> {
     const message = error instanceof Error ? error.message : String(error);
     const output = error instanceof JobExecutionError ? (error.output ?? lastOutput) : lastOutput;
-    const logs = error instanceof JobExecutionError ? (error.logs ?? lastLogs) : lastLogs;
-    await this.jobs.save(current.fail(message, output, logs));
+    await this.jobs.save(current.fail(message, output));
   }
 }

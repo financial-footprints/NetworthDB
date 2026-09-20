@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { clearRefreshToken, readRefreshToken, writeRefreshToken } from "@web/context/Auth/storage";
-import { resetSessionStorage } from "../setup";
+import { resetSessionStorage } from "@tests/web/setup";
+import { clearRefreshToken, readRefreshToken, writeRefreshToken } from "@web/contexts/Auth/storage";
 
 describe("auth storage", () => {
   afterEach(() => {

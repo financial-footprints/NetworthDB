@@ -1,0 +1,21 @@
+meta {
+  name: 13-02 List Categories
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/categories
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.items: isArray
+  res.body.total: gte 0
+}

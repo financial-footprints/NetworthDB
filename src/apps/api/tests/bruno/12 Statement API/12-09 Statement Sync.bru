@@ -16,12 +16,12 @@ auth:bearer {
 
 body:json {
   {
-    "scope": {}
+    "accountId": "{{statementAccountId}}"
   }
 }
 
 script:post-response {
-  bru.setVar("statementSyncJobId", res.body.data.id);
+  bru.setVar("statementSyncJobId", res.body.data.jobId);
 }
 
 assert {

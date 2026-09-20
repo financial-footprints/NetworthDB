@@ -1,0 +1,19 @@
+meta {
+  name: 17-15 Delete Import
+  type: http
+  seq: 15
+}
+
+delete {
+  url: {{BASE_URL}}/api/v1/accounts/{{ledgerAccountId}}/transaction-imports/{{ledgerImportId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+assert {
+  res.status: eq 204
+}

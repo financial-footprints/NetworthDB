@@ -1,23 +1,18 @@
 import type { User } from "@core/domains/user/entities/user/index";
+import type { Role } from "@core/domains/user/roles";
 import { ForbiddenError } from "@core/shared/errors/domain-error";
 
-export const ROLES = ["user", "manager", "administrator"] as const;
-
-export type Role = (typeof ROLES)[number];
-
-export function isRole(value: string): value is Role {
-  return (ROLES as readonly string[]).includes(value);
-}
+export { ROLES, type Role } from "@core/domains/user/roles";
 
 export function assertAdministrator(user: User): void {
   if (user.role !== "administrator") {
-    throw new ForbiddenError("core.user.authorization.forbidden.insufficient-admin");
+    throw new ForbiddenError("Forbidden");
   }
 }
 
 export function assertAdministratorOrManager(user: User): void {
   if (user.role !== "administrator" && user.role !== "manager") {
-    throw new ForbiddenError("core.user.authorization.forbidden.insufficient-permissions");
+    throw new ForbiddenError("Forbidden");
   }
 }
 

@@ -1,0 +1,31 @@
+meta {
+  name: 19-05 Wait Export Job
+  type: http
+  seq: 5
+}
+
+script:pre-request {
+  const { waitForJob } = require("./lib/bruno-jobs/wait-for-job.cjs");
+  await waitForJob({
+    baseUrl: bru.getEnvVar("BASE_URL"),
+    token: bru.getVar("backupSessionToken"),
+    jobId: bru.getVar("backupExportJobId"),
+    wantStatus: "completed",
+    timeoutMs: 120000,
+  });
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/jobs/{{backupExportJobId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{backupSessionToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.status: eq completed
+}

@@ -42,6 +42,26 @@ export class Job {
     return this.status === "queued" || this.status === "running";
   }
 
+  appendLogs(chunk: string): Job {
+    if (!chunk) {
+      return this;
+    }
+
+    const separator = this.logs ? "\n" : "";
+    return new Job(
+      this.id,
+      this.userId,
+      this.stage,
+      this.status,
+      this.scope,
+      this.createdAt,
+      this.completedAt,
+      this.output,
+      this.error,
+      this.logs ? `${this.logs}${separator}${chunk}` : chunk
+    );
+  }
+
   markRunning(): Job | null {
     if (this.status !== "queued") {
       return null;

@@ -9,7 +9,7 @@ docs {
 
   Liveness probe. Confirms the API process is running.
 
-  **This test verifies:** Response is 200 with `{ data: { ok: true } }`. No auth required.
+  **This test verifies:** Response is 200 with `{ ok: true }`. No auth required.
 }
 
 get {
@@ -20,6 +20,5 @@ get {
 
 assert {
   res.status: eq 200
-  res.body.data.ok: eq true
-  res.body.errors: isEmpty
+  res.body.ok: eq true
 }

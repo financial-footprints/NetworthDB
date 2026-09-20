@@ -1,0 +1,19 @@
+meta {
+  name: 13-05 Delete Category
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{BASE_URL}}/api/v1/categories/{{categoryId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+assert {
+  res.status: eq 204
+}

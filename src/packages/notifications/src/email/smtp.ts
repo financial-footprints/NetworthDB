@@ -1,5 +1,4 @@
-import { DomainError, type EmailSender, type SendEmailRequest } from "@ndb/core";
-import type { Logger } from "@ndb/logger";
+import type { EmailSender, Logger, SendEmailRequest } from "@ndb/core";
 import nodemailer, { type SendMailOptions } from "nodemailer";
 
 export interface SmtpEmailSenderOptions {
@@ -64,8 +63,7 @@ export function createSmtpEmailSender(options: SmtpEmailSenderOptions): EmailSen
         await transporter.sendMail(toSmtpMailOptions(options.from, request));
         logger.info("notifications.email.smtp.send.success", {});
       } catch (cause) {
-        throw new DomainError("notifications.email.smtp.send.error", {
-          code: "internal",
+        throw new Error("notifications.email.smtp.send.error", {
           cause: cause instanceof Error ? cause : undefined,
         });
       }

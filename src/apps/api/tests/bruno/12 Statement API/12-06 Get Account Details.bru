@@ -16,5 +16,5 @@ auth:bearer {
 assert {
   res.status: eq 200
   res.body.data.statements.available: eq true
-  res.body.data.statements.statement_count: gte 1
+  res.body.data.statements.statementCount: gte 1
 }

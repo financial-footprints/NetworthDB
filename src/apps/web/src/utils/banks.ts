@@ -1,4 +1,5 @@
-import type { Account } from "@web/utils/api/endpoints/accounts/types";
+import { resolveCreditCardCatalogTitle } from "@ndb/platform";
+import type { Account } from "@web/utils/api/routes/accounts/types";
 import { capitalize } from "@web/utils/strings";
 
 const BANK_DISPLAY_NAMES: Record<string, string> = {
@@ -72,9 +73,16 @@ export function formatAccountTitle(bank: string, variant: string | null): string
   return variantLabel ? `${formatBankName(bank)}: ${variantLabel}` : formatBankName(bank);
 }
 
-export function formatAccountAriaLabel(account: Account): string {
-  const title = account.label || formatAccountTitle(account.bank, account.variant);
-  const number = account.account_number.trim();
+export function formatAccountAriaLabel(
+  account: Account,
+  catalogTitles?: ReadonlyMap<string, string>
+): string {
+  const catalogTitle =
+    account.accountType === "credit_card" && catalogTitles
+      ? resolveCreditCardCatalogTitle(account.bank, account.variant, catalogTitles)
+      : null;
+  const title = catalogTitle || account.label || formatAccountTitle(account.bank, account.variant);
+  const number = account.accountNumber.trim();
   if (!number) {
     return title;
   }

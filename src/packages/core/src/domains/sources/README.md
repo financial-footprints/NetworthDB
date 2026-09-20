@@ -1,4 +1,4 @@
-# Sources domain
+# Sources Domain
 
 Per-user extraction sources (Thunderbird profiles and IMAP email). Used by the statements pipeline to fetch account documents.
 
@@ -16,4 +16,4 @@ Per-user extraction sources (Thunderbird profiles and IMAP email). Used by the s
 - `SourcesService` uses `assertAal2` from `auth` for MFA step-up.
 - `PipelineService` calls `requireSources` before enqueueing pipeline jobs.
 - Blobs at rest are encrypted by `@ndb/database` adapters (NWENC1, ADR-004 tier 2).
-- HTTP serializers compute `has_password` from `emailHasPassword` on the entity.
+- HTTP serializers compute `hasPassword` from `emailHasPassword` on the entity.

@@ -1,0 +1,28 @@
+meta {
+  name: 17-16 Patch Transactions Sync
+  type: http
+  seq: 16
+}
+
+patch {
+  url: {{BASE_URL}}/api/v1/accounts/{{ledgerAccountId}}/statements/transactions-sync
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+body:json {
+  {
+    "period": "2024-06",
+    "transactionsSynced": true,
+    "transactionsImportId": null
+  }
+}
+
+assert {
+  res.status: eq 404
+  res.body.error: isDefined
+}

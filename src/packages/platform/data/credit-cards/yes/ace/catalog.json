@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "registry_key": "yes/ace",
+  "bank": "yes",
+  "variant": "ace",
+  "display_name": "Ace",
+  "default_kind": "named",
+  "networks": ["RuPay"],
+  "reward_kind": "points",
+  "official_product_url": "https://www.yesbank.in/personal-banking/yes-individual/cards/credit-cards",
+  "mitc_url": "https://www.yesbank.in/content/published/api/v1.1/assets/CONT07A77C257C7A4BDD85DB97E51D2B5B8F/native/yesbank_key_fact_statement.pdf",
+  "researched_at": "2026-10-04",
+  "updated_at": "2026-10-04",
+  "sources": [
+    {
+      "url": "https://www.yesbank.in/content/published/api/v1.1/assets/CONT07A77C257C7A4BDD85DB97E51D2B5B8F/native/yesbank_key_fact_statement.pdf",
+      "retrieved_at": "2026-10-04",
+      "label": "Key Fact Statement"
+    },
+    {
+      "url": "https://www.yesbank.in/content/published/api/v1.1/assets/CONT5AA32E547C774006B79F54E05FE58F9E/native/ybl_soc.pdf",
+      "retrieved_at": "2026-10-04",
+      "label": "Schedule of charges"
+    }
+  ],
+  "tags": ["rewards", "rupay"],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. ACE was formerly YES Prosperity Rewards Plus.",
+  "fees": {
+    "joining": {
+      "status": "yes",
+      "summary": "The first-year membership fee is \u20b9499 plus GST.",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "yes",
+      "summary": "The renewal fee is \u20b9499 plus GST.",
+      "confidence": "verified_mitc"
+    },
+    "annual_waiver": {
+      "status": "conditional",
+      "summary": "Spend \u20b95,000 within the first 30 days to waive first-year membership. Spend \u20b950,000 in the anniversary year to waive the next year's renewal.",
+      "confidence": "verified_mitc"
+    },
+    "forex": {
+      "status": "yes",
+      "summary": "Forex conversion is 2.75 percent for the ACE and ACE FD group.",
+      "confidence": "verified_mitc"
+    },
+    "fuel_surcharge": {
+      "status": "conditional",
+      "summary": "A 1 percent fuel surcharge waiver applies on transactions from \u20b9400 to \u20b95,000.",
+      "confidence": "verified_mitc",
+      "conditions": [
+        {
+          "type": "cap",
+          "summary": "The ACE waiver is capped at \u20b9100 per statement cycle."
+        }
+      ]
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "conditional",
+      "summary": "The ACE Digital Welcome Kit states 8 YES Rewardz per \u20b9200 on online shopping except select categories, 4 YES Rewardz per \u20b9200 offline except select categories, and 2 YES Rewardz per \u20b9200 on select categories such as mobile recharge, utility, insurance, and education. No Rewardz accrue on rent, wallet, fuel, government, or marketing spends. The cycle cap is 5,000 YES Rewardz.",
+      "confidence": "verified_product_page"
+    },
+    "accelerated": {
+      "status": "conditional",
+      "summary": "The online versus offline versus select-category split is the accelerated structure. An annual bonus grid is mentioned in the kit header without amounts in this extract.",
+      "confidence": "verified_product_page"
+    },
+    "upi": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "The ACE welcome kit does not state a separate UPI earn rate."
+    },
+    "redemption": {
+      "status": "conditional",
+      "summary": "Redeem through the catalogue, flights, hotels, air miles, yesrewardz.com, netbanking, and YES TOUCH. Bank-wide other-card caps apply: up to 70 percent of the invoice or 1,00,000 points per month on flights and hotels, and 50 percent of available points on voucher and statement-credit redemptions.",
+      "confidence": "verified_mitc"
+    },
+    "expiry": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "The ACE welcome kit does not advertise complimentary lounge access."
+    },
+    "domestic": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Complimentary domestic lounge is not advertised for ACE."
+    },
+    "international": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Complimentary international lounge is not advertised for ACE."
+    },
+    "railway": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Railway lounge access is not advertised for ACE."
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "conditional",
+      "summary": "The welcome kit mentions dining discounts at participating restaurants.",
+      "confidence": "verified_product_page"
+    },
+    "movies": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "golf": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "concierge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "accident": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "card_protect": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "milestones": {
+    "status": "conditional",
+    "summary": "Fee waivers unlock at \u20b95,000 spend in 30 days and \u20b950,000 in the anniversary year. Rewardz are capped at 5,000 points per statement cycle.",
+    "confidence": "verified_mitc"
+  },
+  "welcome": {
+    "status": "NA",
+    "summary": "NA",
+    "confidence": "verified_mitc",
+    "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+  }
+}

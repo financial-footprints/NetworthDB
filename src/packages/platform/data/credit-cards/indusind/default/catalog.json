@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "registry_key": "indusind/default",
+  "bank": "indusind",
+  "variant": "default",
+  "display_name": "IndusInd Credit Card",
+  "default_kind": "parser_fallback",
+  "networks": [],
+  "reward_kind": "unknown",
+  "official_product_url": "https://www.indusind.com/in/en/personal/cards/credit-card.html",
+  "mitc_url": "https://www.indusind.com/content/dam/indusind-corporate/credit-cards/MITC_Premium.pdf",
+  "researched_at": "2026-09-20",
+  "updated_at": "2026-09-20",
+  "sources": [
+    {
+      "url": "https://www.indusind.com/content/dam/indusind-corporate/credit-cards/MITC_Premium.pdf",
+      "retrieved_at": "2026-09-20",
+      "label": "Premium MITC"
+    },
+    {
+      "url": "https://www.indusind.com/in/en/personal/cards/credit-card.html",
+      "retrieved_at": "2026-09-20",
+      "label": "Product catalogue"
+    }
+  ],
+  "tags": [],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. Do not attribute a named SKU to this parser fallback.",
+  "fees": {
+    "joining": {
+      "status": "depends",
+      "summary": "Joining fees are product-specific. Platinum Aura Edge and ePay Amex are nil in the MITC. Do not apply nil to an unknown IndusInd product.",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "depends",
+      "summary": "Annual fees are product-specific. Aura Edge and ePay Amex are nil. Many other cards have fees.",
+      "confidence": "verified_mitc"
+    },
+    "annual_waiver": {
+      "status": "depends",
+      "summary": "Waiver rules are product-specific.",
+      "confidence": "unknown"
+    },
+    "forex": {
+      "status": "depends",
+      "summary": "Forex markup is product-specific in the MITC.",
+      "confidence": "unknown"
+    },
+    "fuel_surcharge": {
+      "status": "depends",
+      "summary": "Fuel surcharge treatment is product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "depends",
+      "summary": "Earn programmes differ. Aura Edge uses four spend plans. ePay Amex uses a per-transaction grid. Do not mix those onto this fallback.",
+      "confidence": "unknown"
+    },
+    "accelerated": {
+      "status": "depends",
+      "summary": "Accelerated earn is product-specific.",
+      "confidence": "unknown"
+    },
+    "upi": {
+      "status": "depends",
+      "summary": "UPI earn is product-specific.",
+      "confidence": "unknown"
+    },
+    "redemption": {
+      "status": "depends",
+      "summary": "Redemption is through Indusmoments, cash credit, or miles depending on the SKU. InterMiles redemption ended on 21 January 2025.",
+      "confidence": "verified_product_page"
+    },
+    "expiry": {
+      "status": "depends",
+      "summary": "Point expiry is product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "depends",
+      "summary": "Lounge access is product-specific. The MITC says Priority Pass is not available on Aura Edge, ePay Amex, Platinum, and a long exclusion list. Priority Pass is a delivery mechanism, not a venue type. Spend gates may still apply on cards that do include lounge.",
+      "confidence": "verified_mitc"
+    },
+    "domestic": {
+      "status": "depends",
+      "summary": "Domestic lounge entitlements are product-specific.",
+      "confidence": "unknown"
+    },
+    "international": {
+      "status": "depends",
+      "summary": "International lounge entitlements are product-specific.",
+      "confidence": "unknown"
+    },
+    "railway": {
+      "status": "depends",
+      "summary": "Railway lounge and booking surcharge rules are product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "depends",
+      "summary": "Dining benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "movies": {
+      "status": "depends",
+      "summary": "Movie benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "golf": {
+      "status": "depends",
+      "summary": "Golf benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "concierge": {
+      "status": "depends",
+      "summary": "Concierge benefits are product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "depends",
+      "summary": "Travel insurance is product-specific.",
+      "confidence": "unknown"
+    },
+    "accident": {
+      "status": "depends",
+      "summary": "Accident cover is product-specific.",
+      "confidence": "unknown"
+    },
+    "card_protect": {
+      "status": "depends",
+      "summary": "Total Protect and similar covers are product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "milestones": {
+    "status": "depends",
+    "summary": "Spend milestones are product-specific.",
+    "confidence": "unknown"
+  },
+  "welcome": {
+    "status": "depends",
+    "summary": "Welcome benefits are product-specific.",
+    "confidence": "unknown"
+  }
+}

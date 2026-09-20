@@ -33,19 +33,23 @@ export class Password {
     const minLen = appEnv === "production" ? PROD_MIN_PASSWORD_LEN : DEV_MIN_PASSWORD_LEN;
 
     if (len < minLen) {
-      throw new ValidationError(`core.auth.password.invalid.too-short.${minLen}`, {
+      throw new ValidationError("Password is too short.", {
         field: "password",
+        context: { minLen },
       });
     }
 
     if (len > MAX_PASSWORD_LEN) {
-      throw new ValidationError(`core.auth.password.invalid.too-long.${MAX_PASSWORD_LEN}`, {
+      throw new ValidationError("Password is too long.", {
         field: "password",
+        context: { maxLen: MAX_PASSWORD_LEN },
       });
     }
 
     if (appEnv === "production" && !meetsProductionComplexity(raw)) {
-      throw new ValidationError("core.auth.password.invalid.complexity", { field: "password" });
+      throw new ValidationError("Password does not meet complexity requirements.", {
+        field: "password",
+      });
     }
 
     return new Password(raw);

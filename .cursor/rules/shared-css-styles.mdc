@@ -1,0 +1,40 @@
+---
+description: Shared web UI styles live in base.css, not TypeScript constants
+globs: src/apps/web/**/*.{ts,tsx,css}
+alwaysApply: false
+---
+# Shared CSS Styles (Web)
+
+Do **not** create new TypeScript files that export shared Tailwind/class strings (e.g. `export const BUTTON_CLASS = "..."`) for cross-file reuse.
+
+## When Styles Are Reused
+
+If the same class list appears in **two or more** places, add a utility class in `src/apps/web/src/assets/styles/base.css` (same pattern as `.btn-primary`, `.form-input`) and use `className="utility-name"` in components.
+
+```css
+/* base.css */
+.popover-menu-item {
+  @apply block w-full px-3 py-2 text-left text-sm ...;
+}
+```
+
+```tsx
+<button type="button" className="popover-menu-item">Edit</button>
+```
+
+## When Inline Classes Are Fine
+
+- One-off layout or page-specific styling
+- Component-local styling not reused elsewhere
+- Dynamic class composition (`granted ? "..." : "..."`) inside a single component
+
+## Do Not (New Code)
+
+- Export `const MENU_ITEM_CLASS = "..."` from a `.ts` file for cross-file reuse
+- Re-export style constants from route `helpers.ts` for JSX `className` usage
+
+Existing constants (for example overlay z-index in `src/apps/web/src/utils/constant.ts`) may remain until Phase 8 consolidation; do not add more.
+
+## Where to Add Shared Classes
+
+`src/apps/web/src/assets/styles/base.css` — use `@apply` with Tailwind utilities; keep names short and semantic (`account-tile-grid`, not `creditCardAccountTileGridClass`).

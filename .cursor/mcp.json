@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "NetworthDB": {
+      "type": "stdio",
+      "command": "/home/atb00ker/.bun/bin/bun",
+      "args": [
+        "--env-file",
+        "${workspaceFolder}/src/apps/copilot/.env",
+        "${workspaceFolder}/src/apps/copilot/src/index.ts"
+      ],
+      "envFile": "${workspaceFolder}/src/apps/copilot/.env"
+    }
+  }
+}

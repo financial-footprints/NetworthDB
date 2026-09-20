@@ -22,6 +22,6 @@ auth:bearer {
 
 assert {
   res.status: eq 200
-  res.body.data.multifactor_enabled: eq true
-  res.body.data.multifactor_methods: isArray
+  res.body.data.multifactorEnabled: eq true
+  res.body.data.multifactorMethods: isArray
 }

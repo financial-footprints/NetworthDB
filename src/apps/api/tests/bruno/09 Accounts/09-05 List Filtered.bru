@@ -5,11 +5,11 @@ meta {
 }
 
 docs {
-  **Endpoint:** `GET /api/v1/accounts?account_type=credit_card`
+  **Endpoint:** `GET /api/v1/accounts?accountType=credit_card`
 }
 
 get {
-  url: {{BASE_URL}}/api/v1/accounts?account_type=credit_card
+  url: {{BASE_URL}}/api/v1/accounts?accountType=credit_card
   body: none
   auth: bearer
 }
@@ -20,5 +20,5 @@ auth:bearer {
 
 assert {
   res.status: eq 200
-  res.body.data.items[0].account_type: eq credit_card
+  res.body.items[0].accountType: eq credit_card
 }

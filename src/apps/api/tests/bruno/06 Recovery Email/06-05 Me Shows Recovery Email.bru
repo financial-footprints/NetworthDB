@@ -16,8 +16,8 @@ auth:bearer {
 
 assert {
   res.status: eq 200
-  res.body.data.recovery_email_enabled: eq true
-  res.body.data.recovery_email_set_at: isDefined
+  res.body.data.recoveryEmailEnabled: eq true
+  res.body.data.recoveryEmailSetAt: isDefined
 }
 
 docs {

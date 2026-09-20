@@ -1,6 +1,6 @@
 import type { DisplayName } from "@core/domains/user/entities/user/display-name";
 import { TotpState } from "@core/domains/user/entities/user/totp";
-import type { Role } from "@core/domains/user/helpers";
+import type { Role } from "@core/domains/user/roles";
 import { ValidationError } from "@core/shared/errors/domain-error";
 
 const USERNAME_PATTERN = /^[A-Za-z0-9_]{3,32}$/;
@@ -11,11 +11,11 @@ export class Username {
   static parse(raw: string): Username {
     const trimmed = raw.trim();
     if (trimmed.length === 0) {
-      throw new ValidationError("core.user.username.invalid.required", { field: "username" });
+      throw new ValidationError("Username is required.", { field: "username" });
     }
 
     if (!USERNAME_PATTERN.test(trimmed)) {
-      throw new ValidationError("core.user.username.invalid.format", {
+      throw new ValidationError("Username is invalid.", {
         field: "username",
         value: trimmed,
       });

@@ -123,7 +123,11 @@ sequenceDiagram
   API->>DB: Persist opaque blob
 ```
 
-While unlocked, API updates send opaque blobs only. Creating, rotating, or deleting slots requires appropriate proof (password, elevated session, or passkey).
+While unlocked, API updates send opaque blobs when the user keeps E2E enabled for that field. Users may disable E2E per field in Profile → Encryption; the client may then send plaintext for that column. The server stores either form as opaque text with length checks only. Creating, rotating, or deleting slots requires appropriate proof (password, elevated session, or passkey).
+
+### Backup
+
+Server backup copies vault wraps and sealed fields as opaque bytes. It never unwraps the DEK. Restore **replaces** destination vault rows with the archive slots. The DEK is recovered only if the user still knows a surviving slot secret (the old password or a recovery phrase). A new account password does not unwrap an imported password slot unless it is that same secret. WebAuthn PRF slots are not portable onto a new account unless the same credential already exists there.
 
 ### Wire Format
 
@@ -158,3 +162,4 @@ When recovery email is enrolled and a recovery-phrase or passkey slot exists, th
 
 - [ADR-002](002-authentication.md) — authentication and recovery ceremonies
 - [ADR-004](004-data-encryption-policy.md) — tier-1 classification
+- [ADR-008](008-backup-archive.md) — vault wraps in backup ZIP

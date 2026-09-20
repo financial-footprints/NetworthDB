@@ -1,0 +1,25 @@
+meta {
+  name: 17-04 List Transactions All Dates
+  type: http
+  seq: 4
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/accounts/:accountId/transactions` (no `from` / `to`)
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/accounts/{{ledgerAccountId}}/transactions
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.total: gte 0
+  res.body.items: isArray
+}

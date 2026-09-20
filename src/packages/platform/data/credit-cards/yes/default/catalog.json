@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "registry_key": "yes/default",
+  "bank": "yes",
+  "variant": "default",
+  "display_name": "YES Bank Credit Card",
+  "default_kind": "parser_fallback",
+  "networks": [],
+  "reward_kind": "unknown",
+  "official_product_url": "https://www.yesbank.in/personal-banking/yes-individual/cards/credit-cards",
+  "mitc_url": "https://www.yesbank.in/content/published/api/v1.1/assets/CONT07A77C257C7A4BDD85DB97E51D2B5B8F/native/yesbank_key_fact_statement.pdf",
+  "researched_at": "2026-09-20",
+  "updated_at": "2026-09-20",
+  "sources": [
+    {
+      "url": "https://www.yesbank.in/content/published/api/v1.1/assets/CONT07A77C257C7A4BDD85DB97E51D2B5B8F/native/yesbank_key_fact_statement.pdf",
+      "retrieved_at": "2026-09-20",
+      "label": "Key Fact Statement"
+    },
+    {
+      "url": "https://www.yesbank.in/content/published/api/v1.1/assets/CONT5AA32E547C774006B79F54E05FE58F9E/native/ybl_soc.pdf",
+      "retrieved_at": "2026-09-20",
+      "label": "Schedule of charges"
+    }
+  ],
+  "tags": [],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. Do not attribute ACE or another named SKU to this parser fallback.",
+  "fees": {
+    "joining": {
+      "status": "depends",
+      "summary": "First-year fees in the Key Fact Statement range from nil on some RuPay products through ₹499 on ACE and up to ₹9,999 on MARQUEE.",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "depends",
+      "summary": "Renewal fees follow the same product schedule as first-year fees.",
+      "confidence": "verified_mitc"
+    },
+    "annual_waiver": {
+      "status": "depends",
+      "summary": "Waiver rules are product-specific. ACE waives first-year and renewal fees on stated spend thresholds and must not be assumed here.",
+      "confidence": "unknown"
+    },
+    "forex": {
+      "status": "depends",
+      "summary": "Forex markup in the Key Fact Statement ranges from 1 percent to 3.50 percent by variant.",
+      "confidence": "verified_mitc"
+    },
+    "fuel_surcharge": {
+      "status": "depends",
+      "summary": "A 1 percent fuel surcharge waiver on ₹400 to ₹5,000 appears bank-wide, but the maximum waiver per cycle is product-specific, from ₹100 on ACE to ₹1,000 on MARQUEE.",
+      "confidence": "verified_mitc"
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "depends",
+      "summary": "YES Rewardz accrual is product-specific. Do not show ACE earn rates on this fallback.",
+      "confidence": "unknown"
+    },
+    "accelerated": {
+      "status": "depends",
+      "summary": "Accelerated earn is product-specific.",
+      "confidence": "unknown"
+    },
+    "upi": {
+      "status": "depends",
+      "summary": "The Key Fact Statement says UPI is only on RuPay. Earn rates still depend on the SKU.",
+      "confidence": "verified_mitc"
+    },
+    "redemption": {
+      "status": "conditional",
+      "summary": "For other credit cards the bank caps flight and hotel redemptions at 70 percent of the invoice or 1,00,000 points per month, and voucher and statement-credit redemptions at 50 percent of available points.",
+      "confidence": "verified_mitc"
+    },
+    "expiry": {
+      "status": "depends",
+      "summary": "Rewardz expiry is product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "depends",
+      "summary": "Complimentary domestic lounge in the Key Fact Statement is spend-gated. From April 2024 the illustrated gate was ₹35,000 in the previous quarter. From 1 April 2025 thresholds vary by variant, for example ₹50,000 on SELECT and ELITE+. ACE is not named in that threshold table. Priority Pass is a delivery mechanism on some YES products, not a venue type.",
+      "confidence": "verified_mitc"
+    },
+    "domestic": {
+      "status": "depends",
+      "summary": "Domestic lounge quotas are product-specific.",
+      "confidence": "unknown"
+    },
+    "international": {
+      "status": "depends",
+      "summary": "International lounge quotas are product-specific.",
+      "confidence": "unknown"
+    },
+    "railway": {
+      "status": "depends",
+      "summary": "Railway lounge access is product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "depends",
+      "summary": "Dining benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "movies": {
+      "status": "depends",
+      "summary": "Movie benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "golf": {
+      "status": "depends",
+      "summary": "Golf benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "concierge": {
+      "status": "depends",
+      "summary": "Concierge benefits are product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "depends",
+      "summary": "Travel insurance is product-specific.",
+      "confidence": "unknown"
+    },
+    "accident": {
+      "status": "depends",
+      "summary": "Accident cover is product-specific.",
+      "confidence": "unknown"
+    },
+    "card_protect": {
+      "status": "depends",
+      "summary": "Card protection cover is product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "milestones": {
+    "status": "depends",
+    "summary": "Spend milestones are product-specific.",
+    "confidence": "unknown"
+  },
+  "welcome": {
+    "status": "depends",
+    "summary": "Welcome benefits are product-specific.",
+    "confidence": "unknown"
+  }
+}

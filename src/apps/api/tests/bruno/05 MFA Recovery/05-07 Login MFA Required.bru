@@ -18,7 +18,7 @@ body:json {
 }
 
 script:post-response {
-  bru.setVar("recoveryMfaToken", res.body.data.multifactor_token);
+  bru.setVar("recoveryMfaToken", res.body.data.multifactorToken);
 }
 
 assert {

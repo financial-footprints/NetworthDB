@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "registry_key": "pnb/default",
+  "bank": "pnb",
+  "variant": "default",
+  "display_name": "PNB Credit Card",
+  "default_kind": "parser_fallback",
+  "networks": [],
+  "reward_kind": "unknown",
+  "official_product_url": "https://creditcard.pnb.bank.in/",
+  "mitc_url": "https://pnbcard.in/PDF/MITC.PDF",
+  "researched_at": "2026-09-20",
+  "updated_at": "2026-09-20",
+  "sources": [
+    {
+      "url": "https://pnbcard.in/PDF/MITC.PDF",
+      "retrieved_at": "2026-09-20",
+      "label": "PNB MITC"
+    },
+    {
+      "url": "https://www.pnbindia.in/PreQualified-Credit-Card.html",
+      "retrieved_at": "2026-09-20",
+      "label": "PQCC programme"
+    },
+    {
+      "url": "https://creditcard.pnb.bank.in/",
+      "retrieved_at": "2026-09-20",
+      "label": "Live MITC host"
+    }
+  ],
+  "tags": [],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. Do not attribute Platinum, Signature, or Luxura benefits to this parser fallback.",
+  "fees": {
+    "joining": {
+      "status": "depends",
+      "summary": "Joining fees in the MITC include nil on Visa Classic, Visa Platinum, RuPay Platinum, and PQCC digital issuance, ₹1,500 on Visa Signature, and other product rows. Do not apply Platinum ₹500 annual or Signature fees here.",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "depends",
+      "summary": "Annual fees include nil on Visa Classic, ₹300 on Visa Gold with usage conditions, ₹500 on Visa Platinum and RuPay Platinum, and ₹2,000 on Visa Signature.",
+      "confidence": "verified_mitc"
+    },
+    "annual_waiver": {
+      "status": "depends",
+      "summary": "Waiver rules are product-specific. Visa Signature waives on ₹3 lakh spends. RuPay Platinum waives if used once each quarter.",
+      "confidence": "verified_mitc"
+    },
+    "forex": {
+      "status": "depends",
+      "summary": "Forex markup is product-specific in the MITC.",
+      "confidence": "unknown"
+    },
+    "fuel_surcharge": {
+      "status": "depends",
+      "summary": "Fuel surcharge treatment is product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "depends",
+      "summary": "Earn rates were not found in the first 800 lines of the MITC extract and are per variant.",
+      "confidence": "unknown"
+    },
+    "accelerated": {
+      "status": "depends",
+      "summary": "Accelerated earn is product-specific.",
+      "confidence": "unknown"
+    },
+    "upi": {
+      "status": "depends",
+      "summary": "UPI earn is product-specific.",
+      "confidence": "unknown"
+    },
+    "redemption": {
+      "status": "conditional",
+      "summary": "Bank-wide redemption starts from 1,000 points via creditcard.pnb.bank.in or support@pnbrewardz.com. A ₹0.25 per point example appears only in a negative-balance closure illustration and may vary by variant.",
+      "confidence": "verified_mitc"
+    },
+    "expiry": {
+      "status": "depends",
+      "summary": "Point expiry is product-specific. Points forfeit on closure or delinquency.",
+      "confidence": "unknown"
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "depends",
+      "summary": "Luxura has lounge. The bank may restrict cards used only for lounge. Platinum lounge is unknown in the MITC extract. Do not assume lounge or Priority Pass on this fallback.",
+      "confidence": "verified_mitc"
+    },
+    "domestic": {
+      "status": "depends",
+      "summary": "Domestic lounge is product-specific.",
+      "confidence": "unknown"
+    },
+    "international": {
+      "status": "depends",
+      "summary": "International lounge is product-specific.",
+      "confidence": "unknown"
+    },
+    "railway": {
+      "status": "depends",
+      "summary": "Railway lounge is product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "depends",
+      "summary": "Dining benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "movies": {
+      "status": "depends",
+      "summary": "Movie benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "golf": {
+      "status": "depends",
+      "summary": "Golf benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "concierge": {
+      "status": "depends",
+      "summary": "Concierge benefits are product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "depends",
+      "summary": "Travel insurance is product-specific.",
+      "confidence": "unknown"
+    },
+    "accident": {
+      "status": "depends",
+      "summary": "Accident cover is product-specific.",
+      "confidence": "unknown"
+    },
+    "card_protect": {
+      "status": "depends",
+      "summary": "Card protection cover is product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "milestones": {
+    "status": "depends",
+    "summary": "Spend milestones are product-specific. Milestone spends typically exclude fees, forex, GST, fuel surcharge, late payment, interest, rent surcharge, and cheque bounce.",
+    "confidence": "verified_mitc"
+  },
+  "welcome": {
+    "status": "depends",
+    "summary": "Welcome benefits are product-specific. PQCC issues nil joining for eligible existing PNB customers.",
+    "confidence": "unknown"
+  }
+}

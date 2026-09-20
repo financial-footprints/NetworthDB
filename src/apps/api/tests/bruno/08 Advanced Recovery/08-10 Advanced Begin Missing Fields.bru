@@ -1,0 +1,29 @@
+meta {
+  name: 08-10 Advanced Begin Missing Fields
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/auth/recovery/advanced/begin
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "",
+    "email": ""
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.error: isDefined
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/auth/recovery/advanced/begin`
+
+  **This test verifies:** Missing username and email returns 400.
+}

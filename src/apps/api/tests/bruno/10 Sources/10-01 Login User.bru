@@ -1,0 +1,30 @@
+meta {
+  name: 10-01 Login User
+  type: http
+  seq: 1
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/auth/login`
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "usher",
+    "password": "admin"
+  }
+}
+
+script:post-response {
+  bru.setVar("integrationsSessionToken", res.body.data.sessionToken);
+}
+
+assert {
+  res.status: eq 200
+}

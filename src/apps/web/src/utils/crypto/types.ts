@@ -1,16 +1,18 @@
-import { isTotpEnrolled } from "@web/context/Auth/session";
+import { isTotpEnrolled } from "@web/contexts/Auth/user";
+import type { E2eeFieldId } from "@web/utils/crypto/client-settings";
 
 export type EncryptionFieldKind = "e2ee" | "server_plain" | "server_hashed" | "server_encrypted";
 
 export type EncryptionFieldDefinition = {
   label: string;
   kind: EncryptionFieldKind;
+  e2eeFieldId?: E2eeFieldId;
   detail?: string;
   showCondition?: () => boolean;
 };
 
 type EncryptionModuleDefinition = {
-  id: "profile" | "accounts" | "statements";
+  id: "profile" | "accounts" | "statements" | "transactions" | "rules";
   name: string;
   isEnabled: () => boolean;
   fields: EncryptionFieldDefinition[];
@@ -26,7 +28,7 @@ const PROFILE_MODULE: EncryptionModuleDefinition = {
   name: "Profile",
   isEnabled: () => true,
   fields: [
-    { label: "Your Name", kind: "e2ee" },
+    { label: "Your Name", kind: "e2ee", e2eeFieldId: "display_name" },
     { label: "Username", kind: "server_plain" },
     { label: "Recovery Email", kind: "server_hashed" },
     {
@@ -50,11 +52,43 @@ const ACCOUNTS_MODULE: EncryptionModuleDefinition = {
       detail:
         "Bank, variant, account type, opening and closing dates, and the display label shown on account tiles.",
     },
-    { label: "Account Number", kind: "e2ee" },
+    { label: "Account Number", kind: "e2ee", e2eeFieldId: "account_number" },
     {
       label: "Account Secrets",
       kind: "server_encrypted",
       detail: "Statement file passwords, email matching rules, and statement cleanup rules.",
+    },
+  ],
+};
+
+const TRANSACTIONS_MODULE: EncryptionModuleDefinition = {
+  id: "transactions",
+  name: "Transactions",
+  isEnabled: () => true,
+  fields: [
+    {
+      label: "Description",
+      kind: "server_plain",
+      detail: "Merchant text stored as plaintext so the server can search and back up the ledger.",
+    },
+    {
+      label: "Reference",
+      kind: "server_plain",
+      detail: "Optional reference numbers. Stored as plaintext like descriptions.",
+    },
+  ],
+};
+
+const RULES_MODULE: EncryptionModuleDefinition = {
+  id: "rules",
+  name: "Rules",
+  isEnabled: () => true,
+  fields: [
+    {
+      label: "Rule Definitions",
+      kind: "server_plain",
+      detail:
+        "Rule group titles, rule titles and descriptions, triggers, and actions are stored as plaintext for server-side matching (ADR-004 tier 3).",
     },
   ],
 };
@@ -81,6 +115,8 @@ const STATEMENTS_MODULE: EncryptionModuleDefinition = {
 const ENCRYPTION_MODULES: EncryptionModuleDefinition[] = [
   PROFILE_MODULE,
   ACCOUNTS_MODULE,
+  TRANSACTIONS_MODULE,
+  RULES_MODULE,
   STATEMENTS_MODULE,
 ];
 

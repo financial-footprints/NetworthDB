@@ -16,9 +16,9 @@ auth:bearer {
 
 body:json {
   {
-    "slot_type": "recovery_phrase",
+    "slotType": "recovery_phrase",
     "salt": "BQIDBAUGBwgJCgsMDQ4PEB",
-    "wrap_blob": "ghi.jkl",
+    "wrapBlob": "ghi.jkl",
     "label": "backup phrase"
   }
 }
@@ -29,7 +29,7 @@ script:post-response {
 
 assert {
   res.status: eq 201
-  res.body.data.slot_type: eq recovery_phrase
+  res.body.data.slotType: eq recovery_phrase
 }
 
 docs {

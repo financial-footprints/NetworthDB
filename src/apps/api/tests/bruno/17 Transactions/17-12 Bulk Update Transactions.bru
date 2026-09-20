@@ -1,0 +1,51 @@
+meta {
+  name: 17-12 Bulk Update Transactions
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/accounts/{{ledgerAccountId}}/transactions/bulk
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+body:json {
+  {
+    "items": [
+      {
+        "id": "{{batchTxnId1}}",
+        "date": "2024-06-20",
+        "amount": 1000,
+        "sourceAccountId": "{{ledgerAccountId}}",
+        "destinationAccountId": "{{expenseAccountId}}",
+        "description": "Batch one edited",
+        "refNo": null,
+        "categoryId": null,
+        "subcategoryId": null,
+        "tagIds": []
+      },
+      {
+        "id": "{{batchTxnId2}}",
+        "date": "2024-06-21",
+        "amount": 2000,
+        "sourceAccountId": "{{ledgerAccountId}}",
+        "destinationAccountId": "{{expenseAccountId}}",
+        "description": "Batch two",
+        "refNo": null,
+        "categoryId": null,
+        "subcategoryId": null,
+        "tagIds": []
+      }
+    ]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.updated: eq 2
+}

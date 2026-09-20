@@ -3,20 +3,9 @@ export type Pagination = {
   offset?: number;
 };
 
-export type ApiSoftError = {
-  message?: string;
-  account_id?: string;
-  [key: string]: unknown;
-};
-
 export type ListData<T> = {
   items: T[];
   total: number;
-};
-
-export type ApiSuccess<T> = {
-  data: T;
-  errors: ApiSoftError[];
 };
 
 export type ValidationDetails = {

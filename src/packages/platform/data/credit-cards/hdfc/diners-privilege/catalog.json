@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "registry_key": "hdfc/diners-privilege",
+  "bank": "hdfc",
+  "variant": "diners-privilege",
+  "display_name": "Diners Privilege",
+  "default_kind": "named",
+  "networks": ["Diners Club"],
+  "reward_kind": "points",
+  "official_product_url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/diners-privilege",
+  "mitc_url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/personal-mitc",
+  "researched_at": "2026-10-04",
+  "updated_at": "2026-10-04",
+  "sources": [
+    {
+      "url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/diners-privilege",
+      "retrieved_at": "2026-10-04",
+      "label": "Product page"
+    },
+    {
+      "url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/diners-privilege/fees-and-charges",
+      "retrieved_at": "2026-10-04",
+      "label": "Fees and charges"
+    }
+  ],
+  "tags": ["lounge", "dining", "rewards"],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. Lounge rules change on 1 July 2026. Other product changes are flagged from 15 May 2026.",
+  "fees": {
+    "joining": {
+      "status": "yes",
+      "summary": "The joining fee is \u20b91,000 plus tax.",
+      "confidence": "verified_product_page"
+    },
+    "annual": {
+      "status": "yes",
+      "summary": "The renewal fee is \u20b91,000 plus tax.",
+      "confidence": "verified_product_page"
+    },
+    "annual_waiver": {
+      "status": "conditional",
+      "summary": "The renewal fee is waived on \u20b93 lakh of annual spends.",
+      "confidence": "verified_product_page"
+    },
+    "forex": {
+      "status": "yes",
+      "summary": "Forex markup is 3.5 percent.",
+      "confidence": "verified_product_page"
+    },
+    "fuel_surcharge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc"
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "yes",
+      "summary": "The card earns 4 reward points per \u20b9200 of retail spend. The MITC lists a cycle cap of 50,000 reward points.",
+      "confidence": "verified_mitc"
+    },
+    "accelerated": {
+      "status": "conditional",
+      "summary": "Online food spends on Swiggy and Zomato earn 20 reward points per \u20b9200. Additional 4X food points are capped at 2,500 reward points per calendar month. SmartBuy advertises up to 10X.",
+      "confidence": "verified_product_page"
+    },
+    "upi": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "redemption": {
+      "status": "yes",
+      "summary": "SmartBuy travel redeems at \u20b90.50 per point. The exclusive catalogue is up to \u20b90.35. Restaurants are \u20b90.50. Cashback is \u20b90.20.",
+      "confidence": "verified_product_page"
+    },
+    "expiry": {
+      "status": "conditional",
+      "summary": "HDFC reward points typically remain valid for two years. Unused accounts for more than 365 days nullify points.",
+      "confidence": "verified_mitc"
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "conditional",
+      "summary": "From 1 July 2026 lounge access is spend-gated on eligible spends in the previous calendar quarter. Use that rule rather than older marketing that said 2 domestic visits per quarter.",
+      "confidence": "verified_product_page"
+    },
+    "domestic": {
+      "status": "conditional",
+      "summary": "From 1 July 2026 the quarterly allotment is 2 domestic lounge vouchers as part of 3 vouchers per calendar quarter.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "spend",
+          "summary": "Spend at least \u20b960,000 of eligible spend in the previous calendar quarter."
+        }
+      ]
+    },
+    "international": {
+      "status": "conditional",
+      "summary": "From 1 July 2026 the quarterly allotment includes 1 international lounge voucher as part of 3 vouchers per calendar quarter.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "spend",
+          "summary": "Spend at least \u20b960,000 of eligible spend in the previous calendar quarter."
+        }
+      ]
+    },
+    "railway": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "conditional",
+      "summary": "Participating restaurants advertise an extra 10 percent off on Dineout.",
+      "confidence": "verified_product_page"
+    },
+    "movies": {
+      "status": "conditional",
+      "summary": "BookMyShow weekend buy-one-get-one applies with a maximum of \u20b9250 per ticket and 2 free tickets per calendar month on Friday through Sunday shows.",
+      "confidence": "verified_product_page"
+    },
+    "golf": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "concierge": {
+      "status": "yes",
+      "summary": "SmartBuy concierge is listed at 1860 425 1188.",
+      "confidence": "verified_product_page"
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "yes",
+      "summary": "Emergency overseas hospitalisation cover is USD 31,250. Baggage delay cover is USD 625.",
+      "confidence": "verified_product_page"
+    },
+    "accident": {
+      "status": "yes",
+      "summary": "Air accident cover is USD 125,000.",
+      "confidence": "verified_product_page"
+    },
+    "card_protect": {
+      "status": "yes",
+      "summary": "Credit liability cover is \u20b99 lakh.",
+      "confidence": "verified_product_page"
+    }
+  },
+  "milestones": {
+    "status": "conditional",
+    "summary": "Spending \u20b975,000 in the first 90 days unlocks complimentary Swiggy One and Times Prime annual memberships. Spending \u20b91.5 lakh in a quarter unlocks a \u20b91,500 voucher from a listed partner set. Lounge unlocks at \u20b960,000 eligible spend in the previous quarter from July 2026.",
+    "confidence": "verified_product_page"
+  },
+  "welcome": {
+    "status": "conditional",
+    "summary": "Welcome memberships are Swiggy One and Times Prime after \u20b975,000 spend in the first 90 days.",
+    "confidence": "verified_product_page"
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "registry_key": "bank/variant",
+  "bank": "bank",
+  "variant": "variant",
+  "display_name": "Display name",
+  "default_kind": "named",
+  "networks": [],
+  "reward_kind": "unknown",
+  "researched_at": "2026-09-20",
+  "updated_at": "2026-09-20",
+  "sources": [
+    {
+      "url": "https://example.com/",
+      "retrieved_at": "2026-09-20",
+      "label": "Replace with the issuer product page or MITC"
+    }
+  ],
+  "tags": [],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails.",
+  "fees": {
+    "joining": {
+      "status": "unknown",
+      "summary": "The joining fee is not described in the sources we checked.",
+      "confidence": "unknown"
+    },
+    "annual": {
+      "status": "unknown",
+      "summary": "The annual fee is not described in the sources we checked.",
+      "confidence": "unknown"
+    },
+    "annual_waiver": {
+      "status": "unknown",
+      "summary": "Annual fee waiver rules are not described in the sources we checked.",
+      "confidence": "unknown"
+    },
+    "forex": {
+      "status": "unknown",
+      "summary": "Forex markup is not described in the sources we checked.",
+      "confidence": "unknown"
+    },
+    "fuel_surcharge": {
+      "status": "unknown",
+      "summary": "Fuel surcharge treatment is not described in the sources we checked.",
+      "confidence": "unknown"
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "unknown",
+      "summary": "Base earn is not described in the sources we checked.",
+      "confidence": "unknown"
+    },
+    "accelerated": {
+      "status": "unknown",
+      "summary": "Accelerated earn is not described in the sources we checked.",
+      "confidence": "unknown"
+    },
+    "upi": {
+      "status": "unknown",
+      "summary": "UPI earn is not described in the sources we checked.",
+      "confidence": "unknown"
+    },
+    "redemption": {
+      "status": "unknown",
+      "summary": "Redemption is not described in the sources we checked.",
+      "confidence": "unknown"
+    },
+    "expiry": {
+      "status": "unknown",
+      "summary": "Reward expiry is not described in the sources we checked.",
+      "confidence": "unknown"
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "unknown",
+      "summary": "How lounge access is delivered, including Priority Pass and spend gates, is not described in the sources we checked.",
+      "confidence": "unknown"
+    },
+    "domestic": {
+      "status": "unknown",
+      "summary": "Domestic airport lounge access is not described in the sources we checked.",
+      "confidence": "unknown"
+    },
+    "international": {
+      "status": "unknown",
+      "summary": "International airport lounge access is not described in the sources we checked.",
+      "confidence": "unknown"
+    },
+    "railway": {
+      "status": "unknown",
+      "summary": "Railway lounge access is not described in the sources we checked.",
+      "confidence": "unknown"
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "unknown",
+      "summary": "Dining benefits are not described in the sources we checked.",
+      "confidence": "unknown"
+    },
+    "movies": {
+      "status": "unknown",
+      "summary": "Movie benefits are not described in the sources we checked.",
+      "confidence": "unknown"
+    },
+    "golf": {
+      "status": "unknown",
+      "summary": "Golf benefits are not described in the sources we checked.",
+      "confidence": "unknown"
+    },
+    "concierge": {
+      "status": "unknown",
+      "summary": "Concierge benefits are not described in the sources we checked.",
+      "confidence": "unknown"
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "unknown",
+      "summary": "Travel insurance is not described in the sources we checked.",
+      "confidence": "unknown"
+    },
+    "accident": {
+      "status": "unknown",
+      "summary": "Accident cover is not described in the sources we checked.",
+      "confidence": "unknown"
+    },
+    "card_protect": {
+      "status": "unknown",
+      "summary": "Card protection cover is not described in the sources we checked.",
+      "confidence": "unknown"
+    }
+  },
+  "milestones": {
+    "status": "unknown",
+    "summary": "Spend milestones are not described in the sources we checked.",
+    "confidence": "unknown"
+  },
+  "welcome": {
+    "status": "unknown",
+    "summary": "Welcome benefits are not described in the sources we checked.",
+    "confidence": "unknown"
+  }
+}

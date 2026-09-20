@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "registry_key": "bob/default",
+  "bank": "bob",
+  "variant": "default",
+  "display_name": "BOB Credit Card",
+  "default_kind": "parser_fallback",
+  "networks": [],
+  "reward_kind": "unknown",
+  "official_product_url": "https://www.bobcard.co.in/most-important-terms-and-condition",
+  "mitc_url": "https://online.bobcard.co.in/assets/BOBCARD_MITS.pdf",
+  "researched_at": "2026-09-20",
+  "updated_at": "2026-09-20",
+  "sources": [
+    {
+      "url": "https://www.bobcard.co.in/most-important-terms-and-condition",
+      "retrieved_at": "2026-09-20",
+      "label": "MITC index"
+    },
+    {
+      "url": "https://online.bobcard.co.in/assets/BOBCARD_MITS.pdf",
+      "retrieved_at": "2026-09-20",
+      "label": "BOBCARD MITC PDF"
+    }
+  ],
+  "tags": [],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. Do not attribute Easy or another named SKU to this parser fallback.",
+  "fees": {
+    "joining": {
+      "status": "depends",
+      "summary": "The MITC lists per-product joining fees. Examples include Easy ₹500, Select ₹700, Premier ₹1,000, Eterna ₹2,499, and many nil products. Do not apply Easy's ₹500 here.",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "depends",
+      "summary": "Annual fees are listed per product in the same MITC table.",
+      "confidence": "verified_mitc"
+    },
+    "annual_waiver": {
+      "status": "depends",
+      "summary": "Waiver rules are product-specific. Easy uses ₹35,000 anniversary spend and must not be assumed here.",
+      "confidence": "unknown"
+    },
+    "forex": {
+      "status": "depends",
+      "summary": "Forex markup is product-specific.",
+      "confidence": "unknown"
+    },
+    "fuel_surcharge": {
+      "status": "depends",
+      "summary": "Fuel surcharge treatment is product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "depends",
+      "summary": "Reward currency and base earn are product-specific in Features and Rewards T&Cs.",
+      "confidence": "unknown"
+    },
+    "accelerated": {
+      "status": "depends",
+      "summary": "Accelerated earn is product-specific.",
+      "confidence": "unknown"
+    },
+    "upi": {
+      "status": "depends",
+      "summary": "UPI earn is product-specific.",
+      "confidence": "unknown"
+    },
+    "redemption": {
+      "status": "depends",
+      "summary": "Redemption is product-specific.",
+      "confidence": "unknown"
+    },
+    "expiry": {
+      "status": "depends",
+      "summary": "Point expiry is product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "depends",
+      "summary": "Lounge access is product-specific. The MITC index mentions lounge as a topic to check per product. There is no single lounge grid for all BOBCARD products. Priority Pass, if offered, is a delivery mechanism rather than a venue type.",
+      "confidence": "unknown"
+    },
+    "domestic": {
+      "status": "depends",
+      "summary": "Domestic lounge entitlements are product-specific.",
+      "confidence": "unknown"
+    },
+    "international": {
+      "status": "depends",
+      "summary": "International lounge entitlements are product-specific.",
+      "confidence": "unknown"
+    },
+    "railway": {
+      "status": "depends",
+      "summary": "Railway lounge entitlements are product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "depends",
+      "summary": "Dining benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "movies": {
+      "status": "depends",
+      "summary": "Movie benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "golf": {
+      "status": "depends",
+      "summary": "Golf benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "concierge": {
+      "status": "depends",
+      "summary": "Concierge benefits are product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "depends",
+      "summary": "Travel insurance is product-specific.",
+      "confidence": "unknown"
+    },
+    "accident": {
+      "status": "depends",
+      "summary": "Accident cover is product-specific.",
+      "confidence": "unknown"
+    },
+    "card_protect": {
+      "status": "depends",
+      "summary": "Card protection cover is product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "milestones": {
+    "status": "depends",
+    "summary": "Spend milestones are product-specific.",
+    "confidence": "unknown"
+  },
+  "welcome": {
+    "status": "depends",
+    "summary": "Welcome benefits are product-specific.",
+    "confidence": "unknown"
+  }
+}

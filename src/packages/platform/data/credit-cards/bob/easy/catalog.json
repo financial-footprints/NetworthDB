@@ -1,0 +1,194 @@
+{
+  "schema_version": 1,
+  "registry_key": "bob/easy",
+  "bank": "bob",
+  "variant": "easy",
+  "display_name": "Easy Shopping",
+  "default_kind": "named",
+  "networks": ["Visa", "Mastercard", "RuPay"],
+  "reward_kind": "points",
+  "official_product_url": "https://www.bobcard.co.in/credit-card-types/easy",
+  "mitc_url": "https://online.bobcard.co.in/assets/BOBCARD_MITS.pdf",
+  "researched_at": "2026-10-04",
+  "updated_at": "2026-10-04",
+  "sources": [
+    {
+      "url": "https://www.bobcard.co.in/credit-card-types/easy",
+      "retrieved_at": "2026-10-04",
+      "label": "Product page"
+    },
+    {
+      "url": "https://online.bobcard.co.in/assets/BOBCARD_MITS.pdf",
+      "retrieved_at": "2026-10-04",
+      "label": "BOBCARD MITC PDF"
+    },
+    {
+      "url": "https://www.bobcard.co.in/most-important-terms-and-condition",
+      "retrieved_at": "2026-10-04",
+      "label": "MITC hub"
+    },
+    {
+      "url": "https://media.bobcard.co.in/media/zsvi2qye/lounge-benefit-update-wef-1st-january-2025.pdf",
+      "retrieved_at": "2026-10-04",
+      "label": "Domestic lounge schedule"
+    }
+  ],
+  "tags": ["rupay", "rewards"],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. The Easy product page was thin on fetch, so accelerated categories remain incomplete.",
+  "fees": {
+    "joining": {
+      "status": "yes",
+      "summary": "The joining fee is \u20b9500. FD-backed Easy, Select, and Premier rows in the MITC list nil joining instead.",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "yes",
+      "summary": "The annual fee is \u20b9500.",
+      "confidence": "verified_mitc"
+    },
+    "annual_waiver": {
+      "status": "conditional",
+      "summary": "The joining fee is waived on \u20b96,000 spend in the first 60 days. If that milestone is missed, the first-year fee is levied in the third statement. The annual fee is waived on \u20b935,000 spend in the anniversary year. Waivers apply only for non-delinquent holders.",
+      "confidence": "verified_product_page"
+    },
+    "forex": {
+      "status": "yes",
+      "summary": "Foreign-currency markup is 3.5 percent of the transaction amount.",
+      "confidence": "verified_mitc"
+    },
+    "fuel_surcharge": {
+      "status": "conditional",
+      "summary": "Fuel surcharge is waived at 1 percent on transactions from \u20b9400 to \u20b95,000, capped at \u20b9250 per statement cycle. GST on surcharge is not reversed. No reward points apply on fuel.",
+      "confidence": "verified_mitc",
+      "conditions": [
+        {
+          "type": "cap",
+          "summary": "The waiver is capped at \u20b9250 per statement cycle."
+        },
+        {
+          "type": "txn_range",
+          "summary": "The waiver band is \u20b9400 to \u20b95,000."
+        }
+      ]
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "yes",
+      "summary": "The official page snippet states 1 point per \u20b9100 on other categories.",
+      "confidence": "verified_product_page"
+    },
+    "accelerated": {
+      "status": "conditional",
+      "summary": "The product page advertises 5 reward points per \u20b9100 on movies, shopping, and utilities, capped at 1,000 reward points per statement cycle on those categories.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "cap",
+          "summary": "Accelerated earn on those categories is capped at 1,000 reward points per statement cycle."
+        }
+      ]
+    },
+    "upi": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "BOBCARD MITC does not describe a separate UPI earn rate for Easy."
+    },
+    "redemption": {
+      "status": "yes",
+      "summary": "Cashback redemption is 1 reward point equals \u20b90.20. Other catalogue options were not recovered without the Features and Rewards PDF.",
+      "confidence": "verified_product_page"
+    },
+    "expiry": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "BOBCARD lounge schedule effective 1 January 2025 lists Premier and above; Easy is not included."
+    },
+    "domestic": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Easy is absent from the January 2025 domestic lounge benefit table in BOBCARD MITC materials."
+    },
+    "international": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Easy is absent from BOBCARD lounge benefit schedules checked against MITC."
+    },
+    "railway": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Railway lounge access is not listed for Easy in BOBCARD MITC or the product page."
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "movies": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "golf": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "concierge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "accident": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "card_protect": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "milestones": {
+    "status": "conditional",
+    "summary": "Joining fee waiver unlocks at \u20b96,000 spend in 60 days. Annual fee waiver unlocks at \u20b935,000 anniversary spend.",
+    "confidence": "verified_mitc"
+  },
+  "welcome": {
+    "status": "NA",
+    "summary": "NA",
+    "confidence": "verified_product_page",
+    "notes": "The Easy product page describes fee waivers only, not a separate welcome voucher."
+  }
+}

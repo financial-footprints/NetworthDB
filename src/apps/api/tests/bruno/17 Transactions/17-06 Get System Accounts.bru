@@ -1,0 +1,26 @@
+meta {
+  name: 17-06 Get System Accounts
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/accounts/system
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+script:post-response {
+  const items = res.getBody().data?.items ?? [];
+  const expense = items.find((row) => row.accountType === "expense");
+  bru.setVar("expenseAccountId", expense?.id ?? "");
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.items: isArray
+}

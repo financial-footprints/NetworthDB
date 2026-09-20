@@ -18,7 +18,7 @@ const nonNegativeInt = z
   .string()
   .transform((value) => parseBoundedInt(value, 0, "invalid-non-negative-int"));
 
-export function withEnvDefault<T extends z.ZodTypeAny>(schema: T, defaultInput: string) {
+export function withEnvDefault<T extends z.ZodType>(schema: T, defaultInput: string) {
   return z.preprocess((value) => emptyToUndefined(value) ?? defaultInput, schema);
 }
 
@@ -64,10 +64,6 @@ const runtimeEnvSchema = z.object({
   ENVIRONMENT: z.enum(APP_ENVS),
 });
 
-const databaseEnvSchema = z.object({
-  POSTGRES_SSLMODE: nonEmptyString,
-});
-
 const sessionEnvSchema = z.object({
   SESSION_TTL: durationMs,
   REFRESH_TTL: durationMs,
@@ -111,12 +107,12 @@ const corsEnvSchema = z.object({
 });
 
 const storageEnvSchema = z.object({
-  FILESTORE_SECRET: optionalString,
   FILESTORE_PATH: optionalString,
+  BACKUP_MAX_UPLOAD_BYTES: withEnvDefault(nonNegativeInt, "536870912"),
 });
 
 const jobsEnvSchema = z.object({
-  JOBS_MAX_WORKERS: withEnvDefault(positiveInt, "2"),
+  JOBS_MAX_WORKERS: withEnvDefault(positiveInt, "10"),
 });
 
 const advancedSecurityEnvSchema = z.object({
@@ -127,15 +123,14 @@ const advancedSecurityEnvSchema = z.object({
 });
 
 export const bootstrapEnvSchema = runtimeEnvSchema
-  .merge(databaseEnvSchema)
-  .merge(sessionEnvSchema)
-  .merge(multifactorEnvSchema)
-  .merge(securityEnvSchema)
-  .merge(recoveryEnvSchema)
-  .merge(webauthnEnvSchema)
-  .merge(corsEnvSchema)
-  .merge(storageEnvSchema)
-  .merge(jobsEnvSchema)
-  .merge(advancedSecurityEnvSchema);
+  .extend(sessionEnvSchema.shape)
+  .extend(multifactorEnvSchema.shape)
+  .extend(securityEnvSchema.shape)
+  .extend(recoveryEnvSchema.shape)
+  .extend(webauthnEnvSchema.shape)
+  .extend(corsEnvSchema.shape)
+  .extend(storageEnvSchema.shape)
+  .extend(jobsEnvSchema.shape)
+  .extend(advancedSecurityEnvSchema.shape);
 
 export type BootstrapEnv = z.infer<typeof bootstrapEnvSchema>;

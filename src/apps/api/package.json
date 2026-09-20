@@ -7,10 +7,10 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "dev": "bun --watch --no-clear-screen --env-file .env src/index.ts",
-    "start": "bun --env-file .env src/index.ts",
-    "start:test": "bun --env-file .env.tests src/index.ts",
-    "test": "bun test --env-file .env.tests ./tests/unit",
+    "dev": "bun --watch --no-clear-screen --env-file .env src/server.ts",
+    "start": "bun --env-file .env src/server.ts",
+    "start:test": "bun --env-file .env.tests src/server.ts",
+    "test": "bun test --env-file .env.tests src tests",
     "type-check": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
@@ -20,11 +20,12 @@
     "@ndb/middleware": "workspace:*",
     "@ndb/platform": "workspace:*",
     "@hono/zod-openapi": "^1.6.1",
-    "hono": "^4.13.5"
+    "@hono/swagger-ui": "^0.5.0",
+    "hono": "^4.13.5",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@ndb/logger": "workspace:*",
-    "@ndb/statements": "workspace:*",
     "@types/bun": "^1.4.1",
     "otpauth": "^9.4.0"
   }

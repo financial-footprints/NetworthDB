@@ -17,7 +17,7 @@ post {
 }
 
 script:post-response {
-  bru.setVar("regularUserSessionToken", res.body.data.session_token);
+  bru.setVar("regularUserSessionToken", res.body.data.sessionToken);
 }
 
 body:json {

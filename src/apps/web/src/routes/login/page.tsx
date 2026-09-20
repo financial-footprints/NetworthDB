@@ -1,21 +1,22 @@
-import { LoginCard, LoginCardSkeleton } from "@web/components/auth/LoginCard";
-import { MfaEnrollFlow } from "@web/components/auth/MfaEnrollFlow";
-import { type MfaVerifyComplete, MfaVerifyFlow } from "@web/components/auth/MfaVerifyFlow";
-import { VaultSetupFlow } from "@web/components/auth/VaultSetupFlow";
-import { VaultUnlockFlow } from "@web/components/auth/VaultUnlockFlow";
-import { PrimaryButton } from "@web/components/button";
-import { FormErrorSummary } from "@web/components/fields/FormErrorSummary";
-import { FormRow } from "@web/components/fields/FormRow";
-import { PasswordInput } from "@web/components/fields/PasswordInput";
-import { useAuth } from "@web/context/Auth/AuthContext";
-import { useNotifications } from "@web/context/Notifications/NotificationContext";
+import { LoginCard, LoginCardSkeleton } from "@web/components/Auth/LoginCard";
+import { MfaEnrollFlow } from "@web/components/Auth/MfaEnrollFlow";
+import { type MfaVerifyComplete, MfaVerifyFlow } from "@web/components/Auth/MfaVerifyFlow";
+import { VaultSetupFlow } from "@web/components/Auth/VaultSetupFlow";
+import { VaultUnlockFlow } from "@web/components/Auth/VaultUnlockFlow";
+import { PrimaryButton } from "@web/components/Button";
+import { FormErrorSummary } from "@web/components/Fields/FormErrorSummary";
+import { FormRow } from "@web/components/Fields/FormRow";
+import { PasswordInput } from "@web/components/Fields/PasswordInput";
+import { PageTitle } from "@web/components/Layout/PageTitle";
+import { useAuth } from "@web/contexts/Auth/Context";
+import { useNotifications } from "@web/contexts/Notifications/Context";
 import { path } from "@web/router/routes";
-import type { MeResponse, TokenPair } from "@web/utils/api/endpoints/auth/types";
+import type { MeResponse, TokenPair } from "@web/utils/api/routes/auth/types";
 import { ApiError } from "@web/utils/api/types";
 import { listUnlockMethods, type UnlockMethod } from "@web/utils/crypto/vault";
 import { errorMessage } from "@web/utils/errors";
 import { type SubmitEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { type Location, useLocation, useNavigate } from "react-router-dom";
+import { Link, type Location, useLocation, useNavigate } from "react-router-dom";
 
 type LoginLocationState = {
   from?: { pathname?: string };
@@ -107,6 +108,15 @@ function CredentialsLoginForm({
             disabled={submitting}
           />
         </FormRow>
+
+        <p className="text-right text-sm">
+          <Link
+            to={path.recovery.request}
+            className="font-medium text-[#1a5fb4] hover:text-[#1557a0]"
+          >
+            Forgot password?
+          </Link>
+        </p>
 
         <div className="pt-1 [&_button]:flex [&_button]:w-full [&_button]:justify-center">
           <PrimaryButton type="submit" disabled={submitting} aria-busy={submitting}>
@@ -244,7 +254,7 @@ export default function LoginPage() {
     if (status !== "authenticated" || vaultStatus !== "locked" || vaultSetupInProgress || !me) {
       return;
     }
-    const methods = listUnlockMethods(me.vault_slots);
+    const methods = listUnlockMethods(me.vaultSlots);
     setStep({ kind: "unlock", methods });
   }, [me, status, vaultSetupInProgress, vaultStatus]);
 
@@ -276,7 +286,7 @@ export default function LoginPage() {
     if (!me) {
       return [] as UnlockMethod[];
     }
-    return listUnlockMethods(me.vault_slots);
+    return listUnlockMethods(me.vaultSlots);
   }, [me, step]);
 
   const finishingSignIn = status === "authenticated" && vaultSetupInProgress;
@@ -374,6 +384,7 @@ export default function LoginPage() {
 
   return (
     <div className="space-y-4">
+      <PageTitle page="Sign In" />
       {errorMessages.length > 0 ? <FormErrorSummary title="" messages={errorMessages} /> : null}
 
       <LoginCard size={cardSize}>

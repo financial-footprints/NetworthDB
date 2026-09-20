@@ -4,7 +4,7 @@ meta {
   seq: 8
 }
 
-put {
+patch {
   url: {{BASE_URL}}/api/v1/users/me/vault/slots/{{vaultSlotId}}
   body: json
   auth: bearer
@@ -17,17 +17,17 @@ auth:bearer {
 body:json {
   {
     "salt": "CQIDBAUGBwgJCgsMDQ4PEC",
-    "wrap_blob": "mno.pqr"
+    "wrapBlob": "mno.pqr"
   }
 }
 
 assert {
   res.status: eq 200
-  res.body.data.wrap_blob: eq mno.pqr
+  res.body.data.wrapBlob: eq mno.pqr
 }
 
 docs {
-  **Endpoint:** `PUT /api/v1/users/me/vault/slots/:id`
+  **Endpoint:** `PATCH /api/v1/users/me/vault/slots/:id`
 
   **This test verifies:** User can rotate a vault slot wrap.
 }

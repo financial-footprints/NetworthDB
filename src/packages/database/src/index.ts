@@ -1,14 +1,19 @@
 export { createDbClient, pingDb } from "@database/client";
-export { cryptography } from "@database/encryption";
-export { parseDbEnv, parseStorageEnv } from "@database/env";
+export { createCryptography } from "@database/encryption";
 export {
   DrizzleAccountRepository,
+  DrizzleBackupExportRepository,
+  DrizzleCategoryRepository,
+  DrizzleDashboardRepository,
   DrizzleJobRepository,
   DrizzleMultifactorChallengeRepository,
   DrizzleRecoveryChallengeRepository,
   DrizzleRecoveryCodeRepository,
+  DrizzleRuleGroupRepository,
+  DrizzleRuleRepository,
   DrizzleSessionRepository,
   DrizzleSourcesRepository,
+  DrizzleTagRepository,
   DrizzleUserRepository,
   DrizzleVaultSlotRepository,
   DrizzleWebAuthnCredsRepository,

@@ -3,7 +3,7 @@ import { createDbClient } from "@database/client";
 import { parseDbEnv } from "@database/env";
 import { DrizzleWebAuthnCredsRepository } from "@database/repositories/auth/drizzle-webauthn-creds-repository";
 import { DrizzleUserRepository } from "@database/repositories/users/drizzle-user-repository";
-import { authWebauthnCreds } from "@database/schema/auth/webauthn-creds";
+import { authWebauthnCreds } from "@database/schema/auth/webauthn-credentials";
 import { users } from "@database/schema/users/index";
 import type { DbClientHandle } from "@database/types";
 import { User, Username, WebAuthnCredential } from "@ndb/core";

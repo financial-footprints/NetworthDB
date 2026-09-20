@@ -2,16 +2,16 @@ import type { ApiConfig } from "@bootstrap/config/api";
 import { loadConfig } from "@bootstrap/config/api";
 import { type ApiServices, createApiServices, createAuthServices } from "@bootstrap/services";
 import { KvstoreAuthLimits } from "@ndb/auth";
-import { createDbClient, parseDbEnv } from "@ndb/database";
-import type { Logger } from "@ndb/logger";
+import type { Logger } from "@ndb/core";
+import { createDbClient } from "@ndb/database";
+import { parseDbEnv } from "@ndb/database/env";
 import { createLogger } from "@ndb/logger";
-import { createPool, initStatementsRuntime, type Pool, wrap } from "@ndb/statements";
+import { createPool, wrap } from "@ndb/statements";
 
 export type ApiRuntime = {
   config: ApiConfig;
   logger: Logger;
   services: ApiServices;
-  pool: Pool;
   close: () => Promise<void>;
 };
 
@@ -20,11 +20,19 @@ export async function loadApiRuntime(): Promise<ApiRuntime> {
   const logger = createLogger({
     level: config.app.logLevel,
     app: "api",
+    environment: config.app.environment,
   });
 
-  initStatementsRuntime();
-  const pool = createPool({ threads: config.jobs.workers });
-  const compute = wrap(pool);
+  const statementsRuntime = {
+    filestorePath: config.filestore.path,
+    encryptAtRest: config.encryption.enabled,
+    logLevel: config.app.logLevel,
+    environment: config.app.environment,
+  };
+  const pool = createPool({
+    threads: config.jobs.workers,
+    runtime: statementsRuntime,
+  });
 
   const dbHandle = createDbClient({ config: parseDbEnv() });
   const authLimits = await KvstoreAuthLimits.connect({
@@ -47,6 +55,7 @@ export async function loadApiRuntime(): Promise<ApiRuntime> {
     },
     logger,
   });
+  const engine = wrap(pool, statementsRuntime);
   const services = createApiServices(
     dbHandle.client,
     {
@@ -55,45 +64,47 @@ export async function loadApiRuntime(): Promise<ApiRuntime> {
       jobs: config.jobs,
       encryption: config.encryption,
       advancedSecurity: config.advancedSecurity,
+      filestore: config.filestore,
     },
-    compute
+    engine
   );
-  services.jobRunner.onCancel((jobId) => {
+  services.jobRunnerService.onCancel((jobId) => {
     pool.cancel(jobId);
   });
 
-  const recovered = await services.jobRunner.recoverJobs();
+  const recovered = await services.jobRunnerService.recoverJobs();
   if (recovered > 0) {
     logger.info("jobs.orphan.failed", { count: recovered });
   }
 
-  let logsCleanupInterval: ReturnType<typeof setInterval> | undefined;
-  if (config.app.environment === "production") {
-    const purgeLogs = async () => {
-      const count = await services.jobRunner.purgeExpiredLogs();
-      if (count > 0) {
-        logger.info("jobs.logs.purged", { count });
-      }
-    };
-    void purgeLogs();
-    logsCleanupInterval = setInterval(
-      () => {
-        void purgeLogs();
-      },
-      24 * 60 * 60 * 1000
-    );
-  }
+  let maintenanceInterval: ReturnType<typeof setInterval> | undefined;
+  const runMaintenance = async () => {
+    const expiredExports = await services.backupService.purgeExpiredExports();
+    if (expiredExports > 0) {
+      logger.info("backup.exports.purged", { count: expiredExports });
+    }
+    const logs = await services.jobRunnerService.purgeExpiredLogs();
+    if (logs > 0) {
+      logger.info("jobs.logs.purged", { count: logs });
+    }
+  };
+  void runMaintenance();
+  maintenanceInterval = setInterval(
+    () => {
+      void runMaintenance();
+    },
+    60 * 60 * 1000
+  );
 
   return {
     config,
     logger,
     services,
-    pool,
     close: async () => {
-      if (logsCleanupInterval) {
-        clearInterval(logsCleanupInterval);
+      if (maintenanceInterval) {
+        clearInterval(maintenanceInterval);
       }
-      services.jobRunner.shutdown();
+      services.jobRunnerService.shutdown();
       await pool.shutdown();
       await authLimits.close();
       await dbHandle.close();

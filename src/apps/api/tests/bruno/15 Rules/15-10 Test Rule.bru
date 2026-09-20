@@ -1,0 +1,59 @@
+meta {
+  name: 15-10 Test Rule
+  type: http
+  seq: 10
+}
+
+script:pre-request {
+  const baseUrl = bru.getEnvVar("BASE_URL");
+  const token = bru.getEnvVar("SESSION_TOKEN");
+  const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+  const accountsRes = await fetch(`${baseUrl}/api/v1/accounts`, { headers });
+  const accountsBody = await accountsRes.json();
+  let bank = (accountsBody.items ?? []).find((row) => row.accountType === "bank");
+  if (!bank?.id) {
+    const createRes = await fetch(`${baseUrl}/api/v1/accounts`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        bank: "HDFC",
+        accountType: "bank",
+        openingDate: "2020-01-01",
+        accountNumber: "bruno-rule-test",
+        passwords: [],
+      }),
+    });
+    const created = await createRes.json();
+    bank = created.data;
+  }
+  const systemRes = await fetch(`${baseUrl}/api/v1/accounts/system`, { headers });
+  const systemBody = await systemRes.json();
+  const expense = (systemBody.data?.items ?? []).find((row) => row.accountType === "expense");
+  bru.setVar("ruleTestBankId", bank?.id ?? "");
+  bru.setVar("ruleTestExpenseId", expense?.id ?? "");
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/rules/{{ruleId}}/test
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+body:json {
+  {
+    "date": "2024-06-01",
+    "amount": 5000,
+    "sourceAccountId": "{{ruleTestBankId}}",
+    "destinationAccountId": "{{ruleTestExpenseId}}",
+    "description": "coffee shop"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.matched: eq true
+}

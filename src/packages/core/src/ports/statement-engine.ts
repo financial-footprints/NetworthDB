@@ -1,11 +1,10 @@
 import type { Account } from "@core/domains/account/entities/account";
-import type { PipelineContext } from "@core/domains/account/modules/statements/embedded/pipeline-context";
+import type { PipelineRun } from "@core/domains/account/statements/entities/pipeline";
 import type {
   Bank,
   StatementList,
   StatementPipelineResult,
-  StatementTransactions,
-} from "@core/domains/account/modules/statements/types";
+} from "@core/domains/account/statements/types";
 
 export type StatementFileInput = {
   userId: string;
@@ -27,44 +26,40 @@ export type WriteUploadInput = {
   filename: string;
   data: Buffer;
   passwords: string[];
-};
-
-export type StatementEngineJobOptions = {
-  jobId: string;
-  pipelineTrace?: boolean;
+  bank: string;
+  variant: string | null;
 };
 
 export type StatementEngine = {
   listBanks(): Bank[];
   processPipeline(
-    context: PipelineContext,
-    dataKey: Buffer | null,
-    options: StatementEngineJobOptions
+    pipeline: PipelineRun,
+    shouldCancel: () => boolean,
+    onLogLine?: (line: string) => void
   ): Promise<StatementPipelineResult>;
   processUpload(
-    context: PipelineContext,
-    accountId: string,
-    format: string,
-    statementDate: string | null | undefined,
-    dataKey: Buffer | null,
-    options: StatementEngineJobOptions
+    pipeline: PipelineRun,
+    shouldCancel: () => boolean,
+    onLogLine?: (line: string) => void
   ): Promise<StatementPipelineResult>;
   readAccountStatements(input: {
     userId: string;
     dataKey: Buffer | null;
     account: Account;
   }): StatementList;
-  readStatementTransactions(input: {
+  readStatementFile(input: StatementFileInput): Buffer | null;
+  statementFileExists(input: StatementFileInput): boolean;
+  writeUpload(input: WriteUploadInput): Promise<{ relative: string }>;
+  deleteAccountStatements(
+    pipeline: PipelineRun,
+    onLogLine?: (line: string) => void
+  ): Promise<StatementPipelineResult>;
+  setTransactionsSync(input: {
     userId: string;
     dataKey: Buffer | null;
     account: Account;
-  }): StatementTransactions[];
-  readStatementFile(input: StatementFileInput): Buffer | null;
-  statementFileExists(input: StatementFileInput): boolean;
-  writeUpload(input: WriteUploadInput): { relative: string };
-  deleteAccountStatements(
-    context: PipelineContext,
-    accountId: string,
-    dataKey: Buffer | null
-  ): Promise<StatementPipelineResult>;
+    period: string;
+    transactionsSynced: boolean;
+    transactionsImportId: string | null;
+  }): void;
 };

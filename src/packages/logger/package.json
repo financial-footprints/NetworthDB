@@ -4,29 +4,19 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./exports.d.ts",
-      "default": "./index.ts"
-    }
-  },
-  "files": [
-    "index.ts",
-    "native.d.ts",
-    "exports.d.ts",
-    "*.node"
-  ],
-  "napi": {
-    "binaryName": "logger",
-    "constEnum": false
+    ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "napi build --release --no-js --dts native.d.ts --manifest-path ../../../Cargo.toml --package logger",
-    "build:debug": "napi build --no-js --dts native.d.ts --manifest-path ../../../Cargo.toml --package logger",
-    "dev": "bash ../../scripts/napi.sh",
+    "test": "bun test ./tests",
     "type-check": "tsc --noEmit -p tsconfig.json"
   },
+  "dependencies": {
+    "@ndb/core": "workspace:*",
+    "@ndb/platform": "workspace:*",
+    "pino": "^10.3.1"
+  },
   "devDependencies": {
-    "@napi-rs/cli": "^3.4.1",
+    "@types/bun": "^1.4.1",
     "@types/node": "^26.4.1",
     "typescript": "~7.0.2"
   }

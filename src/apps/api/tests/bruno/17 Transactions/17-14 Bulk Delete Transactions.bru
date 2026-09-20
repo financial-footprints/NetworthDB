@@ -1,0 +1,26 @@
+meta {
+  name: 17-14 Bulk Delete Transactions
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/accounts/{{ledgerAccountId}}/transactions/bulk-delete
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+body:json {
+  {
+    "ids": ["{{batchTxnId1}}", "{{batchTxnId2}}"]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.deleted: eq 2
+}

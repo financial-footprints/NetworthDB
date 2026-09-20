@@ -1,0 +1,26 @@
+meta {
+  name: 16-03 Get Dashboard All Dates
+  type: http
+  seq: 3
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/dashboard` (no `from` / `to` — all ledger dates)
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/dashboard
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.period.from: isDefined
+  res.body.data.period.to: isDefined
+  res.body.data.cashflow: isDefined
+}

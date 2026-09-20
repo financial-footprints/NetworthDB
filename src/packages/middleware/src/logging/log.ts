@@ -1,4 +1,4 @@
-import type { Logger } from "@ndb/logger";
+import type { Logger } from "@ndb/core";
 import { runWithRequestContext } from "@ndb/logger";
 import { REQUEST_ID_HEADER } from "@ndb/platform";
 import type { Context } from "hono";
@@ -36,16 +36,15 @@ function writeRequestLog(logger: Logger, c: Context, durationMs: number): void {
   logger.info("middleware.http.ok", context);
 }
 
-export function requestLog(logger: Logger) {
+export function logMiddleware(logger: Logger) {
   return createMiddleware(async (c, next) => {
     const rayId = c.req.raw.headers.get(REQUEST_ID_HEADER) ?? crypto.randomUUID();
     c.header(REQUEST_ID_HEADER, rayId);
 
     const start = performance.now();
-    await runWithRequestContext(
-      rayId,
-      async () => await next(),
-    );
-    writeRequestLog(logger, c, Math.round(performance.now() - start));
+    await runWithRequestContext(rayId, async () => {
+      await next();
+      writeRequestLog(logger, c, Math.round(performance.now() - start));
+    });
   });
 }

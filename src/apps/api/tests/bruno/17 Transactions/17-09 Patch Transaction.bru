@@ -1,0 +1,31 @@
+meta {
+  name: 17-09 Patch Transaction
+  type: http
+  seq: 9
+}
+
+patch {
+  url: {{BASE_URL}}/api/v1/accounts/{{ledgerAccountId}}/transactions/{{ledgerTransactionId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+body:json {
+  {
+    "date": "2024-06-15",
+    "amount": 2500,
+    "sourceAccountId": "{{ledgerAccountId}}",
+    "destinationAccountId": "{{expenseAccountId}}",
+    "description": "Bruno spend edited",
+    "refNo": null
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.description: eq Bruno spend edited
+}

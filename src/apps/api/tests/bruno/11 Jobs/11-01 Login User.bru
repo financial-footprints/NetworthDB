@@ -18,7 +18,7 @@ body:json {
 }
 
 script:post-response {
-  bru.setVar("jobsSessionToken", res.body.data.session_token);
+  bru.setVar("jobsSessionToken", res.body.data.sessionToken);
 }
 
 assert {

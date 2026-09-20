@@ -1,18 +1,11 @@
 import { type BootstrapEnv, getEnv } from "@bootstrap/config/env";
 import type { AppEnv, Role } from "@ndb/core";
+import { decodeSecretKey } from "@ndb/encryption";
 import { z } from "zod";
 
-const MULTIFACTOR_KEY_LENGTH = 32;
 const MFA_TOTP_SKEW_MAX = 10;
 
-const mfaSecretSchema = z.string().transform((value) => {
-  const key = Buffer.from(value, "base64url");
-  if (key.length !== MULTIFACTOR_KEY_LENGTH) {
-    throw new Error(`bootstrap.config.env.invalid-mfa-secret.length.${key.length}`);
-  }
-
-  return key;
-});
+const mfaSecretSchema = z.string().transform((value) => decodeSecretKey(value));
 
 function parseMfaTotpSkew(skew: number): number {
   if (skew > MFA_TOTP_SKEW_MAX) {

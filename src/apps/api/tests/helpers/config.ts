@@ -1,9 +1,6 @@
-import type { ApiConfig, ApiServices, HealthService } from "@ndb/bootstrap";
-import { UserService } from "@ndb/core";
+import type { ApiConfig } from "@ndb/bootstrap";
 import { API_PREFIX } from "@ndb/platform";
-import { createStatementsTestServices } from "@tests/api/helpers/statements-test-services";
 import {
-  CapturingEmailSender,
   TEST_AUTH_RATE_WINDOW_MS,
   TEST_MFA_SECRET,
   TEST_MULTIFACTOR_CONFIG,
@@ -12,7 +9,6 @@ import {
   TEST_SESSION_TTL,
   TEST_WEBAUTHN_CONFIG,
 } from "@tests/auth/helpers";
-import { createInMemoryAuthRepos, wireInMemoryAuth } from "@tests/auth/helpers/wiring";
 
 const TEST_FILESTORE_SECRET = Buffer.from(
   "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
@@ -76,26 +72,9 @@ export function fakeConfig(): ApiConfig {
       pipelineTrace: false,
       sensitiveBackups: false,
     },
-  };
-}
-
-export function fakeServices(): ApiServices {
-  const repos = createInMemoryAuthRepos();
-  const emailSender = new CapturingEmailSender();
-  const { auth, vault } = wireInMemoryAuth(repos, emailSender);
-
-  const pipeline = createStatementsTestServices();
-
-  return {
-    health: {
-      check: async () => ({ ok: true }),
-    } as HealthService,
-    user: new UserService(repos.users, auth),
-    account: pipeline.account,
-    sources: pipeline.sources,
-    job: pipeline.job,
-    jobRunner: pipeline.jobRunner,
-    vault,
-    auth,
+    filestore: {
+      path: "/tmp/networthdb-test",
+    },
+    backupMaxUploadBytes: 536_870_912,
   };
 }

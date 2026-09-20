@@ -1,0 +1,50 @@
+meta {
+  name: 10-07 Put Sources
+  type: http
+  seq: 7
+}
+
+docs {
+  **Endpoint:** `PUT /api/v1/sources`
+}
+
+put {
+  url: {{BASE_URL}}/api/v1/sources
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{integrationsSessionToken}}
+}
+
+body:json {
+  {
+    "sources": [
+      {
+        "id": "tb-1",
+        "type": "thunderbird",
+        "label": "Laptop",
+        "profile": "/home/user/.thunderbird/xxxx"
+      },
+      {
+        "id": "imap-1",
+        "type": "email",
+        "label": "Work Gmail",
+        "host": "imap.example.test",
+        "port": 993,
+        "username": "user@example.test",
+        "password": "imap-secret",
+        "folder": "INBOX",
+        "useSsl": true
+      }
+    ]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.sources[0].type: eq thunderbird
+  res.body.data.sources[1].type: eq email
+  res.body.data.sources[1].hasPassword: eq true
+}

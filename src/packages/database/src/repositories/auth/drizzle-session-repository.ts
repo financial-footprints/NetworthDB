@@ -56,7 +56,7 @@ export class DrizzleSessionRepository implements SessionRepository {
       return mapRow(row);
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictError("database.auth.session.create.error.hash-collision");
+        throw new ConflictError("Session token collided. Try again.");
       }
 
       throw error;

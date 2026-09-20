@@ -1,4 +1,5 @@
-import { DEFAULT_EMAIL_PORT } from "@core/domains/sources/constants";
+export const DEFAULT_EMAIL_PORT = 993;
+
 import { ValidationError } from "@core/shared/errors/domain-error";
 
 export type ThunderbirdSource = {
@@ -53,10 +54,6 @@ export type SourcesUpdateInput = {
 
 export function emptySources(): Sources {
   return { sources: [] };
-}
-
-export function cloneSources(sources: Sources): Sources {
-  return structuredClone(sources);
 }
 
 export function emailHasPassword(source: EmailSource): boolean {
@@ -162,9 +159,9 @@ function assertUniqueSourceIds(items: SourceWriteInput[]): void {
   const seen = new Set<string>();
   for (const item of items) {
     if (seen.has(item.id)) {
-      throw new ValidationError("core.sources.invalid.duplicate-id", {
+      throw new ValidationError("Source id is already used.", {
         field: "sources",
-        id: item.id,
+        context: { id: item.id },
       });
     }
 
@@ -230,7 +227,7 @@ function resolveEmailPassword(
 function requireNonEmptyString(value: string, field: string): string {
   const trimmed = value.trim();
   if (!trimmed) {
-    throw new ValidationError("core.sources.invalid.required-field", {
+    throw new ValidationError("Required field is missing.", {
       field,
     });
   }

@@ -1,7 +1,8 @@
-import type { MeResponse } from "@web/utils/api/endpoints/auth/types";
-import { readDEK } from "@web/utils/crypto/session";
-import { hasE2EEVault } from "@web/utils/crypto/vault/fields";
+import { fetchMe, initializeVault } from "@web/utils/api/routes/auth";
+import type { MeResponse } from "@web/utils/api/routes/auth/types";
+import { readDEK, writeDEK } from "@web/utils/crypto/session";
 import {
+  createVault,
   credentialIdsMatch,
   findPasswordSlot,
   unwrapDEKFromSlot,
@@ -19,10 +20,10 @@ export function listUnlockMethods(slots: VaultSlotMaterial[]): UnlockMethod[] {
   if (findPasswordSlot(slots)) {
     methods.push("password");
   }
-  if (slots.some((slot) => slot.slot_type === "recovery_phrase")) {
+  if (slots.some((slot) => slot.slotType === "recovery_phrase")) {
     methods.push("recovery_phrase");
   }
-  if (slots.some((slot) => slot.slot_type === "webauthn_prf")) {
+  if (slots.some((slot) => slot.slotType === "webauthn_prf")) {
     methods.push("webauthn");
   }
   return methods;
@@ -43,7 +44,7 @@ async function unlockVaultFromSlots(
     }
   }
   if (ctx.recoveryPhrase) {
-    for (const slot of slots.filter((entry) => entry.slot_type === "recovery_phrase")) {
+    for (const slot of slots.filter((entry) => entry.slotType === "recovery_phrase")) {
       try {
         return await unwrapDEKFromSlot(slot, ctx.recoveryPhrase);
       } catch {
@@ -54,14 +55,14 @@ async function unlockVaultFromSlots(
   throw new Error("vault locked");
 }
 
-export async function unlockWithWebAuthnPRF(
+async function unlockWithWebAuthnPRF(
   slots: VaultSlot[],
   credentialId: string,
   prfOutput: Uint8Array
 ): Promise<CryptoKey> {
   const slot = slots.find(
     (entry) =>
-      entry.slot_type === "webauthn_prf" && credentialIdsMatch(entry.credential_id, credentialId)
+      entry.slotType === "webauthn_prf" && credentialIdsMatch(entry.credentialId, credentialId)
   );
   if (!slot) {
     throw new Error("vault locked");
@@ -77,11 +78,11 @@ export async function unlockVault(
 }
 
 export async function tryAutoUnlock(me: MeResponse, ctx: UnlockContext): Promise<AutoUnlockResult> {
-  if (!hasE2EEVault(me.vault_initialized)) {
+  if (!me.vaultInitialized) {
     return { kind: "no_vault" };
   }
 
-  const slots = me.vault_slots;
+  const slots = me.vaultSlots;
   const existingDek = await readDEK();
   if (existingDek) {
     return { kind: "unlocked", dek: existingDek };
@@ -131,4 +132,29 @@ export async function unlockVaultManual(
     password: ctx.password,
     recoveryPhrase: ctx.recoveryPhrase,
   });
+}
+
+export async function ensureVaultAtLogin(
+  sessionToken: string,
+  me: MeResponse,
+  password: string
+): Promise<MeResponse> {
+  if (me.vaultInitialized) {
+    return me;
+  }
+
+  const created = await createVault(password);
+  await initializeVault(sessionToken, {
+    displayName: undefined,
+    slots: [
+      {
+        slotType: "password",
+        salt: created.slots[0]?.salt ?? "",
+        wrapBlob: created.slots[0]?.wrapBlob ?? "",
+        password,
+      },
+    ],
+  });
+  await writeDEK(created.dek);
+  return fetchMe(sessionToken);
 }

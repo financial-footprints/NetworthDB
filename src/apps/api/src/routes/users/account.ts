@@ -1,14 +1,17 @@
+import { jsonBody, jsonMedia } from "@api/config/http";
 import { createSessionRouter, errorResponses } from "@api/config/router";
-import { jsonBody, jsonMedia } from "@api/routes/auth/helpers";
-import { serializeEmpty, serializeSessionTokens } from "@api/routes/auth/serializer";
+import {
+  serializeNullableSessionResponse,
+  serializeSessionTokens,
+} from "@api/routes/auth/serializer";
 import { type SessionTokenPair, ValidationError } from "@ndb/core";
 import { sessionPrincipal } from "@ndb/middleware";
 import { API, patchMeReqSchema, patchMeSchema } from "@ndb/platform";
 
 function requireCurrentPassword(password?: string): string {
   if (password === undefined) {
-    throw new ValidationError("api.auth.account.password.invalid.current-required", {
-      field: "current_password",
+    throw new ValidationError("Current password is required.", {
+      field: "currentPassword",
     });
   }
 
@@ -20,7 +23,7 @@ const accountRoutes = createSessionRouter();
 accountRoutes.endpoint(
   {
     method: "patch",
-    path: API.users.me.update,
+    path: API.users.me.patch,
     request: { body: jsonBody(patchMeReqSchema) },
     responses: {
       200: {
@@ -39,32 +42,36 @@ accountRoutes.endpoint(
     let sessionPair: SessionTokenPair | undefined;
 
     if (body.displayName !== undefined) {
-      await c.get("services").vault.update(user.id, body.displayName);
+      await c.get("services").userService.updateDisplayName(user.id, body.displayName);
+    }
+
+    if (body.clientSettings !== undefined) {
+      await c.get("services").userService.saveClientSettings(user.id, body.clientSettings);
     }
 
     if (body.username !== undefined) {
       const currentPassword = requireCurrentPassword(body.currentPassword);
       sessionPair = await c
         .get("services")
-        .auth.updateUsername(user, authAcr, authAmr, body.username, currentPassword);
+        .authService.updateUsername(user, authAcr, authAmr, body.username, currentPassword);
     }
 
     if (body.newPassword !== undefined) {
       const currentPassword = requireCurrentPassword(body.currentPassword);
       sessionPair = await c
         .get("services")
-        .auth.updatePassword(user, authAcr, authAmr, currentPassword, body.newPassword);
+        .authService.updatePassword(user, authAcr, authAmr, currentPassword, body.newPassword);
     }
 
     if (body.recoveryEmail !== undefined) {
       const currentPassword = requireCurrentPassword(body.currentPassword);
 
       if (body.recoveryEmail === null) {
-        await c.get("services").auth.recovery.deleteEmail(user.id, currentPassword);
+        await c.get("services").authService.recovery.deleteEmail(user.id, currentPassword);
       } else {
         await c
           .get("services")
-          .auth.recovery.updateEmail(user.id, currentPassword, body.recoveryEmail);
+          .authService.recovery.updateEmail(user.id, currentPassword, body.recoveryEmail);
       }
     }
 
@@ -72,7 +79,7 @@ accountRoutes.endpoint(
       return c.json(serializeSessionTokens(sessionPair), 200);
     }
 
-    return c.json(serializeEmpty(), 200);
+    return c.json(serializeNullableSessionResponse(), 200);
   }
 );
 

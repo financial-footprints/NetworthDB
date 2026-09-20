@@ -1,0 +1,116 @@
+name: networthdb
+
+services:
+  postgres:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: postgres
+    env_file:
+      - env/postgres.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_ssl:/var/lib/postgresql/ssl
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    command: ["valkey-server", "--appendonly", "yes"]
+    volumes:
+      - valkey_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  migrate:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: app
+    env_file:
+      - env/api.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command:
+      - sh
+      - -c
+      - |
+        set -eu
+        bun deploy/scripts/migrate.ts
+        bun src/packages/database/src/operations/migrate/role.ts
+        bun deploy/scripts/bootstrap.admin.ts
+        bun src/packages/database/scripts/seed.ts
+    restart: "no"
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: app
+    env_file:
+      - env/api.env
+    volumes:
+      - filestore_data:/var/lib/networthdb
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      valkey:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "-q",
+          "--spider",
+          "http://127.0.0.1:8000/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+
+  copilot:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: app
+    env_file:
+      - env/copilot.env
+    command: ["bun", "src/apps/copilot/src/index.ts"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${COPILOT_HTTP_PORT:-8002}:8002"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: web
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${WEB_HTTP_PORT:-8080}:80"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  postgres_ssl:
+  valkey_data:
+  filestore_data:

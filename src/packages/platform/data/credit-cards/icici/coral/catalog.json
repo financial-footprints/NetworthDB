@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "registry_key": "icici/coral",
+  "bank": "icici",
+  "variant": "coral",
+  "display_name": "Coral",
+  "default_kind": "named",
+  "networks": ["Visa", "Mastercard", "RuPay", "American Express"],
+  "reward_kind": "points",
+  "official_product_url": "https://www.icicibank.com/personal-banking/cards/credit-card/coral-credit-card/key-privileges",
+  "mitc_url": "https://www.icicibank.com/content/dam/managed-assets/docs/personal/cards/MITC_cc.pdf",
+  "researched_at": "2026-10-04",
+  "updated_at": "2026-10-04",
+  "sources": [
+    {
+      "url": "https://www.icicibank.com/personal-banking/cards/credit-card/coral-credit-card/key-privileges",
+      "retrieved_at": "2026-10-04",
+      "label": "Key privileges"
+    },
+    {
+      "url": "https://www.icicibank.com/content/dam/managed-assets/docs/personal/cards/MITC_cc.pdf",
+      "retrieved_at": "2026-10-04",
+      "label": "ICICI MITC"
+    }
+  ],
+  "tags": ["rewards", "lounge"],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. American Express BookMyShow cashback on this family was revoked from 1 January 2025.",
+  "fees": {
+    "joining": {
+      "status": "yes",
+      "summary": "The joining fee is \u20b9500 plus GST.",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "yes",
+      "summary": "The annual fee is \u20b9500 plus GST.",
+      "confidence": "verified_mitc"
+    },
+    "annual_waiver": {
+      "status": "conditional",
+      "summary": "The next year's annual fee is waived if spend exceeds \u20b91.5 lakh.",
+      "confidence": "verified_mitc"
+    },
+    "forex": {
+      "status": "yes",
+      "summary": "Forex markup is 3.5 percent.",
+      "confidence": "verified_mitc"
+    },
+    "fuel_surcharge": {
+      "status": "conditional",
+      "summary": "A 1 percent fuel surcharge waiver applies only at HPCL on ICICI merchant swipe, on transactions from \u20b9400 to \u20b94,000.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "merchant",
+          "summary": "The waiver applies only at HPCL on an ICICI merchant swipe."
+        },
+        {
+          "type": "txn_range",
+          "summary": "The eligible transaction range is \u20b9400 to \u20b94,000."
+        }
+      ]
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "yes",
+      "summary": "The card earns 2 reward points per \u20b9100 of retail spend and 1 reward point per \u20b9100 of utility and insurance spend.",
+      "confidence": "verified_product_page"
+    },
+    "accelerated": {
+      "status": "conditional",
+      "summary": "Accelerated value is mainly milestone bonus points rather than a category 5X table. Movie and entertainment offers are discounts, not extra reward points.",
+      "confidence": "verified_product_page"
+    },
+    "upi": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "redemption": {
+      "status": "yes",
+      "summary": "Points redeem on health, travel, vouchers, appliances, electronics, and fashion in the catalogue. The conversion rate is not stated on the product page.",
+      "confidence": "verified_product_page"
+    },
+    "expiry": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "conditional",
+      "summary": "Domestic airport lounge is spend-gated on the preceding calendar quarter and is for the primary cardholder only. Railway lounge is a separate quarterly entitlement. Access is not described as Priority Pass.",
+      "confidence": "verified_product_page"
+    },
+    "domestic": {
+      "status": "conditional",
+      "summary": "The card includes 1 domestic airport lounge visit per quarter for the primary cardholder.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "spend",
+          "summary": "Spend at least \u20b975,000 in the preceding calendar quarter. Access is in the following quarter."
+        }
+      ]
+    },
+    "international": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "railway": {
+      "status": "yes",
+      "summary": "The card includes 4 railway lounge visits per year, also described as 1 railway lounge visit per quarter. Visits beyond the quota are charged by the lounge.",
+      "confidence": "verified_product_page"
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "movies": {
+      "status": "conditional",
+      "summary": "BookMyShow and INOX offer 25 percent off up to \u20b9100, twice a month. From 1 April 2026 the complimentary-ticket movie and events offer needs \u20b925,000 spend in the preceding quarter for primary and plus cards.",
+      "confidence": "verified_product_page"
+    },
+    "golf": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "concierge": {
+      "status": "conditional",
+      "summary": "RuPay Coral lists a 24x7 concierge at 18002670731.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "network",
+          "summary": "The concierge number is described for the RuPay variant."
+        }
+      ]
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "accident": {
+      "status": "conditional",
+      "summary": "RuPay Coral lists \u20b92 lakh personal accident cover.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "network",
+          "summary": "Personal accident cover is described for the RuPay variant."
+        }
+      ]
+    },
+    "card_protect": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "milestones": {
+    "status": "conditional",
+    "summary": "The card credits 2,000 reward points at \u20b92 lakh spend and 1,000 extra points per additional \u20b91 lakh, up to 10,000 bonus points per anniversary year. Lounge unlocks at \u20b975,000 prior-quarter spend. Movies unlock at \u20b925,000 prior-quarter spend from April 2026. The annual fee waiver is \u20b91.5 lakh.",
+    "confidence": "verified_product_page"
+  },
+  "welcome": {
+    "status": "NA",
+    "summary": "NA",
+    "confidence": "verified_product_page",
+    "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+  }
+}

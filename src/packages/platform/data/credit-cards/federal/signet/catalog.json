@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "registry_key": "federal/signet",
+  "bank": "federal",
+  "variant": "signet",
+  "display_name": "Signet",
+  "default_kind": "named",
+  "networks": ["Visa", "Mastercard"],
+  "reward_kind": "points",
+  "official_product_url": "https://www.federalbank.co.in/credit-cards",
+  "mitc_url": "https://www.federalbank.co.in/documents/10180/81307/Service+charges+and+Fees-+Credit+Card.pdf",
+  "researched_at": "2026-10-04",
+  "updated_at": "2026-10-04",
+  "sources": [
+    {
+      "url": "https://www.federalbank.co.in/signet-credit-card",
+      "retrieved_at": "2026-10-04",
+      "label": "Signet product page"
+    },
+    {
+      "url": "https://www.federalbank.co.in/credit-cards-mitc",
+      "retrieved_at": "2026-10-04",
+      "label": "Credit cards MITC lounge and rewards"
+    },
+    {
+      "url": "https://www.federalbank.co.in/documents/10180/81307/Service+charges+and+Fees-+Credit+Card.pdf",
+      "retrieved_at": "2026-10-04",
+      "label": "Charges table"
+    }
+  ],
+  "tags": ["rewards"],
+  "conflicts": [
+    "Product-page marketing describes 3-2-1 rewards. The MITC only states 1 reward point per \u20b9200."
+  ],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. The Federal listing page returned 403 on full fetch, so lounge quotas and welcome vouchers remain unconfirmed.",
+  "fees": {
+    "joining": {
+      "status": "yes",
+      "summary": "The MITC lists Signet joining and annual as \u20b9750.",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "yes",
+      "summary": "The annual fee is \u20b9750.",
+      "confidence": "verified_mitc"
+    },
+    "annual_waiver": {
+      "status": "conditional",
+      "summary": "Spend \u20b975,000 in a year excluding cash to waive the next year's annual fee.",
+      "confidence": "verified_mitc"
+    },
+    "forex": {
+      "status": "yes",
+      "summary": "Forex markup is 3.5 percent.",
+      "confidence": "verified_mitc"
+    },
+    "fuel_surcharge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "The family charges MITC lists fuel surcharge waiver for Imperio and Celesta only, not Signet."
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "yes",
+      "summary": "The MITC states 1 reward point per \u20b9200 of spend in the enterprise pool with debit and netbanking. There are no points on cash, fuel, or e-wallet load.",
+      "confidence": "verified_mitc"
+    },
+    "accelerated": {
+      "status": "conditional",
+      "summary": "Signet marketing and customer-benefit terms describe 3x rewards on electronics and apparel, 2x on entertainment, and 1x on other categories, while the charges MITC table still shows 1 point per \u20b9200.",
+      "confidence": "conflict",
+      "notes": "Prefer MITC for base accrual; treat multipliers as product-page benefits until both align."
+    },
+    "upi": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Federal credit-card MITC does not describe a separate UPI earn rate for Signet."
+    },
+    "redemption": {
+      "status": "conditional",
+      "summary": "The redemption fee is \u20b999. Points are forfeited on death, fraud, or arrears. Catalogue options are otherwise unknown.",
+      "confidence": "verified_mitc"
+    },
+    "expiry": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "conditional",
+      "summary": "Primary cardholders receive one complimentary domestic airport lounge visit per calendar quarter when they spend at least \u20b920,000 in the preceding calendar quarter.",
+      "confidence": "verified_mitc"
+    },
+    "domestic": {
+      "status": "conditional",
+      "summary": "Signet includes one domestic lounge visit per quarter after \u20b920,000 spend in the preceding calendar quarter.",
+      "confidence": "verified_mitc",
+      "conditions": [
+        {
+          "type": "spend",
+          "summary": "Spend at least \u20b920,000 in the preceding calendar quarter."
+        }
+      ]
+    },
+    "international": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Federal lounge schedule lists international access for Celesta only; Signet shows NA for international lounge."
+    },
+    "railway": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Federal Signet MITC and lounge schedule do not describe a standalone dining discount programme separate from the 3-2-1 rewards multipliers."
+    },
+    "movies": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "golf": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Golf benefits are documented for Celesta in Federal materials, not for Signet."
+    },
+    "concierge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "accident": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "card_protect": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    }
+  },
+  "milestones": {
+    "status": "conditional",
+    "summary": "The documented spend milestone is \u20b975,000 annual-fee waiver.",
+    "confidence": "verified_mitc"
+  },
+  "welcome": {
+    "status": "conditional",
+    "summary": "RuPay Signet marketing lists onboarding benefits including Amazon Pay e-voucher and INOX movie offers subject to separate T&C PDFs.",
+    "confidence": "verified_product_page"
+  }
+}

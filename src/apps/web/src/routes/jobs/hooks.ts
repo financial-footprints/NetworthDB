@@ -1,26 +1,26 @@
-import { useNotifications } from "@web/context/Notifications/NotificationContext";
+import { useNotifications } from "@web/contexts/Notifications/Context";
 import { log } from "@web/logging";
-import { buildAccountIndex, mergeAccountLists } from "@web/routes/jobs/display";
-import { readAccounts } from "@web/utils/api/endpoints/accounts";
-import type { Account } from "@web/utils/api/endpoints/accounts/types";
-import { cancelJob } from "@web/utils/api/endpoints/jobs";
-import type { JobResponse } from "@web/utils/api/endpoints/jobs/types";
+import { buildAccountIndex } from "@web/routes/jobs/display";
+import { readAccounts } from "@web/utils/api/routes/accounts";
+import type { Account } from "@web/utils/api/routes/accounts/types";
+import { cancelJob } from "@web/utils/api/routes/jobs";
+import type { JobApi } from "@web/utils/api/routes/jobs/types";
 import { errorMessage } from "@web/utils/errors";
 import { useEffect, useMemo, useState } from "react";
 
 type UseCancelJobResult = {
-  cancelJobById: (jobId: string, onSuccess?: (updated: JobResponse) => void) => Promise<void>;
+  cancelJobById: (jobId: string, onSuccess?: (updated: JobApi) => void) => Promise<void>;
   stoppingJobId: string | null;
 };
 
-export function useJobAccountIndex(jobs: JobResponse[]): Map<string, Account> {
+export function useJobAccountIndex(jobs: JobApi[]): Map<string, Account> {
   const [accountIndex, setAccountIndex] = useState<Map<string, Account>>(() => new Map());
 
   const accountIds = useMemo(() => {
     const ids = new Set<string>();
     for (const job of jobs) {
-      if (job.account_id) {
-        ids.add(job.account_id);
+      if (job.accountId) {
+        ids.add(job.accountId);
       }
     }
     return ids;
@@ -36,15 +36,7 @@ export function useJobAccountIndex(jobs: JobResponse[]): Map<string, Account> {
 
     void (async () => {
       try {
-        const creditCards = await readAccounts("credit_card");
-        let accounts = creditCards.accounts;
-        const index = buildAccountIndex(accounts);
-        const needsBankAccounts = [...accountIds].some((id) => !index.has(id));
-
-        if (needsBankAccounts) {
-          const bankAccounts = await readAccounts("bank_account");
-          accounts = mergeAccountLists(creditCards, bankAccounts);
-        }
+        const { accounts } = await readAccounts();
 
         if (!cancelled) {
           setAccountIndex(buildAccountIndex(accounts));

@@ -1,0 +1,19 @@
+meta {
+  name: 18-04 Get Unknown Catalog 404
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/credit-cards/catalog/missing/card
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+assert {
+  res.status: eq 404
+  res.body.error: isDefined
+}

@@ -1,15 +1,15 @@
 import { generateMnemonic } from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english.js";
 import {
+  asBufferSource,
   decodeBase64url,
   encodeBase64url,
   randomBytes,
   unwrapDEK,
   wrapDEK,
 } from "@web/utils/crypto/aes";
-import { asBufferSource } from "@web/utils/crypto/helpers";
 import { deriveKEK } from "@web/utils/crypto/kdf";
-import { packE2EEBlob, unpackE2EEBlob } from "@web/utils/crypto/vault/blob";
+import { packE2EEBlob, unpackE2EEBlob } from "@web/utils/crypto/vault/fields";
 import type { VaultSlotMaterial, VaultSlotType } from "@web/utils/crypto/vault/types";
 
 const PRF_HKDF_INFO = new TextEncoder().encode("networth-vault-kek");
@@ -39,7 +39,7 @@ export async function wrapDEKForSlot(
   slotType: VaultSlotType,
   secret: string | Uint8Array,
   existingSalt?: Uint8Array
-): Promise<{ salt: string; wrap_blob: string }> {
+): Promise<{ salt: string; wrapBlob: string }> {
   const salt = existingSalt ?? randomBytes(16);
   let kek: CryptoKey;
   if (slotType === "webauthn_prf") {
@@ -56,7 +56,7 @@ export async function wrapDEKForSlot(
   const wrapped = await wrapDEK(kek, dek);
   return {
     salt: encodeBase64url(salt),
-    wrap_blob: packE2EEBlob(encodeBase64url(wrapped.nonce), encodeBase64url(wrapped.ciphertext)),
+    wrapBlob: packE2EEBlob(encodeBase64url(wrapped.nonce), encodeBase64url(wrapped.ciphertext)),
   };
 }
 
@@ -66,7 +66,7 @@ export async function unwrapDEKFromSlot(
 ): Promise<CryptoKey> {
   const salt = decodeBase64url(slot.salt);
   let kek: CryptoKey;
-  if (slot.slot_type === "webauthn_prf") {
+  if (slot.slotType === "webauthn_prf") {
     if (!(secret instanceof Uint8Array)) {
       throw new Error("PRF slot requires Uint8Array secret");
     }
@@ -77,7 +77,7 @@ export async function unwrapDEKFromSlot(
     }
     kek = await deriveKEK(secret, salt);
   }
-  const { nonce, ciphertext } = unpackE2EEBlob(slot.wrap_blob);
+  const { nonce, ciphertext } = unpackE2EEBlob(slot.wrapBlob);
   return unwrapDEK(kek, decodeBase64url(ciphertext), decodeBase64url(nonce));
 }
 
@@ -96,7 +96,7 @@ export function credentialIdsMatch(stored: string | null | undefined, asserted: 
 }
 
 export function findPasswordSlot<T extends VaultSlotMaterial>(slots: T[]): T | undefined {
-  return slots.find((slot) => slot.slot_type === "password");
+  return slots.find((slot) => slot.slotType === "password");
 }
 
 export async function createPasswordSlot(
@@ -105,9 +105,9 @@ export async function createPasswordSlot(
 ): Promise<VaultSlotMaterial> {
   const wrapped = await wrapDEKForSlot(dek, "password", password);
   return {
-    slot_type: "password",
+    slotType: "password",
     salt: wrapped.salt,
-    wrap_blob: wrapped.wrap_blob,
+    wrapBlob: wrapped.wrapBlob,
   };
 }
 
@@ -117,9 +117,9 @@ export async function createRecoveryPhraseSlot(
 ): Promise<VaultSlotMaterial> {
   const wrapped = await wrapDEKForSlot(dek, "recovery_phrase", phrase);
   return {
-    slot_type: "recovery_phrase",
+    slotType: "recovery_phrase",
     salt: wrapped.salt,
-    wrap_blob: wrapped.wrap_blob,
+    wrapBlob: wrapped.wrapBlob,
   };
 }
 
@@ -130,7 +130,7 @@ export function generateRecoveryPhrase(): string {
 export async function rewrapVault(
   dek: CryptoKey,
   newPassword: string
-): Promise<{ salt: string; wrap_blob: string }> {
+): Promise<{ salt: string; wrapBlob: string }> {
   return wrapDEKForSlot(dek, "password", newPassword);
 }
 

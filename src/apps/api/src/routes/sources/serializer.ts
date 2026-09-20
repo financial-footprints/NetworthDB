@@ -19,7 +19,7 @@ function serializeSourceData(source: Sources["sources"][number], includeSecrets:
     port: source.port ?? 993,
     username: source.username || "",
     folder: source.folder || "INBOX",
-    use_ssl: source.useSsl ?? true,
+    useSsl: source.useSsl ?? true,
   };
 
   if (includeSecrets) {
@@ -31,7 +31,7 @@ function serializeSourceData(source: Sources["sources"][number], includeSecrets:
 
   return {
     ...base,
-    has_password: emailHasPassword(source),
+    hasPassword: emailHasPassword(source),
   };
 }
 
@@ -40,6 +40,5 @@ export function serializeSources(sources: Sources, includeSecrets: boolean) {
     data: {
       sources: sources.sources.map((source) => serializeSourceData(source, includeSecrets)),
     },
-    errors: [],
   });
 }

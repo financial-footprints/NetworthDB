@@ -1,8 +1,5 @@
-import type { createApp } from "@ndb/api";
 import type { ApiServices } from "@ndb/bootstrap";
-import { type User, Username } from "@ndb/core";
-import { API } from "@ndb/platform";
-import { readApiJson } from "@tests/api/helpers/api-response";
+import { type JobOutput, type User, Username } from "@ndb/core";
 import type { AuthTestServices } from "@tests/api/helpers/auth-services";
 
 type JobStatus = "queued" | "running" | "completed" | "failed" | "cancelled";
@@ -11,6 +8,7 @@ type JobPollResponse = {
   id: string;
   status: string;
   error?: string | null;
+  output: JobOutput;
 };
 
 type WaitForJobOptions = {
@@ -81,7 +79,7 @@ async function pollJob(
 }
 
 export async function waitForJobInServices(
-  services: Pick<ApiServices, "job"> & Pick<AuthTestServices, "users">,
+  services: Pick<ApiServices, "jobService"> & Pick<AuthTestServices, "users">,
   username: string,
   jobId: string,
   options: WaitForJobOptions = {}
@@ -89,30 +87,12 @@ export async function waitForJobInServices(
   const user = await userForUsername(services.users, username);
 
   return pollJob(async () => {
-    const job = await services.job.get(user, "aal1", jobId);
+    const job = await services.jobService.get(user, "aal1", jobId);
     return {
       id: job.id,
       status: job.status,
       error: job.error,
+      output: job.output,
     };
-  }, options);
-}
-
-export async function waitForJobViaApp(
-  app: ReturnType<typeof createApp>,
-  token: string,
-  jobId: string,
-  options: WaitForJobOptions = {}
-): Promise<JobPollResponse> {
-  return pollJob(async () => {
-    const response = await app.request(API.jobs.details.replace(":id", jobId), {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!response.ok) {
-      throw new Error(`jobs poll failed: HTTP ${response.status}`);
-    }
-
-    const body = await readApiJson<JobPollResponse>(response);
-    return body.data;
   }, options);
 }

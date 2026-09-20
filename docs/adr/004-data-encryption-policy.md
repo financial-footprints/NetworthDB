@@ -101,13 +101,15 @@ flowchart LR
 
 ### Field Classification
 
-**Tier 1 — E2E:** user display name, account number, vault slot wraps.
+**Tier 1 — E2E (client-optional, default on):** user display name, account number, vault slot wraps. Per-field E2E toggles live in `users.client_settings` (tier 3 JSON the server does not interpret).
 
 **Tier 2 — Server encryption:** per-user encryption secret, TOTP secrets, account integration secrets (PDF passwords, mail rules), source credentials, job output/error/logs, on-disk statement vault files (production).
 
-**Tier 3 — Plaintext (justified):** usernames, roles, MFA flags, account type/bank/variant/label/dates (pipeline and list APIs need these without vault unlock), job queue metadata, auth ceremony metadata.
+**Tier 3 — Plaintext (justified):** usernames, roles, MFA flags, account type/bank/variant/label/dates (pipeline and list APIs need these without vault unlock), job queue metadata, auth ceremony metadata, `client_settings`, transaction `date`, amount, **`description`**, and **`ref_no`** columns (range queries, whole-word search, statement ingest, and backup without vault unlock; see ADR-006), monthly summary aggregates, vault statement catalog flags (`transactions_synced`, `transactions_import_id` on statement metadata — not secrets), transaction category and tag **names** (list, filter, and uniqueness without vault unlock; see ADR-007), transaction rule group and rule **titles** and **descriptions**, and JSONB **triggers** and **actions** (server-side match and apply after ingest without vault unlock; see ADR-009).
 
 **Hashed:** password hash, recovery email hash, session and token hashes.
+
+**Backup ZIP (user password, not NWENC1):** the 7-day export artifact is AES-256 inside the ZIP with a password the server does not store. Vault wraps and E2E fields remain opaque inside that archive. See ADR-008.
 
 ### Review Rule
 
@@ -143,4 +145,4 @@ Pull requests that add columns or encrypted blobs must state the **tier** and **
 
 - [ADR-002](002-authentication.md) — sessions, MFA, hashing
 - [ADR-003](003-end-to-end-encryption.md) — vault, DEK, blob format
-- [ADR-005](005-statements-compute.md) — on-disk statement vault
+- [Statement compute](../../src/packages/statements/README.md) — on-disk statement vault

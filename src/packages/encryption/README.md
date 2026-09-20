@@ -1,4 +1,4 @@
-# @ndb/encryption
+# `@ndb/encryption`
 
 Single implementation of server-side symmetric encryption for NetworthDB.
 
@@ -16,17 +16,16 @@ Algorithm: AES-256-GCM with a 32-byte key and 12-byte nonce.
 
 | Export | Purpose |
 | ------ | ------- |
-| `decodeKey` | Decode `FILESTORE_SECRET` / `MFA_SECRET` (hex or base64url) to 32 bytes |
-| `encrypt` / `decrypt` | NWENC1 byte blobs |
-| `encryptString` / `decryptString` | UTF-8 string convenience (MFA TOTP) |
+| `encrypt` / `decrypt` | NWENC1 byte blobs (callers pass a valid 32-byte `Buffer` key) |
 | `isEncrypted` | Detect NWENC1 magic header |
+| `decodeSecretKey` | Decode `FILESTORE_SECRET` and `MFA_SECRET` env values (hex or base64url, 32 bytes) |
 
 ## Consumers
 
 | Package | Usage |
 | ------- | ----- |
 | `@ndb/database` | Per-user data key wrap + tier-2 Postgres blobs |
-| `@ndb/core` | MFA TOTP secrets (`MFA_SECRET`) |
-| `@ndb/statements` | On-disk `.nwenc` vault files (Rust `rlib`, no NAPI) |
+| `@ndb/auth` | MFA TOTP secrets (`MFA_SECRET`) |
+| `@ndb/statements` | On-disk `.nwenc` vault files |
 
-Build: `bun run --filter @ndb/encryption build:debug`
+Pure TypeScript — no build step. Run tests with `bun run --filter @ndb/encryption test`.

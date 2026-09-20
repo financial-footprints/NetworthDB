@@ -97,10 +97,10 @@ describe("bootstrap env schema", () => {
     });
   });
 
-  test("JOBS_MAX_WORKERS defaults to 2 when unset", () => {
+  test("JOBS_MAX_WORKERS defaults to 10 when unset", () => {
     withEnv({}, () => {
       delete process.env.JOBS_MAX_WORKERS;
-      expect(parseEnv().JOBS_MAX_WORKERS).toBe(2);
+      expect(parseEnv().JOBS_MAX_WORKERS).toBe(10);
     });
   });
 
@@ -141,25 +141,23 @@ describe("bootstrap env helpers", () => {
     });
   });
 
-  test("getEnv required-in-production returns null for FILESTORE_SECRET when undefined and not production", () => {
+  test("getEnv required-in-production returns null for FILESTORE_PATH when undefined and not production", () => {
     withEnv({ ENVIRONMENT: "local" }, () => {
       const env = parseEnv();
-      delete (env as { FILESTORE_SECRET?: string }).FILESTORE_SECRET;
+      delete (env as { FILESTORE_PATH?: string }).FILESTORE_PATH;
 
-      expect(
-        getEnv(env, "FILESTORE_SECRET", z.string(), "required-in-production", false)
-      ).toBeNull();
+      expect(getEnv(env, "FILESTORE_PATH", z.string(), "required-in-production", false)).toBeNull();
     });
   });
 
-  test("getEnv required-in-production throws when FILESTORE_SECRET is undefined in production", () => {
+  test("getEnv required-in-production throws when FILESTORE_PATH is undefined in production", () => {
     withEnv({}, () => {
       const env = parseEnv();
-      delete (env as { FILESTORE_SECRET?: string }).FILESTORE_SECRET;
+      delete (env as { FILESTORE_PATH?: string }).FILESTORE_PATH;
 
       expect(() =>
-        getEnv(env, "FILESTORE_SECRET", z.string(), "required-in-production", true)
-      ).toThrow("bootstrap.config.env.production-required.not-found.FILESTORE_SECRET");
+        getEnv(env, "FILESTORE_PATH", z.string(), "required-in-production", true)
+      ).toThrow("bootstrap.config.env.production-required.not-found.FILESTORE_PATH");
     });
   });
 
@@ -268,12 +266,40 @@ describe("bootstrap config guards", () => {
     });
   });
 
-  test("advanced security config disables sensitive backups and enables pipeline trace", () => {
+  test("advanced security config disables sensitive backups and enables pipeline trace when kill switch is on", () => {
     withEnv({ DISABLE_ADVANCED_SECURITY: "true" }, () => {
       const config = loadConfig();
       expect(config.advancedSecurity.disabled).toBe(true);
       expect(config.advancedSecurity.sensitiveBackups).toBe(true);
       expect(config.advancedSecurity.pipelineTrace).toBe(true);
+    });
+  });
+
+  test("pipeline trace is enabled in local even when kill switch is off", () => {
+    withEnv({ ENVIRONMENT: "local", DISABLE_ADVANCED_SECURITY: "false" }, () => {
+      expect(loadConfig().advancedSecurity.pipelineTrace).toBe(true);
+    });
+  });
+
+  test("filestore path loads from env in production", () => {
+    withEnv({ FILESTORE_PATH: "/data/networthdb" }, () => {
+      expect(loadConfig().filestore.path).toBe("/data/networthdb");
+    });
+  });
+
+  test("filestore path defaults in local when unset", () => {
+    withEnv({ ENVIRONMENT: "local" }, () => {
+      delete process.env.FILESTORE_PATH;
+      expect(loadConfig().filestore.path).toBe("/tmp/networthdb");
+    });
+  });
+
+  test("production requires FILESTORE_PATH", () => {
+    withEnv({}, () => {
+      delete process.env.FILESTORE_PATH;
+      expect(() => loadConfig()).toThrow(
+        "bootstrap.config.env.production-required.not-found.FILESTORE_PATH"
+      );
     });
   });
 });

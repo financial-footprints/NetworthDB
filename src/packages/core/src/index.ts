@@ -1,20 +1,92 @@
 export type {
   AccountFilters,
+  AccountListItem,
   AccountRepository,
   AccountSortColumn,
+  AmountAggregate,
+  BackupArtifactRead,
+  BackupArtifactStore,
+  BackupExportFiles,
+  BackupExportRepository,
+  BackupImportFiles,
   Bank,
+  CategoryFilters,
+  CategoryRepository,
+  CategorySortColumn,
+  DashboardAccountAmount,
+  DashboardCashflow,
+  DashboardNamedAmount,
+  DashboardNetWorth,
+  DashboardRangeAggregates,
+  DashboardRepository,
+  DashboardSeriesPoint,
+  DashboardSnapshot,
   MailRules,
   MetadataResult,
-  PipelineContext,
-  Statement,
+  MonthlySummary,
+  OwnedId,
+  RangeSummary,
+  RuleAction,
+  RuleExpression,
+  RuleFilters,
+  RuleGroupFilters,
+  RuleGroupRepository,
+  RuleGroupSortColumn,
+  RuleRepository,
+  RuleSortColumn,
+  RuleTrigger,
+  SeriesBucket,
   StatementList,
   StatementPipelineResult,
   StatementRules,
-  StatementTransactions,
+  StatementWarning,
+  TagFilters,
+  TagRepository,
+  TagSortColumn,
+  TransactionCursor,
+  TransactionFilters,
+  TransactionRepository,
+  TransactionSortColumn,
+  UploadSourceFormat,
 } from "@core/domains/account";
-export { Account, AccountService } from "@core/domains/account";
-export { ACCOUNT_TYPES } from "@core/domains/account/constants";
-export type { StatementsRuntime } from "@core/domains/account/modules/statements/embedded/pipeline-context";
+export {
+  Account,
+  AccountService,
+  BACKUP_ZIP_PASSWORD_MIN_LEN,
+  BackupExport,
+  BackupService,
+  Category,
+  CategoryService,
+  DashboardService,
+  LedgerIngestService,
+  MAX_BATCH_SIZE,
+  MAX_TAGS_PER_TRANSACTION,
+  PipelineRun,
+  RULE_ACTION_TYPES,
+  RULE_TRIGGER_TYPES,
+  RuleEngineService,
+  RuleGroupService,
+  RuleService,
+  sortDashboardAccountAmounts,
+  sortDashboardNamedAmounts,
+  Tag,
+  TagService,
+  Transaction,
+  TransactionImport,
+  TransactionRule,
+  TransactionRuleGroup,
+  TransactionService,
+} from "@core/domains/account";
+export { ACCOUNTS_JSON_NAME } from "@core/domains/account/backup/constants";
+export {
+  ACCOUNT_TYPES,
+  INSTRUMENT_ACCOUNT_TYPES,
+  isSystemAccountType,
+  SYSTEM_ACCOUNT_LABELS,
+  supportsStatements,
+} from "@core/domains/account/constants";
+export { ACCOUNT_LIST_STATUSES } from "@core/domains/account/helpers";
+export type { StatementsServices } from "@core/domains/account/statements/embedded/statements-services";
 export type {
   AdvancedRecoveryContext,
   AppEnv,
@@ -43,7 +115,6 @@ export type {
   WebAuthnCredentialFilters,
   WebAuthnCredentialRepository,
   WebAuthnCredentialSortColumn,
-  WebAuthnCredentialSummary,
   WebAuthnCredentialUpdate,
   WebAuthnServiceConfig,
   WebAuthnSessionFilters,
@@ -63,7 +134,11 @@ export {
   WebAuthnCredential,
   WebAuthnSession,
 } from "@core/domains/auth";
-export type { PasswordLockout, PublicMultifactorState } from "@core/domains/auth/helpers";
+export type {
+  MultifactorProofInput,
+  PasswordLockout,
+  PublicMultifactorState,
+} from "@core/domains/auth/helpers";
 export type {
   JobFilters,
   JobLogs,
@@ -76,6 +151,7 @@ export type {
 export {
   ACTIVE_JOB_STATUSES,
   EMPTY_JOB_OUTPUT,
+  isActiveJobStatus,
   JOB_STAGES,
   JOB_STATUSES,
   Job,
@@ -84,11 +160,13 @@ export {
   JobService,
 } from "@core/domains/jobs";
 export type {
+  EmailSource,
   Source,
   Sources,
   SourcesFilters,
   SourcesRepository,
   SourcesSortColumn,
+  ThunderbirdSource,
 } from "@core/domains/sources";
 export {
   emailHasPassword,
@@ -103,10 +181,12 @@ export type {
   UserSortColumn,
   VaultPublicState,
   VaultSlotFilters,
+  VaultSlotInput,
   VaultSlotPublic,
   VaultSlotRepository,
   VaultSlotSortColumn,
   VaultSlotUpdate,
+  VaultSlotUpdateInput,
 } from "@core/domains/user";
 export {
   DisplayName,
@@ -117,7 +197,6 @@ export {
   UserService,
   VAULT_SLOT_TYPE_PASSWORD,
   VAULT_SLOT_TYPE_RECOVERY_PHRASE,
-  VAULT_SLOT_TYPE_WEBAUTHN_PRF,
   VAULT_SLOT_TYPES,
   VaultService,
   VaultSlot,
@@ -135,23 +214,29 @@ export type {
   WebAuthnRelyingParty,
   WebAuthnRpConfig,
 } from "@core/ports/auth";
+export type { CreditCardTitleLookup } from "@core/ports/credit-card-titles";
 export type { EmailSender, SendEmailRequest } from "@core/ports/email";
 export type { UserDataKeyLoader } from "@core/ports/encryption";
 export type { RateLimiter } from "@core/ports/ratelimiter";
 export type {
   StatementEngine,
-  StatementEngineJobOptions,
   StatementFileInput,
   WriteUploadInput,
 } from "@core/ports/statement-engine";
 export { CALENDAR_END_SOURCES } from "@core/shared/calendar";
 export {
+  BusinessRuleError,
   ConflictError,
   DomainError,
   EntityNotFoundError,
   ForbiddenError,
+  STALE_UPDATE_CODE,
+  staleUpdateError,
   TooManyRequestsError,
   UnauthorizedError,
   ValidationError,
 } from "@core/shared/errors/domain-error";
+export type { LogContext, Logger, LogLevel } from "@core/shared/logging/logger";
+export { parseRupeeToInteger } from "@core/shared/money";
 export { ONE, type Pagination, type Sort } from "@core/shared/query";
+export { Time } from "@core/shared/time";

@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "registry_key": "icici/amazon",
+  "bank": "icici",
+  "variant": "amazon",
+  "display_name": "Amazon Pay",
+  "default_kind": "named",
+  "cobrand": "Amazon Pay",
+  "networks": [],
+  "reward_kind": "partner_wallet",
+  "official_product_url": "https://www.icicibank.com/personal-banking/cards/credit-card/amazon-pay-credit-card",
+  "mitc_url": "https://www.icicibank.com/personal-banking/cards/credit-card/amazon-pay-credit-card/terms-conditions",
+  "researched_at": "2026-10-04",
+  "updated_at": "2026-10-04",
+  "sources": [
+    {
+      "url": "https://www.icicibank.com/personal-banking/cards/credit-card/amazon-pay-credit-card",
+      "retrieved_at": "2026-10-04",
+      "label": "Product page"
+    },
+    {
+      "url": "https://www.icicibank.com/personal-banking/cards/credit-card/amazon-pay-credit-card/terms-conditions",
+      "retrieved_at": "2026-10-04",
+      "label": "Amazon Pay MITC"
+    },
+    {
+      "url": "https://www.icicibank.com/content/dam/icicibank/india/managed-assets/docs/personal/cards/tc-for-amazon-pay-credit-card.pdf",
+      "retrieved_at": "2026-10-04",
+      "label": "Co-brand T&C PDF"
+    }
+  ],
+  "tags": ["amazon", "cashback", "lifetime_free"],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. The card is invite-only.",
+  "fees": {
+    "joining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc"
+    },
+    "annual_waiver": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc"
+    },
+    "forex": {
+      "status": "yes",
+      "summary": "Forex markup is 1.99 percent.",
+      "confidence": "verified_product_page"
+    },
+    "fuel_surcharge": {
+      "status": "conditional",
+      "summary": "ICICI passes the merchant surcharge. A 1 percent waiver applies at all petrol pumps on this card. GST on surcharge is not reversed on off-us transactions.",
+      "confidence": "verified_mitc"
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "conditional",
+      "summary": "Other spends outside Amazon earn 1 percent, credited to Amazon Pay balance. Marketing describes earnings as unlimited.",
+      "confidence": "verified_product_page"
+    },
+    "accelerated": {
+      "status": "conditional",
+      "summary": "Amazon.in earns 5 percent for Prime members and 3 percent for non-Prime members. More than 100 Amazon Pay partner merchants earn 2 percent via Login and Pay with Amazon.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "merchant",
+          "summary": "The 5 percent and 3 percent rates apply on Amazon.in and depend on Prime membership."
+        }
+      ]
+    },
+    "upi": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "redemption": {
+      "status": "yes",
+      "summary": "Earnings credit to Amazon Pay balance after the billing cycle and appear as a gift card on Amazon within about 2 working days. This is not a generic ICICI catalogue.",
+      "confidence": "verified_product_page"
+    },
+    "expiry": {
+      "status": "yes",
+      "summary": "Marketing states that Amazon Pay earnings never expire.",
+      "confidence": "verified_product_page"
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "domestic": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "international": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "railway": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "movies": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "golf": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "concierge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "accident": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "card_protect": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "milestones": {
+    "status": "NA",
+    "summary": "NA",
+    "confidence": "verified_product_page"
+  },
+  "welcome": {
+    "status": "NA",
+    "summary": "NA",
+    "confidence": "verified_mitc"
+  }
+}

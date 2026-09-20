@@ -1,0 +1,27 @@
+meta {
+  name: 18-05 Benefits Lounge Domestic
+  type: http
+  seq: 5
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/credit-cards/benefits/lounge.domestic`
+  **This test verifies:** Benefit-first list for one flatten slot path.
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/credit-cards/benefits/lounge.domestic
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.slot_id: eq lounge.domestic
+  res.body.data.items: isArray
+  res.body.data.items[0].registry_key: isDefined
+  res.body.data.items[0].status: isDefined
+}

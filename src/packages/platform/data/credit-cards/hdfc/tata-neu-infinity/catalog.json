@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "registry_key": "hdfc/tata-neu-infinity",
+  "bank": "hdfc",
+  "variant": "tata-neu-infinity",
+  "display_name": "Tata Neu Infinity",
+  "default_kind": "named",
+  "cobrand": "Tata Neu",
+  "networks": ["Visa", "RuPay"],
+  "reward_kind": "partner_wallet",
+  "official_product_url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/tata-neu-infinity-hdfc-bank-credit-card",
+  "mitc_url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/personal-mitc",
+  "researched_at": "2026-10-04",
+  "updated_at": "2026-10-04",
+  "sources": [
+    {
+      "url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/tata-neu-infinity-hdfc-bank-credit-card",
+      "retrieved_at": "2026-10-04",
+      "label": "Product page"
+    },
+    {
+      "url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/personal-mitc",
+      "retrieved_at": "2026-10-04",
+      "label": "HDFC MITC"
+    }
+  ],
+  "tags": ["tata-neu", "rewards", "upi", "lounge"],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails.",
+  "fees": {
+    "joining": {
+      "status": "yes",
+      "summary": "The joining fee is \u20b91,499 plus tax, levied on the 120th day.",
+      "confidence": "verified_product_page"
+    },
+    "annual": {
+      "status": "yes",
+      "summary": "The renewal fee is \u20b91,499 plus tax, levied on the anniversary.",
+      "confidence": "verified_product_page"
+    },
+    "annual_waiver": {
+      "status": "conditional",
+      "summary": "The fee is waived on \u20b93 lakh spend before the renewal date.",
+      "confidence": "verified_product_page"
+    },
+    "forex": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "fuel_surcharge": {
+      "status": "conditional",
+      "summary": "A 1 percent fuel surcharge waiver applies on transactions from \u20b9400 to \u20b95,000.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "cap",
+          "summary": "The waiver is capped at \u20b9500 per statement cycle."
+        }
+      ]
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "yes",
+      "summary": "Rewards are NeuCoins, transferred to Tata Neu within 7 working days of the statement. Non-UPI earn is 5 percent NeuCoins on non-EMI Tata Neu and partner Tata brands, and 1.5 percent on other non-Tata and merchant EMI spends. The MITC lists a cycle cap of 50,000 NeuCoins.",
+      "confidence": "verified_mitc"
+    },
+    "accelerated": {
+      "status": "conditional",
+      "summary": "An additional 5 percent applies on selected Tata Neu categories after NeuPass. From 15 January 2025 that extra 5 percent applies only on the primary cardholder's mobile Tata Neu account. Bill Pay, Tanishq, Cult.fit, Air India, and Tata Play are excluded from the extra 5 percent.",
+      "confidence": "verified_product_page"
+    },
+    "upi": {
+      "status": "conditional",
+      "summary": "From 1 August 2024 eligible UPI earns 0.50 percent posted by the bank plus 1 percent extra via a Tata Neu UPI ID posted to Tata Neu, up to 1.5 percent combined. All UPI NeuCoins are capped at 500 per calendar month.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "cap",
+          "summary": "UPI NeuCoins are capped at 500 per calendar month."
+        },
+        {
+          "type": "channel",
+          "summary": "The extra 1 percent requires a Tata Neu UPI ID."
+        }
+      ]
+    },
+    "redemption": {
+      "status": "yes",
+      "summary": "NeuCoins redeem on Tata Neu and Tata Pay at Bigbasket, Croma, Westside, CLiQ, IHCL, 1mg, Titan, and Tanishq via Neu, among others. Closest-expiry coins redeem first.",
+      "confidence": "verified_product_page"
+    },
+    "expiry": {
+      "status": "conditional",
+      "summary": "From 1 August 2025 NeuCoins are valid for 12 months from the end of the credit month. Pre-August 2025 non-promo balances were set to expire on 31 July 2026.",
+      "confidence": "verified_product_page"
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "conditional",
+      "summary": "Domestic lounge is voucher-based from 10 June 2025 and is spend-gated on calendar-quarter spends. International access on Visa is delivered through Priority Pass on request. International access on RuPay uses a separate visit quota. Priority Pass visits inside India are charged. Guests are always charged. Claim vouchers within 120 days and use them within 180 days. Upgraded or reissued cards count only new-card spends.",
+      "confidence": "verified_product_page"
+    },
+    "domestic": {
+      "status": "conditional",
+      "summary": "Visa and RuPay cards receive 2 lounge vouchers per quarter, with a maximum of 8 per year.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "spend",
+          "summary": "Spend at least \u20b950,000 in the calendar quarter."
+        }
+      ]
+    },
+    "international": {
+      "status": "conditional",
+      "summary": "Visa cards receive 4 Priority Pass visits per year outside India, at 1 per quarter. Extra visits cost USD 27 plus GST. RuPay cards receive 4 visits per year at 1 per quarter, with a $3.25 fee reversed on complimentary visits.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "network",
+          "summary": "Visa international lounge uses Priority Pass on request. RuPay uses a separate international quota."
+        }
+      ]
+    },
+    "railway": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "movies": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "golf": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "concierge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "yes",
+      "summary": "Emergency overseas hospitalisation cover is \u20b915 lakh.",
+      "confidence": "verified_product_page"
+    },
+    "accident": {
+      "status": "yes",
+      "summary": "Air accidental death cover is \u20b91 crore.",
+      "confidence": "verified_product_page"
+    },
+    "card_protect": {
+      "status": "yes",
+      "summary": "Lost card liability cover is \u20b99 lakh.",
+      "confidence": "verified_product_page"
+    }
+  },
+  "milestones": {
+    "status": "conditional",
+    "summary": "Lounge unlocks at \u20b950,000 calendar-quarter spend. The annual fee waiver is \u20b93 lakh. Monthly NeuCoin caps include 2,000 each for grocery, utility, telecom or cable, and insurance from 1 July 2025.",
+    "confidence": "verified_product_page"
+  },
+  "welcome": {
+    "status": "conditional",
+    "summary": "The card credits 1,499 NeuCoins as a fee reversal if the first transaction is within 30 days. Claim in the app within 60 days of that transaction. The eligible window is 180 days from the statement. Coins are valid 365 days from claim. Lifetime-free and first-year-free cards are not eligible.",
+    "confidence": "verified_product_page"
+  }
+}

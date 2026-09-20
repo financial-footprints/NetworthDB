@@ -1,6 +1,6 @@
 import type { BaseEnv } from "@api/config/hono-env";
+import { jsonMedia } from "@api/config/http";
 import { ApiRouter } from "@api/config/router";
-import { jsonMedia } from "@api/routes/auth/helpers";
 import { API, configSchema } from "@ndb/platform";
 
 const configRoutes = new ApiRouter<BaseEnv>().endpoint(
@@ -16,11 +16,10 @@ const configRoutes = new ApiRouter<BaseEnv>().endpoint(
     return c.json(
       configSchema.parse({
         data: {
-          advanced_security: {
+          advancedSecurity: {
             disabled: advancedSecurity.disabled,
           },
         },
-        errors: [],
       }),
       200
     );

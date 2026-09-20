@@ -1,0 +1,26 @@
+meta {
+  name: 17-03 List Accounts
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/accounts
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+script:post-response {
+  const body = res.getBody();
+  const bank = body.items.find((item) => item.accountType === "bank");
+  bru.setVar("ledgerAccountId", bank?.id ?? body.items[0]?.id);
+}
+
+assert {
+  res.status: eq 200
+  res.body.total: gte 1
+}

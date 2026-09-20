@@ -1,7 +1,11 @@
 import type { AuthenticationExtensionsClientInputs as SimpleWebAuthnExtensions } from "@simplewebauthn/browser";
-import type { VaultSlot } from "@web/utils/api/endpoints/auth/types";
-import { decodeBase64url, encodeBase64url, randomBytes } from "@web/utils/crypto/aes";
-import { asBufferSource } from "@web/utils/crypto/helpers";
+import type { VaultSlot } from "@web/utils/api/routes/auth/types";
+import {
+  asBufferSource,
+  decodeBase64url,
+  encodeBase64url,
+  randomBytes,
+} from "@web/utils/crypto/aes";
 import { credentialIdsMatch } from "@web/utils/crypto/vault/slots";
 import type { WebAuthnUnlockContext } from "@web/utils/crypto/vault/types";
 
@@ -11,7 +15,7 @@ type PrfExtensionResults = {
 };
 
 function filterWebAuthnPrfSlots(slots: VaultSlot[]): VaultSlot[] {
-  return slots.filter((slot) => slot.slot_type === "webauthn_prf");
+  return slots.filter((slot) => slot.slotType === "webauthn_prf");
 }
 
 export function buildPrfAuthenticationExtensions(
@@ -43,7 +47,7 @@ export function extractWebAuthnUnlockContext(
   }
 
   const slotIndex = prfSlots.findIndex((slot) =>
-    credentialIdsMatch(slot.credential_id, credentialId)
+    credentialIdsMatch(slot.credentialId, credentialId)
   );
   if (slotIndex === -1) {
     return null;
@@ -108,9 +112,9 @@ export async function authenticateVaultPrf(prfSlots: VaultSlot[]): Promise<WebAu
   }
 
   const allowCredentials = prfSlots
-    .filter((slot) => slot.credential_id)
+    .filter((slot) => slot.credentialId)
     .map((slot) => ({
-      id: asBufferSource(decodeBase64url(slot.credential_id as string)),
+      id: asBufferSource(decodeBase64url(slot.credentialId as string)),
       type: "public-key" as const,
     }));
 

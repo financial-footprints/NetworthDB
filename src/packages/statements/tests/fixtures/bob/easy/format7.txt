@@ -1,0 +1,10 @@
+Credit Card Monthly Statement
+Statement Date :   16/12/2025   |   Statement Period :   17 Nov, 2025 to 16 Dec, 2025
+Account Summary
+Opening Balance Payment/Credits Closing Balance
+Purchases/Debits
+  -1,158.30     .00     794.00     -364.30
+Transaction Details
+AJAY TRIPATHI   (PRIMARY CARD - 6736)
+10/12/2025   R00976   SWIGGY   356   40   INR   794.00   794.00   DR
+Page   1   of   4

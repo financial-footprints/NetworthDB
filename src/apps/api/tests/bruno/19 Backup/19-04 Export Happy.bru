@@ -1,0 +1,30 @@
+meta {
+  name: 19-04 Export Happy
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/backup/export
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{backupSessionToken}}
+}
+
+body:json {
+  {
+    "password": "password1"
+  }
+}
+
+script:post-response {
+  bru.setVar("backupExportJobId", res.body.data.jobId);
+}
+
+assert {
+  res.status: eq 202
+  res.body.data.jobId: isDefined
+}

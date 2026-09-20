@@ -100,6 +100,6 @@ export function webauthnAuth(): AuthContext {
 
 export function assertAal2(multifactorEnabled: boolean, authAcr: string): void {
   if (multifactorEnabled && authAcr !== AUTH_ACR_AAL2) {
-    throw new UnauthorizedError("core.auth.context.unauthorized.multifactor-step-up-required");
+    throw new UnauthorizedError("Additional authentication is required.");
   }
 }

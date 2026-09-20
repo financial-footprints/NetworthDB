@@ -1,0 +1,53 @@
+---
+description: Dot-notation keys for logger messages, infra throws, and operational console output
+globs: src/apps/**/*.{ts,tsx},src/packages/**/*.ts
+alwaysApply: false
+---
+# Structured Logging Keys
+
+Operational logs use stable dot-notation keys so operators can filter on the message string and correlate with `rayId` (`X-Request-Id`).
+
+## Logger First Argument
+
+Use `service.area.outcome` as the message string passed to `logger.debug|info|warn|error`:
+
+- Lowercase segments separated by **dots**
+- Multi-word segments use **kebab-case** (e.g. `middleware.error.internal`)
+- No underscores in keys (`client.error`, not `client_error`)
+- Put IDs, paths, status codes, and `Error` instances in the **context** object (second argument), not in the key string
+
+**Dynamic segments** are allowed when bounded (e.g. `` `bootstrap.config.env.required.not-found.${name}` ``).
+
+## Infrastructure Errors
+
+For persistence, config, and integration failures that surface as 500 responses in [`src/packages/middleware/src/http/error.ts`](../../src/packages/middleware/src/http/error.ts), start `throw new Error(...)` with the same dot key style. Optional detail after a space or in a trailing segment:
+
+```typescript
+throw new Error(`bootstrap.config.env.required.not-found.${name}`);
+```
+
+## API and Domain Errors
+
+Do **not** use dotted keys as the primary `DomainError` message shown to API clients. Use human-readable messages; use `code`, `field`, and `context` for machine identifiers.
+
+## Out of Scope
+
+- Test-only throws and Bruno generators
+- Programming invariant throws in diff helpers (`Invariant: …`)
+
+## Browser and Local Stdout
+
+- Web: [`src/apps/web/src/logging.ts`](../../src/apps/web/src/logging.ts) — use dot keys in JSON log lines; avoid bracket prefixes like `[ApiError]`
+- Migrate/seed and server startup lines use dot keys; append variable detail after a space or use a small JSON object with structured fields
+
+## Examples
+
+```typescript
+// GOOD
+logger.error("middleware.error.internal", { reason: error.message, error });
+logger.info("api.server.listening", { host, port });
+
+// BAD
+logger.warn("HTTP client error", { status });
+throw new Error("Failed to save account");
+```

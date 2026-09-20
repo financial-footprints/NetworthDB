@@ -1,11 +1,14 @@
 import type { AuthEnv } from "@api/config/hono-env";
+import { jsonBody, jsonMedia } from "@api/config/http";
 import { ApiRouter, createSessionRouter, errorResponses } from "@api/config/router";
 import banksRoutes from "@api/routes/accounts/banks/index";
 import filesRoutes from "@api/routes/accounts/files/index";
 import metadataRoutes from "@api/routes/accounts/metadata/index";
 import { serializeAccount, serializeAccountList } from "@api/routes/accounts/serializer";
 import syncRoutes from "@api/routes/accounts/statements/sync";
-import { jsonBody, jsonMedia } from "@api/routes/auth/helpers";
+import systemRoutes from "@api/routes/accounts/system";
+import transactionRoutes from "@api/routes/accounts/transactions/index";
+import type { AccountSortColumn, Sort } from "@ndb/core";
 import { sessionPrincipal } from "@ndb/middleware";
 import {
   API,
@@ -16,6 +19,26 @@ import {
   createAccountReqSchema,
   patchAccountReqSchema,
 } from "@ndb/platform";
+
+function toAccountListSort(query: {
+  sort?: "label" | "accountType" | "currentBalance";
+  direction?: "asc" | "desc";
+}): Sort<AccountSortColumn> | undefined {
+  if (!query.sort) {
+    return undefined;
+  }
+
+  const columnMap: Record<"label" | "accountType" | "currentBalance", AccountSortColumn> = {
+    label: "label",
+    accountType: "accountType",
+    currentBalance: "currentBalance",
+  };
+
+  return {
+    column: columnMap[query.sort],
+    direction: query.direction ?? "asc",
+  };
+}
 
 const accountCrudRoutes = createSessionRouter()
   .endpoint(
@@ -32,8 +55,11 @@ const accountCrudRoutes = createSessionRouter()
       const query = c.req.valid("query");
       const { user, auth } = sessionPrincipal(c.get("principal"));
       const includeSecrets = c.get("config").advancedSecurity.sensitiveBackups;
-      const result = await c.get("services").account.list(user, auth.acr, {
-        accountType: query.account_type,
+      const result = await c.get("services").accountService.list(user, auth.acr, {
+        accountType: query.accountType,
+        listStatus: query.status,
+        q: query.q,
+        sort: toAccountListSort(query),
       });
       return c.json(serializeAccountList(result.items, result.total, includeSecrets), 200);
     }
@@ -53,24 +79,14 @@ const accountCrudRoutes = createSessionRouter()
       const body = c.req.valid("json");
       const { user, auth } = sessionPrincipal(c.get("principal"));
       const includeSecrets = c.get("config").advancedSecurity.sensitiveBackups;
-      const account = await c.get("services").account.create(user, auth.acr, {
-        bank: body.bank,
-        variant: body.variant,
-        accountType: body.accountType,
-        openingDate: body.openingDate,
-        closingDate: body.closingDate,
-        accountNumber: body.accountNumber,
-        passwords: body.passwords,
-        mail: body.mail,
-        statement: body.statement,
-      });
+      const account = await c.get("services").accountService.create(user, auth.acr, body);
       return c.json(serializeAccount(account, includeSecrets), 201);
     }
   )
   .endpoint(
     {
       method: "get",
-      path: API.accounts.details,
+      path: API.accounts.get,
       request: { params: accountIdParamsSchema },
       responses: {
         200: { content: jsonMedia(accountSchema), description: "Account details" },
@@ -79,17 +95,17 @@ const accountCrudRoutes = createSessionRouter()
       },
     },
     async (c) => {
-      const { id } = c.req.valid("param");
+      const { accountId } = c.req.valid("param");
       const { user, auth } = sessionPrincipal(c.get("principal"));
       const includeSecrets = c.get("config").advancedSecurity.sensitiveBackups;
-      const account = await c.get("services").account.get(user, auth.acr, id);
+      const account = await c.get("services").accountService.get(user, auth.acr, accountId);
       return c.json(serializeAccount(account, includeSecrets), 200);
     }
   )
   .endpoint(
     {
       method: "patch",
-      path: API.accounts.details,
+      path: API.accounts.patch,
       request: {
         params: accountIdParamsSchema,
         body: jsonBody(patchAccountReqSchema),
@@ -102,28 +118,20 @@ const accountCrudRoutes = createSessionRouter()
       },
     },
     async (c) => {
-      const { id } = c.req.valid("param");
+      const { accountId } = c.req.valid("param");
       const body = c.req.valid("json");
       const { user, auth } = sessionPrincipal(c.get("principal"));
       const includeSecrets = c.get("config").advancedSecurity.sensitiveBackups;
-      const account = await c.get("services").account.update(user, auth.acr, id, {
-        bank: body.bank,
-        variant: body.variant,
-        accountType: body.accountType,
-        openingDate: body.openingDate,
-        closingDate: body.closingDate,
-        accountNumber: body.accountNumber,
-        passwords: body.passwords,
-        mail: body.mail,
-        statement: body.statement,
-      });
+      const account = await c
+        .get("services")
+        .accountService.update(user, auth.acr, accountId, body);
       return c.json(serializeAccount(account, includeSecrets), 200);
     }
   )
   .endpoint(
     {
       method: "delete",
-      path: API.accounts.details,
+      path: API.accounts.delete,
       request: { params: accountIdParamsSchema },
       responses: {
         204: { description: "Account deleted" },
@@ -132,18 +140,20 @@ const accountCrudRoutes = createSessionRouter()
       },
     },
     async (c) => {
-      const { id } = c.req.valid("param");
+      const { accountId } = c.req.valid("param");
       const { user, auth } = sessionPrincipal(c.get("principal"));
-      await c.get("services").account.delete(user, auth.acr, id);
+      await c.get("services").accountService.delete(user, auth.acr, accountId);
       return c.body(null, 204);
     }
   );
 
 const accountRoutes = new ApiRouter<AuthEnv>()
   .route("/", banksRoutes)
+  .route("/", systemRoutes)
   .route("/", metadataRoutes)
   .route("/", filesRoutes)
   .route("/", syncRoutes)
+  .route("/", transactionRoutes)
   .route("/", accountCrudRoutes);
 
 export default accountRoutes;

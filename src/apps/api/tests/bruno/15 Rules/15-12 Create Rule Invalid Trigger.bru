@@ -1,0 +1,41 @@
+meta {
+  name: 15-12 Create Rule Invalid Trigger
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/rules
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+body:json {
+  {
+    "groupId": "{{RULE_GROUP_ID}}",
+    "title": "Bad Rule",
+    "when": {
+      "op": "and",
+      "items": [
+        {
+          "type": "not_a_real_trigger",
+          "value": "x"
+        }
+      ]
+    },
+    "actions": [
+      {
+        "type": "clear_category"
+      }
+    ]
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.error: isDefined
+}

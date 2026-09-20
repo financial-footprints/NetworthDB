@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "registry_key": "onecard/default",
+  "bank": "onecard",
+  "variant": "default",
+  "display_name": "OneCard",
+  "default_kind": "sole_product",
+  "cobrand": "Federal Bank",
+  "networks": ["Visa", "RuPay"],
+  "reward_kind": "points",
+  "official_product_url": "https://www.getonecard.app/",
+  "mitc_url": "https://www.getonecard.app/legal/fed_mitc/",
+  "researched_at": "2026-10-04",
+  "updated_at": "2026-10-04",
+  "sources": [
+    {
+      "url": "https://www.getonecard.app/",
+      "retrieved_at": "2026-10-04",
+      "label": "Product page"
+    },
+    {
+      "url": "https://www.getonecard.app/legal/fed_mitc/",
+      "retrieved_at": "2026-10-04",
+      "label": "Federal Bank One MITC"
+    },
+    {
+      "url": "https://www.getonecard.app/blog/make-airport-visits-rewarding-with-around-you/",
+      "retrieved_at": "2026-10-04",
+      "label": "Airport dining FAQ"
+    }
+  ],
+  "tags": ["upi", "rewards", "lifetime_free"],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails.",
+  "fees": {
+    "joining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc"
+    },
+    "annual_waiver": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc"
+    },
+    "forex": {
+      "status": "yes",
+      "summary": "Foreign-currency transactions attract a markup of 1 percent over the network reference rate in the Federal Bank One MITC.",
+      "confidence": "verified_mitc"
+    },
+    "fuel_surcharge": {
+      "status": "conditional",
+      "summary": "A fuel surcharge waiver applies at the lower of 1 percent of the transaction or the actual surcharge excluding GST.",
+      "confidence": "verified_mitc",
+      "conditions": [
+        {
+          "type": "cap",
+          "summary": "The waiver is capped at \u20b9400 per calendar month."
+        }
+      ]
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "yes",
+      "summary": "The card earns 1 reward point per \u20b950 of eligible spend. Fractional spend below \u20b950 does not earn a point.",
+      "confidence": "verified_mitc"
+    },
+    "accelerated": {
+      "status": "conditional",
+      "summary": "From 6 January 2025 the card credits 5X points on the top two spend categories in a month when you spend in at least three categories. Incremental 5X points are credited on the 10th of the next month.",
+      "confidence": "verified_mitc",
+      "conditions": [
+        {
+          "type": "spend",
+          "summary": "Each qualifying category must have at least \u20b9750 of spend in the month."
+        },
+        {
+          "type": "cap",
+          "summary": "Education, bills, and insurance 5X points are capped so total rewards in those categories do not exceed 25,000 points."
+        }
+      ]
+    },
+    "upi": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "redemption": {
+      "status": "yes",
+      "summary": "There is no redemption fee. Points can be used to pay for transactions less than two months old and on in-app offers.",
+      "confidence": "verified_mitc"
+    },
+    "expiry": {
+      "status": "conditional",
+      "summary": "Points do not expire on a fixed calendar, but they are nullified if the card is unused for more than 365 days, if the account is in arrears or fraud, on death, on refunds, or if the account is closed.",
+      "confidence": "verified_mitc"
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page"
+    },
+    "domestic": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page"
+    },
+    "international": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page"
+    },
+    "railway": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page"
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "conditional",
+      "summary": "Around You offers 20 percent valueback, up to \u20b9500, on selected airport dining when the offer is activated in the app. This is not lounge access.",
+      "confidence": "verified_product_page"
+    },
+    "movies": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "golf": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "concierge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "accident": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "card_protect": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    }
+  },
+  "milestones": {
+    "status": "conditional",
+    "summary": "The 5X earn programme is the main spend milestone. Referral bonus points are 2,500 per activated referred user, with monthly and annual caps.",
+    "confidence": "verified_mitc",
+    "conditions": [
+      {
+        "type": "cap",
+        "summary": "Referral bonuses are capped at 25 per month and 100 per year and are not eligible for 5X."
+      }
+    ]
+  },
+  "welcome": {
+    "status": "NA",
+    "summary": "NA",
+    "confidence": "verified_mitc"
+  }
+}

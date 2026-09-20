@@ -15,9 +15,9 @@ import type { ResolvedMultifactorBearer } from "@core/domains/auth/services/mult
 import type { SessionLifecycle } from "@core/domains/auth/services/session-lifecycle";
 import type { User } from "@core/domains/user/entities/user/index";
 import type { Role } from "@core/domains/user/helpers";
-import type { VaultSlot } from "@core/domains/user/modules/vault/entities/vault-slot";
-import type { VaultService } from "@core/domains/user/modules/vault/services/vault-service";
 import type { UserRepository } from "@core/domains/user/repositories/user-repository";
+import type { VaultSlot } from "@core/domains/user/vault/entities/vault-slot";
+import type { VaultService } from "@core/domains/user/vault/services/vault-service";
 import type { PasswordHasher, TokenDigest, WebAuthnRelyingParty } from "@core/ports/auth";
 import {
   EntityNotFoundError,
@@ -93,7 +93,7 @@ export class WebAuthnService {
     const ceremony = await this._loadCeremony(sessionId, user.id, "registration");
     const verified = await this.webauthn.verifyRegistration(ceremony.options, response);
     if (!verified.verified) {
-      throw new UnauthorizedError("core.auth.webauthn.verify.unauthorized.failed");
+      throw new UnauthorizedError("WebAuthn verification failed.");
     }
 
     const credentialName = name?.trim() || "Passkey";
@@ -133,7 +133,7 @@ export class WebAuthnService {
       { column: "createdAt", direction: "asc" }
     );
     if (credentials.length === 0) {
-      throw new ValidationError("core.auth.webauthn.invalid.not-enrolled");
+      throw new ValidationError("No passkeys are enrolled.");
     }
 
     const options = await this.webauthn.createAuthenticationOptions(
@@ -153,7 +153,7 @@ export class WebAuthnService {
     const prfCredentials = this.vaultService.filterPrf(vaultSlots, credentials);
 
     if (prfCredentials.length === 0) {
-      throw new ValidationError("core.auth.webauthn.vault.invalid.no-passkey");
+      throw new ValidationError("No passkey supports vault recovery.");
     }
 
     const options = await this.webauthn.createAuthenticationOptions(
@@ -175,7 +175,7 @@ export class WebAuthnService {
       { column: "createdAt", direction: "asc" }
     );
     if (credentials.length === 0) {
-      throw new ValidationError("core.auth.webauthn.invalid.not-enrolled");
+      throw new ValidationError("No passkeys are enrolled.");
     }
 
     if (bearer.kind === "session" && user.multifactorEnabled) {
@@ -200,12 +200,12 @@ export class WebAuthnService {
       tokenHash: this.tokens.sha256Hex(multifactorToken),
     });
     if (!challenge?.isValid()) {
-      throw new UnauthorizedError("core.auth.session.unauthorized.invalid-or-expired");
+      throw new UnauthorizedError("Session is invalid or expired.");
     }
 
     const user = await this.users.findById(challenge.userId);
     if (!user || user.totp.isLocked()) {
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
 
     const ceremony = await this._loadCeremony(sessionId, user.id, "authentication");
@@ -218,7 +218,7 @@ export class WebAuthnService {
     const credential = stored.find((item) => item.credentialId.equals(credentialId));
     if (!credential) {
       await this._recordLoginFailure(user);
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
 
     try {
@@ -228,7 +228,7 @@ export class WebAuthnService {
         credential
       );
       if (!verified.verified) {
-        throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+        throw new UnauthorizedError("Invalid username or password.");
       }
 
       await this.credentials.save(
@@ -236,7 +236,7 @@ export class WebAuthnService {
       );
     } catch {
       await this._recordLoginFailure(user);
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
 
     await this.webauthnSessions.delete({ id: sessionId });
@@ -269,7 +269,7 @@ export class WebAuthnService {
     const credentialId = Buffer.from(responseId, "base64url");
     const credential = stored.find((item) => item.credentialId.equals(credentialId));
     if (!credential) {
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
 
     const verified = await this.webauthn.verifyAuthentication(
@@ -278,7 +278,7 @@ export class WebAuthnService {
       credential
     );
     if (!verified.verified) {
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
 
     await this.credentials.save(
@@ -308,17 +308,14 @@ export class WebAuthnService {
 
     const credential = await this.credentials.findById(credentialId);
     if (!credential || credential.userId !== stored.id) {
-      throw new EntityNotFoundError("core.auth.webauthn.credential.not-found", {
-        entityName: "WebAuthnCredential",
-        id: credentialId,
-      });
+      throw new EntityNotFoundError("WebAuthnCredential", credentialId);
     }
 
     const count = await this.credentials.aggregate({ userId: stored.id });
     const hasTotp = stored.totp.hasTotp();
     const roleRequired = this._requiresMfaForRole(stored.role);
     if (count <= 1 && !hasTotp && roleRequired) {
-      throw new ValidationError("core.auth.multifuser.disable.invalid.last-method");
+      throw new ValidationError("Cannot disable the last authentication method.");
     }
 
     const hasVaultSlot = await this.vaultService.canDeleteCredential(
@@ -364,12 +361,12 @@ export class WebAuthnService {
   ) {
     const session = await this.webauthnSessions.findById(sessionId);
     if (!session?.isValid() || session.userId !== userId) {
-      throw new ValidationError("core.auth.webauthn.session.invalid");
+      throw new ValidationError("WebAuthn session is invalid.");
     }
 
     const ceremony = decodeWebAuthnCeremonyBlob(session.sessionData);
     if (ceremony.kind !== expectedKind) {
-      throw new ValidationError("core.auth.webauthn.session.invalid");
+      throw new ValidationError("WebAuthn session is invalid.");
     }
 
     return ceremony;
@@ -385,19 +382,19 @@ export class WebAuthnService {
 
     if (!bearer.user.multifactorEnabled) {
       if (!input.password) {
-        throw new ValidationError("core.auth.webauthn.invalid.password-required", {
+        throw new ValidationError("Password is required.", {
           field: "password",
         });
       }
 
       const user = await this.users.findById(bearer.user.id);
       if (!user) {
-        throw new UnauthorizedError("core.auth.session.unauthorized.invalid-or-expired");
+        throw new UnauthorizedError("Session is invalid or expired.");
       }
 
       const valid = await this.password.verify(input.password, user.passwordHash);
       if (!valid) {
-        throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+        throw new UnauthorizedError("Invalid username or password.");
       }
 
       return;
@@ -408,14 +405,14 @@ export class WebAuthnService {
 
   private _requireRp(): void {
     if (!this.webauthn.isConfigured()) {
-      throw new ValidationError("core.auth.webauthn.invalid.not-configured");
+      throw new ValidationError("Passkeys are not configured.");
     }
   }
 
   private async _get(userId: string): Promise<User> {
     const user = await this.users.findById(userId);
     if (!user) {
-      throw new UnauthorizedError("core.auth.session.unauthorized.invalid-or-expired");
+      throw new UnauthorizedError("Session is invalid or expired.");
     }
 
     return user;

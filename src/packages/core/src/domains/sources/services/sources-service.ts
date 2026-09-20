@@ -30,7 +30,7 @@ export class SourcesService {
     const record = await this.sources.findById(user.id);
     const settings = record?.toPayload() ?? emptySources();
     if (settings.sources.length === 0) {
-      throw new ValidationError("core.sources.invalid.none");
+      throw new ValidationError("At least one source is required.");
     }
 
     return settings;

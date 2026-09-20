@@ -7,7 +7,7 @@ import type {
 import { loadAuthConfig } from "@bootstrap/config/auth";
 import { parseEnv } from "@bootstrap/config/env";
 import type { AppEnv } from "@ndb/core";
-import { parseStorageEnv } from "@ndb/database";
+import { parseDbEnv, parseStorageEnv } from "@ndb/database/env";
 import type { LogLevel } from "@ndb/logger";
 import { API_PREFIX } from "@ndb/platform";
 
@@ -52,6 +52,10 @@ export type ApiConfig = {
   encryption: EncryptionConfig;
   jobs: JobsConfig;
   advancedSecurity: AdvancedSecurityConfig;
+  filestore: {
+    path: string;
+  };
+  backupMaxUploadBytes: number;
 };
 
 export function loadConfig(): ApiConfig {
@@ -65,14 +69,20 @@ export function loadConfig(): ApiConfig {
     );
   }
 
-  if (
-    environment === "production" &&
-    (env.POSTGRES_SSLMODE.length === 0 || env.POSTGRES_SSLMODE === "disable")
-  ) {
-    throw new Error("bootstrap.config.env.postgres-sslmode.cannot-be-disable.when-production");
+  if (environment === "production") {
+    const db = parseDbEnv();
+    if (db.ssl === false) {
+      throw new Error("bootstrap.config.env.postgres-sslmode.cannot-be-disable.when-production");
+    }
   }
 
   const auth = loadAuthConfig(env, environment);
+
+  const filestorePath =
+    env.FILESTORE_PATH && env.FILESTORE_PATH.length > 0 ? env.FILESTORE_PATH : "/tmp/networthdb";
+  if (environment === "production" && (!env.FILESTORE_PATH || env.FILESTORE_PATH.length === 0)) {
+    throw new Error("bootstrap.config.env.production-required.not-found.FILESTORE_PATH");
+  }
 
   return {
     ttl: {
@@ -104,8 +114,12 @@ export function loadConfig(): ApiConfig {
     },
     advancedSecurity: {
       disabled: env.DISABLE_ADVANCED_SECURITY,
-      pipelineTrace: env.DISABLE_ADVANCED_SECURITY,
+      pipelineTrace: env.DISABLE_ADVANCED_SECURITY || environment === "local",
       sensitiveBackups: env.DISABLE_ADVANCED_SECURITY,
     },
+    filestore: {
+      path: filestorePath,
+    },
+    backupMaxUploadBytes: env.BACKUP_MAX_UPLOAD_BYTES,
   };
 }

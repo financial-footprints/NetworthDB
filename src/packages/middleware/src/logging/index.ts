@@ -1,1 +1,1 @@
-export { requestLog } from "@middleware/logging/log";
+export { logMiddleware } from "@middleware/logging/log";

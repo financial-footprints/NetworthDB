@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "registry_key": "federal/default",
+  "bank": "federal",
+  "variant": "default",
+  "display_name": "Federal Credit Card",
+  "default_kind": "parser_fallback",
+  "networks": [],
+  "reward_kind": "unknown",
+  "official_product_url": "https://www.federalbank.co.in/credit-cards",
+  "mitc_url": "https://www.federalbank.co.in/documents/10180/81307/Service+charges+and+Fees-+Credit+Card.pdf",
+  "researched_at": "2026-09-20",
+  "updated_at": "2026-09-20",
+  "sources": [
+    {
+      "url": "https://www.federalbank.co.in/credit-cards",
+      "retrieved_at": "2026-09-20",
+      "label": "Product list"
+    },
+    {
+      "url": "https://www.federalbank.co.in/documents/10180/81307/Service+charges+and+Fees-+Credit+Card.pdf",
+      "retrieved_at": "2026-09-20",
+      "label": "Charges table"
+    }
+  ],
+  "tags": [],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. Do not attribute Signet, Edge, Imperio, or Celesta to this parser fallback.",
+  "fees": {
+    "joining": {
+      "status": "depends",
+      "summary": "The Signet, Imperio, and Celesta MITC lists annual and joining-style fees of ₹750, ₹1,500, and ₹3,000. Edge cobrand is a separate MITC. Do not pick Signet's ₹750 here.",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "depends",
+      "summary": "Annual fees are product-specific: Signet ₹750, Imperio ₹1,500, Celesta ₹3,000, Edge ₹999.",
+      "confidence": "verified_mitc"
+    },
+    "annual_waiver": {
+      "status": "depends",
+      "summary": "Next-year waiver spends excluding cash are Signet ₹75,000, Imperio ₹1,50,000, Celesta ₹3,00,000, and Edge ₹1.2 lakh previous year.",
+      "confidence": "verified_mitc"
+    },
+    "forex": {
+      "status": "depends",
+      "summary": "Forex markup is 3.5 percent on Signet and Imperio, 2 percent on Celesta, and 2 percent on Edge.",
+      "confidence": "verified_mitc"
+    },
+    "fuel_surcharge": {
+      "status": "depends",
+      "summary": "The family MITC lists a 1 percent fuel waiver on ₹400 to ₹5,000, max ₹150 per month, for Imperio and Celesta only. Signet is not in that row. Edge has a separate fuel waiver up to ₹4,000 per cycle.",
+      "confidence": "verified_mitc"
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "depends",
+      "summary": "MITC earn is 1 reward point per ₹200 on Signet, per ₹150 on Imperio, and per ₹100 on Celesta. Edge earns Jewels, not this pool. There are no points on cash, fuel, or e-wallet load in the family MITC.",
+      "confidence": "verified_mitc"
+    },
+    "accelerated": {
+      "status": "depends",
+      "summary": "Accelerated earn is product-specific.",
+      "confidence": "unknown"
+    },
+    "upi": {
+      "status": "depends",
+      "summary": "UPI earn is product-specific.",
+      "confidence": "unknown"
+    },
+    "redemption": {
+      "status": "conditional",
+      "summary": "The family MITC lists a ₹99 reward redemption fee. Catalogue options still depend on the product.",
+      "confidence": "verified_mitc"
+    },
+    "expiry": {
+      "status": "depends",
+      "summary": "Point expiry is product-specific. Edge Jewels do not expire except after 365 days unused plus clawback cases.",
+      "confidence": "unknown"
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "depends",
+      "summary": "Product listing copy markets lounge on Signet. Quota and spend gates are unknown in the MITC PDF. Do not assign lounge to this fallback. Priority Pass, if used on a named SKU, is a delivery mechanism.",
+      "confidence": "unknown"
+    },
+    "domestic": {
+      "status": "depends",
+      "summary": "Domestic lounge is product-specific.",
+      "confidence": "unknown"
+    },
+    "international": {
+      "status": "depends",
+      "summary": "International lounge is product-specific.",
+      "confidence": "unknown"
+    },
+    "railway": {
+      "status": "depends",
+      "summary": "Railway lounge is product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "depends",
+      "summary": "Dining benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "movies": {
+      "status": "depends",
+      "summary": "Movie benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "golf": {
+      "status": "depends",
+      "summary": "Golf is described on Celesta, not on this fallback.",
+      "confidence": "unknown"
+    },
+    "concierge": {
+      "status": "depends",
+      "summary": "Concierge benefits are product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "depends",
+      "summary": "Travel insurance is product-specific.",
+      "confidence": "unknown"
+    },
+    "accident": {
+      "status": "depends",
+      "summary": "Accident cover is product-specific.",
+      "confidence": "unknown"
+    },
+    "card_protect": {
+      "status": "depends",
+      "summary": "Card protection cover is product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "milestones": {
+    "status": "depends",
+    "summary": "Spend milestones are product-specific.",
+    "confidence": "unknown"
+  },
+  "welcome": {
+    "status": "depends",
+    "summary": "Welcome benefits are product-specific.",
+    "confidence": "unknown"
+  }
+}

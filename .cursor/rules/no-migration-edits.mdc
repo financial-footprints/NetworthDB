@@ -3,25 +3,26 @@ description: Drizzle migrations folder is read-only for AI; developer generates 
 globs: src/packages/database/drizzle/migrations/**
 alwaysApply: false
 ---
-# Drizzle migrations (read-only)
+# Drizzle Migrations (Read-Only for AI)
 
-Never create, modify, or delete files under `src/packages/database/drizzle/migrations/` or `migrations/meta/`.
+Never create, modify, or delete files under `src/packages/database/drizzle/migrations/` or `migrations/meta/`. That folder is **read-only** for AI assistants.
 
 ## Workflow
 
-1. Edit schema in `src/packages/database/src/schema/` (see `postgres-column-alignment` rule).
-2. Edit repositories in `src/packages/database/src/repositories/` if needed.
-3. Tell the developer to review schema changes.
-4. Developer runs `make migrations name=<name>` and `bun run --filter @ndb/database migrate`.
+1. Edit Drizzle schema in `src/packages/database/src/schema/` (follow the `postgres-column-alignment` rule for column order).
+2. Implement repository changes in `src/packages/database/src/repositories/` if needed.
+3. **Stop** — tell the developer to review the schema changes.
+4. The developer runs `make migrations name=<name>` and `bun run --filter @ndb/database migrate` manually.
 
 ## Allowed
 
-- Read migration files to understand current DB shape.
-- Edit `src/packages/database/drizzle/seed/local.template.sql`.
+- **Read** migration files to understand the current database shape.
+- Edit `src/packages/database/drizzle/seed/` (local seed is separate from migrations).
 
-## Not allowed
+## Not Allowed
 
-- Hand-written SQL under `drizzle/migrations/`
-- Running migration generators (`make migrations`, drizzle-kit, etc.)
+- Writing SQL under `src/packages/database/drizzle/migrations/`
+- Updating `src/packages/database/drizzle/migrations/meta/` (`_journal.json`, snapshots)
+- Running `make migrations`, `drizzle-kit generate`, or equivalent generation commands from the agent
 
 See [docs/DEV.md](../../docs/DEV.md) for setup commands.

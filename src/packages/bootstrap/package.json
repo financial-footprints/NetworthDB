@@ -13,12 +13,14 @@
   "dependencies": {
     "@ndb/auth": "workspace:*",
     "@ndb/core": "workspace:*",
+    "@ndb/encryption": "workspace:*",
     "@ndb/statements": "workspace:*",
     "@ndb/database": "workspace:*",
     "@ndb/logger": "workspace:*",
     "@ndb/notifications": "workspace:*",
     "@ndb/platform": "workspace:*",
-    "zod": "^3.24.2"
+    "@zip.js/zip.js": "^2.7.70",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/node": "^26.4.1",

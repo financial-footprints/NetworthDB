@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "registry_key": "hdfc/regalia",
+  "bank": "hdfc",
+  "variant": "regalia",
+  "display_name": "Regalia",
+  "default_kind": "named",
+  "networks": ["Mastercard"],
+  "reward_kind": "points",
+  "official_product_url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/regalia",
+  "mitc_url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/personal-mitc",
+  "researched_at": "2026-10-04",
+  "updated_at": "2026-10-04",
+  "sources": [
+    {
+      "url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/regalia",
+      "retrieved_at": "2026-10-04",
+      "label": "Product page"
+    },
+    {
+      "url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/personal-mitc",
+      "retrieved_at": "2026-10-04",
+      "label": "HDFC MITC"
+    }
+  ],
+  "tags": ["lounge", "rewards", "travel"],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. New sourcing has stopped; existing holders keep benefits. Product-page changes are flagged from 15 May 2026.",
+  "fees": {
+    "joining": {
+      "status": "yes",
+      "summary": "The joining fee is \u20b92,500 plus tax.",
+      "confidence": "verified_product_page"
+    },
+    "annual": {
+      "status": "yes",
+      "summary": "The renewal fee is \u20b92,500 plus tax.",
+      "confidence": "verified_product_page"
+    },
+    "annual_waiver": {
+      "status": "conditional",
+      "summary": "The MITC family table lists a waiver around \u20b93 lakh of annual spend for Regalia. Confirm the personal MITC PDF for the exact waiver row.",
+      "confidence": "verified_mitc"
+    },
+    "forex": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "fuel_surcharge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "yes",
+      "summary": "The card earns 4 reward points per \u20b9200 of retail spend. The MITC lists a cycle cap of 50,000 reward points.",
+      "confidence": "verified_mitc"
+    },
+    "accelerated": {
+      "status": "conditional",
+      "summary": "SmartBuy advertises up to 5X on flights, hotels, and vouchers. PayZapp extra cashback on utilities is marketing copy.",
+      "confidence": "verified_product_page"
+    },
+    "upi": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "redemption": {
+      "status": "yes",
+      "summary": "Points redeem through SmartBuy and NetBanking. Typical HDFC grids on related Gold pages use about \u20b90.50 on flights and hotels, about \u20b90.35 on catalogue, and about \u20b90.20 on statement credit. Confirm whether Regalia uses the same grid.",
+      "confidence": "unknown"
+    },
+    "expiry": {
+      "status": "conditional",
+      "summary": "Reward points are typically valid for two years. Unused accounts for more than 365 days nullify points.",
+      "confidence": "verified_mitc"
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "conditional",
+      "summary": "Domestic lounge is voucher-based. International access is delivered through Priority Pass. Priority Pass visits inside India are charged. Spend in a calendar quarter gates domestic vouchers. Completing at least four transactions unlocks international Priority Pass visits.",
+      "confidence": "verified_product_page"
+    },
+    "domestic": {
+      "status": "conditional",
+      "summary": "Primary and add-on holders can receive up to 2 lounge vouchers per quarter.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "spend",
+          "summary": "Spend at least \u20b91 lakh in the calendar quarter."
+        }
+      ]
+    },
+    "international": {
+      "status": "conditional",
+      "summary": "Primary and add-on holders can receive up to 6 complimentary visits per year outside India through Priority Pass.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "other",
+          "summary": "Priority Pass is issued after at least 4 transactions."
+        },
+        {
+          "type": "other",
+          "summary": "Priority Pass visits inside India are charged at USD 27 plus tax per the MITC."
+        }
+      ]
+    },
+    "railway": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "conditional",
+      "summary": "Partner restaurants via Swiggy Dineout and Good Food Trail advertise up to 7.5 percent off.",
+      "confidence": "verified_product_page"
+    },
+    "movies": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "golf": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "concierge": {
+      "status": "yes",
+      "summary": "A 24x7 concierge is listed at 1860 425 1188 and regalia.support@smartbuyoffers.co.",
+      "confidence": "verified_product_page"
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "yes",
+      "summary": "Emergency overseas hospitalisation cover is \u20b915 lakh.",
+      "confidence": "verified_product_page"
+    },
+    "accident": {
+      "status": "yes",
+      "summary": "Accidental air death cover is \u20b91 crore, described as USD 125,000.",
+      "confidence": "verified_product_page"
+    },
+    "card_protect": {
+      "status": "yes",
+      "summary": "Lost card and credit liability cover is \u20b99 lakh.",
+      "confidence": "verified_product_page"
+    }
+  },
+  "milestones": {
+    "status": "conditional",
+    "summary": "Domestic lounge unlocks at \u20b91 lakh spend per calendar quarter. Fee waiver is around \u20b93 lakh per year in the MITC family table. SmartBuy dashboard memberships are mentioned without voucher amounts on the current page. Boarding Edge is not listed on Regalia.",
+    "confidence": "verified_product_page"
+  },
+  "welcome": {
+    "status": "NA",
+    "summary": "NA",
+    "confidence": "verified_product_page"
+  }
+}

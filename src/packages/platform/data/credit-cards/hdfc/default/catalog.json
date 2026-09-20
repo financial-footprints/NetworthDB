@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "registry_key": "hdfc/default",
+  "bank": "hdfc",
+  "variant": "default",
+  "display_name": "HDFC Bank Credit Card",
+  "default_kind": "parser_fallback",
+  "networks": [],
+  "reward_kind": "unknown",
+  "official_product_url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards",
+  "mitc_url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/personal-mitc",
+  "researched_at": "2026-09-20",
+  "updated_at": "2026-09-20",
+  "sources": [
+    {
+      "url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/personal-mitc",
+      "retrieved_at": "2026-09-20",
+      "label": "Personal MITC hub"
+    },
+    {
+      "url": "https://v.hdfcbank.com/content/dam/hdfc-aem-microsites/biz-cards/mitc.pdf",
+      "retrieved_at": "2026-09-20",
+      "label": "Business MITC PDF"
+    }
+  ],
+  "tags": [],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. Do not attribute a named SKU to this parser fallback.",
+  "fees": {
+    "joining": {
+      "status": "depends",
+      "summary": "Joining fees are listed per product in the HDFC MITC. Do not apply Regalia, Swiggy, or Tata Neu fees to this fallback.",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "depends",
+      "summary": "Annual fees are product-specific. Examples in MITC extracts include ₹2,500 for some Regalia-family cards and other amounts for cobrands.",
+      "confidence": "verified_mitc"
+    },
+    "annual_waiver": {
+      "status": "depends",
+      "summary": "Waiver spend thresholds are product-specific. Regalia-family examples in MITC extracts include about ₹3 lakh for Regalia and ₹4 lakh for Regalia Gold.",
+      "confidence": "verified_mitc"
+    },
+    "forex": {
+      "status": "depends",
+      "summary": "Forex markup is often 2% or 3.5% depending on the card. Confirm the MITC row for the user's SKU.",
+      "confidence": "verified_mitc"
+    },
+    "fuel_surcharge": {
+      "status": "depends",
+      "summary": "Fuel surcharge waivers in MITC extracts often cover ₹400 to ₹5,000 with a ₹500 cycle cap. Diners Privilege is listed as not applicable. Do not assume a waiver here.",
+      "confidence": "verified_mitc"
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "depends",
+      "summary": "Earn currency and rates are product-specific. NeuCoins, Swiggy cashback, and HDFC reward points must not be mixed onto this fallback.",
+      "confidence": "unknown"
+    },
+    "accelerated": {
+      "status": "depends",
+      "summary": "Accelerated brands, SmartBuy multiples, and cobrand rates are product-specific.",
+      "confidence": "unknown"
+    },
+    "upi": {
+      "status": "depends",
+      "summary": "UPI earn is product-specific. Tata Neu Infinity UPI caps must not be assumed here.",
+      "confidence": "unknown"
+    },
+    "redemption": {
+      "status": "depends",
+      "summary": "Redemption is through SmartBuy, statement credit, or partner wallets depending on the SKU. A ₹99 redemption fee appears on some products.",
+      "confidence": "unknown"
+    },
+    "expiry": {
+      "status": "conditional",
+      "summary": "HDFC reward points typically remain valid for two years. Points are nullified if the card is unused for more than 365 days. NeuCoins on Tata Neu cards follow a different validity rule.",
+      "confidence": "verified_mitc"
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "depends",
+      "summary": "Lounge access, including Priority Pass as a delivery mechanism and spend gates, is product-specific. Priority Pass visits inside India are charged at USD 27 plus tax on several cards that include Priority Pass.",
+      "confidence": "verified_mitc"
+    },
+    "domestic": {
+      "status": "depends",
+      "summary": "Domestic lounge quotas and spend gates are product-specific.",
+      "confidence": "unknown"
+    },
+    "international": {
+      "status": "depends",
+      "summary": "International lounge quotas are product-specific.",
+      "confidence": "unknown"
+    },
+    "railway": {
+      "status": "depends",
+      "summary": "Railway lounge access is product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "depends",
+      "summary": "Dining programmes are product-specific.",
+      "confidence": "unknown"
+    },
+    "movies": {
+      "status": "depends",
+      "summary": "Movie offers are product-specific.",
+      "confidence": "unknown"
+    },
+    "golf": {
+      "status": "depends",
+      "summary": "Golf benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "concierge": {
+      "status": "depends",
+      "summary": "Concierge lines are product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "depends",
+      "summary": "Travel insurance is product-specific.",
+      "confidence": "unknown"
+    },
+    "accident": {
+      "status": "depends",
+      "summary": "Accident cover is product-specific.",
+      "confidence": "unknown"
+    },
+    "card_protect": {
+      "status": "depends",
+      "summary": "Lost-card and credit-liability covers are product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "milestones": {
+    "status": "depends",
+    "summary": "Spend milestones, including lounge unlocks and voucher grids, are product-specific. Statement-cycle reward caps of 50,000 points apply to several named HDFC cards in the MITC.",
+    "confidence": "verified_mitc"
+  },
+  "welcome": {
+    "status": "depends",
+    "summary": "Welcome benefits are product-specific.",
+    "confidence": "unknown"
+  }
+}

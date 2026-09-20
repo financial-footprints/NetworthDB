@@ -16,17 +16,17 @@ auth:bearer {
 
 body:json {
   {
-    "recovery_code": "{{recoveryCode}}"
+    "recoveryCode": "{{recoveryCode}}"
   }
 }
 
 script:post-response {
-  bru.setVar("recoverySessionToken", res.body.data.session_token);
+  bru.setVar("recoverySessionToken", res.body.data.sessionToken);
 }
 
 assert {
   res.status: eq 200
-  res.body.data.session_token: isDefined
+  res.body.data.sessionToken: isDefined
 }
 
 docs {

@@ -20,9 +20,10 @@
       "@platform/*": ["./src/packages/platform/src/*"],
       "@statements/*": ["./src/packages/statements/src/*"],
       "@web/*": ["./src/apps/web/src/*"],
+      "@mcp/*": ["./src/packages/mcp/src/*"],
+      "@copilot/*": ["./src/apps/copilot/src/*"],
       // Tests
       "@tests/api/*": ["./src/apps/api/tests/*"],
-      "@tests/core/*": ["./src/packages/core/tests/*"],
       "@tests/auth/*": ["./src/packages/auth/tests/*"],
       "@tests/bootstrap/*": ["./src/packages/bootstrap/tests/*"],
       "@tests/database/*": ["./src/packages/database/tests/*"],
@@ -32,7 +33,8 @@
       "@tests/notifications/*": ["./src/packages/notifications/tests/*"],
       "@tests/platform/*": ["./src/packages/platform/tests/*"],
       "@tests/statements/*": ["./src/packages/statements/tests/*"],
-      "@tests/web/*": ["./src/apps/web/tests/*"]
+      "@tests/web/*": ["./src/apps/web/tests/*"],
+      "@tests/mcp/*": ["./src/packages/mcp/tests/*"]
     }
   },
   "include": ["src/**/*.ts"]

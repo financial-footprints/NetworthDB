@@ -1,0 +1,22 @@
+meta {
+  name: 00-01 Config
+  type: http
+  seq: 2
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/config`
+
+  **This test verifies:** Public config exposes advanced security flags.
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/config
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.advancedSecurity: isDefined
+}

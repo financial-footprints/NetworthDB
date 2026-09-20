@@ -4,23 +4,28 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./config": "./src/config.ts",
+    "./env": "./src/env/index.ts",
+    "./readonly": "./src/operations/readonly/executor.ts"
   },
   "scripts": {
     "generate": "bash scripts/migration.sh",
-    "migrate": "bun --env-file ../../apps/api/.env drizzle-kit migrate && bun --env-file ../../apps/api/.env scripts/seed.ts",
-    "migrate:test": "bun --env-file ../../apps/api/.env.tests drizzle-kit migrate && bun --env-file ../../apps/api/.env.tests scripts/seed.ts",
+    "migrate": "bun --env-file ../../apps/api/.env drizzle-kit migrate && bun --env-file ../../apps/api/.env src/operations/migrate/role.ts && bun --env-file ../../apps/api/.env scripts/seed.ts",
+    "migrate:test": "bun --env-file ../../apps/api/.env.tests drizzle-kit migrate && bun --env-file ../../apps/api/.env.tests src/operations/migrate/role.ts && bun --env-file ../../apps/api/.env.tests scripts/seed.ts",
     "seed": "bun --env-file ../../apps/api/.env scripts/seed.ts",
+    "backfill:credit-card-labels": "bun --env-file ../../apps/api/.env scripts/backfill-credit-card-labels.ts",
     "test": "bun test --env-file ../../apps/api/.env.tests ./tests",
     "type-check": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@ndb/auth": "workspace:*",
     "@ndb/core": "workspace:*",
+    "@ndb/platform": "workspace:*",
     "@ndb/encryption": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "pg": "^8.16.0",
-    "zod": "^3.24.2"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/bun": "^1.4.1",

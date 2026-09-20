@@ -23,8 +23,18 @@ auth:bearer {
   token: {{statementSessionToken}}
 }
 
+script:post-response {
+  const warnings = res.getBody().data?.output?.warnings ?? [];
+  const extractFailed = warnings.find((row) => row.kind === "extract.failed");
+  if (!extractFailed) {
+    throw new Error("expected extract.failed warning");
+  }
+  if (!String(extractFailed.message).includes("profile directory not found")) {
+    throw new Error(`unexpected extract message: ${extractFailed.message}`);
+  }
+}
+
 assert {
   res.status: eq 200
-  res.body.data.status: eq failed
-  res.body.data.error: contains profile directory not found
+  res.body.data.status: eq completed
 }

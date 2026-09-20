@@ -1,13 +1,13 @@
-import { PageBoundary } from "@web/components/layout/PageBoundary";
-import { PageHeading } from "@web/components/layout/PageHeading";
-import { PageTitle } from "@web/components/layout/PageTitle";
-import { JobsList } from "@web/routes/jobs/JobsList";
-import Loading from "@web/routes/jobs/loading";
-import { invalidateJobs } from "@web/utils/api/endpoints/jobs";
+import { PageBoundary } from "@web/components/Layout/PageBoundary";
+import { PageHeading } from "@web/components/Layout/PageHeading";
+import { PageTitle } from "@web/components/Layout/PageTitle";
+import { List } from "@web/routes/jobs/_parts/Content";
+import Loading from "@web/routes/jobs/suspense";
+import { invalidateJobs } from "@web/utils/api/routes/jobs";
 
 export default function JobsPage() {
   return (
-    <div className="mx-auto w-full max-w-4xl">
+    <div className="mx-auto w-full max-w-6xl">
       <PageTitle page="Jobs" />
       <PageHeading
         title="Jobs"
@@ -21,7 +21,7 @@ export default function JobsPage() {
         }}
         loadingFallback={<Loading />}
       >
-        <JobsList />
+        <List />
       </PageBoundary>
     </div>
   );

@@ -1,0 +1,19 @@
+meta {
+  name: 17-13 Delete Transaction
+  type: http
+  seq: 13
+}
+
+delete {
+  url: {{BASE_URL}}/api/v1/accounts/{{ledgerAccountId}}/transactions/{{ledgerTransactionId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+assert {
+  res.status: eq 204
+}

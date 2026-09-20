@@ -1,6 +1,7 @@
 import type { AuthEnv } from "@api/config/hono-env";
+import { jsonBody, jsonMedia, optionalJsonBody } from "@api/config/http";
 import { ApiRouter, errorResponses } from "@api/config/router";
-import { jsonBody, jsonMedia, optionalJsonBody, withRateLimit } from "@api/routes/auth/helpers";
+import { withRateLimit } from "@api/routes/auth/helpers";
 import { serializeSessionTokens, serializeWebauthnSession } from "@api/routes/auth/serializer";
 import { mfaPrincipal, requireMultifactor, requireMultifactorChallenge } from "@ndb/middleware";
 import {
@@ -35,7 +36,7 @@ mfaChallengeRoutes
     async (c) => {
       const { totp, recoveryCode } = c.req.valid("json");
       const { multifactor } = mfaPrincipal(c.get("principal"));
-      const services = c.get("services").auth;
+      const services = c.get("services").authService;
 
       if (totp !== undefined) {
         const pair = await services.multifactor.verifyTotp(multifactor.token, totp);
@@ -70,7 +71,11 @@ mfaChallengeRoutes
       const { multifactor } = mfaPrincipal(c.get("principal"));
       const pair = await c
         .get("services")
-        .auth.webauthn.loginFinish(multifactor.token, body.sessionId, body.response as never);
+        .authService.webauthn.loginFinish(
+          multifactor.token,
+          body.sessionId,
+          body.response as never
+        );
       return c.json(serializeSessionTokens(pair), 200);
     }
   );
@@ -97,7 +102,9 @@ mfaLoginBeginRoutes.endpoint(
   async (c) => {
     const input = c.req.valid("json");
     const { multifactor } = mfaPrincipal(c.get("principal"));
-    const result = await c.get("services").auth.webauthn.loginBegin(multifactor.bearer, input);
+    const result = await c
+      .get("services")
+      .authService.webauthn.loginBegin(multifactor.bearer, input);
     return c.json(serializeWebauthnSession(result.sessionId, result.options), 200);
   }
 );

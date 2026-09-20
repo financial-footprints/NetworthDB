@@ -1,17 +1,19 @@
-import { createTotpEngine } from "@auth/totp";
+import { createTotpEngine } from "@auth/crypto/totp";
 import { User, Username } from "@core/domains/user/entities/user/index";
 import type { Role } from "@core/domains/user/helpers";
 import { createPasswordHasher } from "@ndb/auth";
 import type { AuthService, PasswordLockout, VaultService } from "@ndb/core";
 import { isSessionTokenPair } from "@ndb/core";
-import type { InMemoryMultifactorChallengeRepository } from "@tests/auth/fakes/in-memory-multifactor-challenge-repository";
-import type { InMemoryRecoveryChallengeRepository } from "@tests/auth/fakes/in-memory-recovery-challenge-repository";
-import type { InMemoryRecoveryCodeRepository } from "@tests/auth/fakes/in-memory-recovery-code-repository";
-import type { InMemorySessionRepository } from "@tests/auth/fakes/in-memory-session-repository";
-import type { InMemoryUserRepository } from "@tests/auth/fakes/in-memory-user-repository";
-import type { InMemoryVaultSlotRepository } from "@tests/auth/fakes/in-memory-vault-slot-repository";
-import type { InMemoryWebAuthnCredentialRepository } from "@tests/auth/fakes/in-memory-webauthn-credential-repository";
-import type { InMemoryWebAuthnSessionRepository } from "@tests/auth/fakes/in-memory-webauthn-session-repository";
+import type {
+  InMemoryMultifactorChallengeRepository,
+  InMemoryRecoveryChallengeRepository,
+  InMemoryRecoveryCodeRepository,
+  InMemorySessionRepository,
+  InMemoryUserRepository,
+  InMemoryVaultSlotRepository,
+  InMemoryWebAuthnCredentialRepository,
+  InMemoryWebAuthnSessionRepository,
+} from "@ndb/core/tests";
 import { CapturingEmailSender } from "@tests/auth/helpers/email";
 import { getByUsername } from "@tests/auth/helpers/helpers";
 import { createTestSecurityStores } from "@tests/auth/helpers/security";

@@ -1,6 +1,6 @@
 import type { AuthEnv } from "@api/config/hono-env";
+import { jsonBody, jsonMedia, optionalJsonBody } from "@api/config/http";
 import { ApiRouter, errorResponses } from "@api/config/router";
-import { jsonBody, jsonMedia, optionalJsonBody } from "@api/routes/auth/helpers";
 import {
   serializeSessionTokens,
   serializeTotpBegin,
@@ -36,7 +36,9 @@ enrollmentRoutes
     async (c) => {
       const input = c.req.valid("json");
       const { multifactor } = mfaPrincipal(c.get("principal"));
-      const result = await c.get("services").auth.multifactor.beginTotp(multifactor.bearer, input);
+      const result = await c
+        .get("services")
+        .authService.multifactor.beginTotp(multifactor.bearer, input);
       return c.json(serializeTotpBegin(result.uri), 200);
     }
   )
@@ -54,7 +56,9 @@ enrollmentRoutes
     async (c) => {
       const { code } = c.req.valid("json");
       const { multifactor } = mfaPrincipal(c.get("principal"));
-      const pair = await c.get("services").auth.multifactor.confirmTotp(multifactor.bearer, code);
+      const pair = await c
+        .get("services")
+        .authService.multifactor.confirmTotp(multifactor.bearer, code);
       return c.json(serializeSessionTokens(pair), 200);
     }
   )
@@ -75,7 +79,9 @@ enrollmentRoutes
     async (c) => {
       const input = c.req.valid("json");
       const { multifactor } = mfaPrincipal(c.get("principal"));
-      const result = await c.get("services").auth.webauthn.registerBegin(multifactor.bearer, input);
+      const result = await c
+        .get("services")
+        .authService.webauthn.registerBegin(multifactor.bearer, input);
       return c.json(serializeWebauthnSession(result.sessionId, result.options), 200);
     }
   )
@@ -98,7 +104,7 @@ enrollmentRoutes
       const { multifactor } = mfaPrincipal(c.get("principal"));
       const pair = await c
         .get("services")
-        .auth.webauthn.registerFinish(
+        .authService.webauthn.registerFinish(
           multifactor.bearer,
           body.sessionId,
           body.response as never,

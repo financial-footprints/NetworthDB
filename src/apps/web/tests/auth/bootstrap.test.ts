@@ -1,26 +1,27 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
-import { runAuthBootstrap } from "@web/context/Auth/helpers";
-import type { MeResponse, TokenPair } from "@web/utils/api/endpoints/auth/types";
+import { runAuthBootstrap } from "@web/contexts/Auth/bootstrap";
+import type { MeResponse, TokenPair } from "@web/utils/api/routes/auth/types";
 import { ApiError } from "@web/utils/api/types";
 
 const tokens: TokenPair = {
-  session_token: "access",
-  refresh_token: "refresh",
-  expires_in: 3600,
+  sessionToken: "access",
+  refreshToken: "refresh",
+  expiresIn: 3600,
 };
 
 const me: MeResponse = {
   id: "user-1",
   username: "alice",
   role: "user",
-  multifactor_enabled: false,
-  multifactor_methods: [],
-  recovery_codes_enabled: false,
-  recovery_email_enabled: false,
-  recovery_email_set_at: null,
-  vault_initialized: false,
-  vault_slots: [],
-  display_name: null,
+  multifactorEnabled: false,
+  multifactorMethods: [],
+  recoveryCodesEnabled: false,
+  recoveryEmailEnabled: false,
+  recoveryEmailSetAt: null,
+  vaultInitialized: false,
+  vaultSlots: [],
+  displayName: null,
+  clientSettings: null,
 };
 
 function createCallbacks(overrides: Partial<Parameters<typeof runAuthBootstrap>[0]> = {}) {

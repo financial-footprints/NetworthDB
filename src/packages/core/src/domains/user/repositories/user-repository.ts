@@ -12,6 +12,8 @@ export type UserFilters = {
 
 export type UserSortColumn = "username" | "createdAt";
 
+export type ClientSettingsRecord = Record<string, unknown> | null;
+
 export interface UserRepository {
   create(user: User): Promise<User>;
   findById(id: string): Promise<User | null>;
@@ -23,4 +25,6 @@ export interface UserRepository {
   save(user: User): Promise<User>;
   aggregate(filters: UserFilters): Promise<number>;
   delete(filters: UserFilters): Promise<void>;
+  getClientSettings(userId: string): Promise<ClientSettingsRecord>;
+  saveClientSettings(userId: string, value: ClientSettingsRecord): Promise<ClientSettingsRecord>;
 }

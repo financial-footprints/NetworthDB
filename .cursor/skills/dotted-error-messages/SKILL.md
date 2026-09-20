@@ -1,155 +1,68 @@
 ---
 name: dotted-error-messages
 description: >-
-  Enforces dotted-notation error message keys for backend throws
-  (package.area.function.status.message). Use when adding or migrating
-  throw new Error / DomainError throws, or when the user mentions dotted
-  notation, error keys, or error message conventions.
+  Enforces dotted-notation keys for logger calls and infrastructure throws;
+  forbids dotted keys as DomainError client messages. Use when adding logs,
+  bootstrap/database config throws, or when reviewing error message style.
 disable-model-invocation: true
 ---
 
-# Dotted Error Messages
+# Dotted Operational Keys (Not DomainError Messages)
 
-All backend `throw new …Error(…)` and intentional `throw new Error(…)` messages must use **dotted notation** keys — not plain English sentences.
+NetworthDB uses **two channels** for errors (see the `structured-logging` Cursor rule):
 
-## Convention
+| Channel | Message style | Examples |
+| ------- | ------------- | -------- |
+| `logger.*` and infra `throw new Error(...)` | Dotted keys | `middleware.error.internal`, `bootstrap.config.env.required.not-found.${name}` |
+| `DomainError` subclasses | Human-readable | `"Username is already taken"`, `"Account not found"` |
+
+Do **not** use dotted keys as `DomainError` (or Zod validation hook) client messages. Those strings must be human-readable English.
+
+## Logger Keys
 
 ```text
-<package/app>.<area-of-operation>.<function>.<status>.<message>
+<app-or-package>.<area>.<outcome>
 ```
 
-- Segments are **flexible** in count and naming; include enough context to identify origin and cause.
-- Use **lowercase kebab-case** for static segments.
-- Append **dynamic values** as a final segment (e.g. `` `bootstrap.config.env.required.not-found.${name}` ``).
-- Minimum: at least **two** dot-separated segments; prefer **4–5** when possible.
+- Lowercase segments, kebab-case within segments
+- IDs and `Error` instances go in the **context** object, not the key string
 
-## Package Prefix Map
+```typescript
+logger.error("middleware.error.internal", { reason: error.message, error });
+logger.info("api.server.listening", { host, port });
+```
+
+## Infrastructure Throws
+
+Bootstrap, database invariants, and config parsing:
+
+```typescript
+throw new Error(`bootstrap.config.env.required.not-found.${name}`);
+throw new Error("database.auth.session.create.error.no-row");
+```
+
+## Domain Throws (Human Messages)
+
+```typescript
+throw new ValidationError("Opening date is required.", { field: "openingDate" });
+throw new EntityNotFoundError("Account not found.", { entityName: "Account", id });
+throw new ConflictError("Username is already taken.", { username });
+```
+
+Use `code`, `field`, and `context` on `DomainError` for machines — not dotted prose in `message`.
+
+## Package Prefix Hints (Infra Only)
 
 | Source path | Prefix |
-|-------------|--------|
-| `src/packages/core/` | `core` |
+| ----------- | ------ |
+| `src/packages/bootstrap/` | `bootstrap` |
 | `src/packages/database/` | `database` |
 | `src/packages/middleware/` | `middleware` |
-| `src/packages/bootstrap/` | `bootstrap` |
 | `src/packages/notifications/` | `notifications` |
 | `src/packages/auth/` | `auth` |
 | `src/apps/api/` | `api` |
 
-**Segment hints:**
-
-- **area** — domain or module: `auth`, `user`, `vault`, `config`, `email`, …
-- **function** — operation: `create`, `login`, `verify`, `save`, `parse-body`, …
-- **status** — outcome bucket: `error`, `invalid`, `not-found`, `conflict`, `unauthorized`, `forbidden`, …
-- **message** — specific slug (kebab-case, no spaces)
-
-## Error Class Selection
-
-Match existing types in `src/packages/core/src/shared/errors/domain-error.ts`:
-
-| Class | When to use |
-|-------|-------------|
-| `ValidationError` | Bad input, parse failures, missing fields |
-| `UnauthorizedError` | Auth failures, missing/invalid tokens |
-| `ForbiddenError` | Authenticated but not permitted |
-| `ConflictError` | State conflicts (duplicate username, vault already initialized) |
-| `EntityNotFoundError` | Missing entity — see special case below |
-| `TooManyRequestsError` | Rate limits |
-| `DomainError` | Generic domain failures (e.g. SMTP send failure) |
-| Plain `Error` | Startup/config failures in bootstrap (established pattern) |
-
-Put structured data in `context` / constructor options — **not** in the message string.
-
-## Canonical Examples (from This Repo)
-
-```typescript
-// database — ConflictError
-throw new ConflictError("database.auth.session.create.error.hash-collision");
-
-// database — plain Error (internal invariant)
-throw new Error("database.auth.recovery-code.create.error.no-row");
-
-// middleware — UnauthorizedError
-throw new UnauthorizedError("middleware.auth.mfa.bearer-not-challenge");
-
-// notifications — DomainError
-throw new DomainError("notifications.email.smtp.send.error", {
-  code: "internal",
-  cause: cause instanceof Error ? cause : undefined,
-});
-
-// bootstrap — plain Error (config)
-throw new Error(`bootstrap.config.env.required.not-found.${name}`);
-```
-
-## Naming Recipe
-
-When writing or converting a throw:
-
-1. Identify **package prefix** from file path.
-2. Identify **area** (`auth`, `user`, `vault`, `config.env`, …).
-3. Identify **function/operation** (`create`, `login`, `parse-body`, …).
-4. Pick **status** segment (`error`, `invalid`, `unauthorized`, `conflict`, `not-found`, …).
-5. Pick **message slug** (kebab-case, no spaces).
-6. Keep `context` / `{ field, value }` options unchanged.
-
-```typescript
-// Before
-throw new UnauthorizedError("invalid credentials");
-
-// After (in auth-service login)
-throw new UnauthorizedError("core.auth.login.unauthorized.invalid-credentials");
-```
-
-## EntityNotFoundError
-
-The constructor currently builds `` `${entityName} with id '${id}' not found` ``. For migration, prefer extending usage so the **message** is a dotted key while context retains entity metadata. Options:
-
-- Refactor constructor to accept a dotted message + context (if changing the class).
-- Or use `DomainError` with `code: "not_found"` and a dotted message until the constructor is updated.
-
-Target pattern:
-
-```typescript
-// Preferred once constructor supports it
-throw new EntityNotFoundError("core.user.find.not-found", { entityName: "User", id: userIdRaw });
-```
-
-## API Impact
-
-`src/packages/middleware/src/http/error.ts` returns `error.message` in JSON for most domain errors. Migrating messages **changes API responses** (e.g. `"username taken"` → `"core.user.register.conflict.username-taken"`). Update tests that assert on `error.message` or response JSON in the same pass.
-
-## Exceptions (No Dotted Key Required)
-
-- **Future frontend** user-facing copy (explicit exception).
-- **Test-only helpers** (`"database client was not created"`, `"missing secret"`) — lower priority; migrate optionally.
-- **Re-thrown errors** (`throw error`) — leave unchanged.
-- **Default empty constructors** — replace defaults with explicit dotted keys when touching the file (e.g. `UnauthorizedError()` → `UnauthorizedError("middleware.auth.bearer.missing")`).
-
-## Migration Workflow
-
-1. Inventory: `rg 'throw new \w+Error\(' src/` and `rg 'throw new Error\(' src/`
-2. Skip or defer test helpers / fakes if desired.
-3. Migrate **layer order**:
-   - Bootstrap + database repos (partial coverage exists)
-   - Core domain services + embedded helpers
-   - Middleware + API routes
-   - Tests (assertions last)
-4. Convert file-by-file using the naming recipe; preserve `context` fields.
-5. Update unit + Bruno tests that match on message strings.
-6. User runs tests (workspace hook blocks agent execution).
-
-## Validation Grep
-
-```bash
-cd /path/to/NetworthDB
-
-# DomainError throws with spaces or no dots (likely need migration)
-rg 'throw new (Validation|Unauthorized|Conflict|Forbidden|TooManyRequests)Error\("[^"]*[^.a-z0-9-][^"]*"\)' src/
-
-# Messages with no dot at all (heuristic)
-rg 'throw new \w+Error\("(?!.*\.).*"\)' src/
-```
-
 ## Additional Resources
 
-- Extended before/after conversions: [examples.md](examples.md)
+- Infra examples: [examples.md](examples.md)
+- Full rule: [`.cursor/rules/structured-logging.mdc`](../../rules/structured-logging.mdc)

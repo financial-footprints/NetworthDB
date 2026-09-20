@@ -1,4 +1,5 @@
 import type { AuthEnv } from "@api/config/hono-env";
+import { jsonMedia } from "@api/config/http";
 import {
   createRoute,
   OpenAPIHono,
@@ -6,38 +7,37 @@ import {
   type RouteHandler,
   type RouteHook,
 } from "@hono/zod-openapi";
-import { requireSession } from "@ndb/middleware";
 import type { ApiErrorResponse } from "@ndb/platform";
 import { apiErrorResponseSchema } from "@ndb/platform";
 import type { Env, MiddlewareHandler, Schema } from "hono";
 
-const errorBody = {
-  content: { "application/json": { schema: apiErrorResponseSchema } },
-} as const;
+const errorBodyContent = jsonMedia(apiErrorResponseSchema);
 
 export const errorResponses = {
-  400: { ...errorBody, description: "Bad Request" },
-  401: { ...errorBody, description: "Unauthorized" },
-  403: { ...errorBody, description: "Forbidden" },
-  404: { ...errorBody, description: "Not Found" },
-  409: { ...errorBody, description: "Conflict" },
-  429: { ...errorBody, description: "Too Many Requests" },
-  500: { ...errorBody, description: "Internal Server Error" },
-} as const;
+  400: { content: errorBodyContent, description: "Bad Request" },
+  401: { content: errorBodyContent, description: "Unauthorized" },
+  403: { content: errorBodyContent, description: "Forbidden" },
+  404: { content: errorBodyContent, description: "Not Found" },
+  409: { content: errorBodyContent, description: "Conflict" },
+  422: { content: errorBodyContent, description: "Unprocessable Entity" },
+  429: { content: errorBodyContent, description: "Too Many Requests" },
+  500: { content: errorBodyContent, description: "Internal Server Error" },
+};
 
 function createApiValidationHook<E extends Env>(): RouteHook<RouteConfig, E> {
-  return (result, c) => {
+  return (result, c): Response | undefined => {
     if (!result.success) {
       const issue = result.error.issues[0];
       const field = issue.path.length > 0 ? issue.path.join(".") : undefined;
       const response: ApiErrorResponse = {
         error: issue.message,
-        code: "invalid_input",
+        code: "VALIDATION_ERROR",
         ...(field ? { field } : {}),
       };
 
       return c.json(response, 400);
     }
+    return undefined;
   };
 }
 
@@ -57,16 +57,8 @@ export class ApiRouter<
     return this;
   }
 
-  endpoint<R extends RouteConfig>(
-    routeConfig: R,
-    handler: RouteHandler<R, E>,
-    hook?: RouteHook<R, E>
-  ): this;
-  endpoint(
-    routeConfig: RouteConfig,
-    handler: RouteHandler<RouteConfig, E>,
-    hook?: RouteHook<RouteConfig, E>
-  ): this {
+  endpoint<R extends RouteConfig>(routeConfig: R, handler: RouteHandler<R, E>): this;
+  endpoint(routeConfig: RouteConfig, handler: RouteHandler<RouteConfig, E>): this {
     const perRouteMiddleware = routeConfig.middleware
       ? Array.isArray(routeConfig.middleware)
         ? routeConfig.middleware
@@ -74,20 +66,16 @@ export class ApiRouter<
       : [];
     const middleware = [...this.routeMiddleware, ...perRouteMiddleware];
 
-    this.openapi(
-      createRoute({
-        ...routeConfig,
-        middleware: middleware as RouteConfig["middleware"],
-      }),
-      handler,
-      hook as Parameters<OpenAPIHono<E, S, BasePath>["openapi"]>[2]
-    );
+    const route = createRoute({
+      ...routeConfig,
+      middleware: middleware as RouteConfig["middleware"],
+    });
+
+    this.openapi(route, handler);
     return this;
   }
 }
 
 export function createSessionRouter(): ApiRouter<AuthEnv> {
-  const router = new ApiRouter<AuthEnv>();
-  router.applyRouteMiddleware(requireSession<AuthEnv>());
-  return router;
+  return new ApiRouter<AuthEnv>();
 }

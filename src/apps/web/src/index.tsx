@@ -1,10 +1,9 @@
-import { AppErrorView } from "@web/components/error/AppErrorView";
-import { ErrorBoundary } from "@web/components/error/ErrorBoundary";
-import { NotFoundView } from "@web/components/error/NotFoundView";
-import { AppLayout } from "@web/components/layout/AppLayout";
-import { LoginLayout } from "@web/components/layout/LoginLayout";
-import { RequireAuth } from "@web/components/layout/RequireAuth";
-import { AuthProvider } from "@web/context/Auth/AuthContext";
+import { ErrorBoundary } from "@web/components/Error/ErrorBoundary";
+import { View } from "@web/components/Error/View";
+import { AppLayout } from "@web/components/Layout/AppLayout";
+import { LoginLayout } from "@web/components/Layout/LoginLayout";
+import { RequireAuth } from "@web/components/Layout/RequireAuth";
+import { AuthProvider } from "@web/contexts/Auth/Context";
 import { routes as allRoutes } from "@web/router/routes";
 import React from "react";
 import ReactDOM from "react-dom/client";
@@ -21,7 +20,15 @@ if (rootEl) {
   root.render(
     <React.StrictMode>
       <BrowserRouter>
-        <ErrorBoundary fallback={(props) => <AppErrorView {...props} />}>
+        <ErrorBoundary
+          fallback={(props) => (
+            <View
+              fullPage
+              message={props.error.message || "An unexpected error occurred."}
+              onRetry={props.reset}
+            />
+          )}
+        >
           <AuthProvider>
             <Routes>
               <Route element={<LoginLayout />}>
@@ -44,7 +51,6 @@ if (rootEl) {
                       element={route.element}
                     />
                   ))}
-                  <Route path="*" element={<NotFoundView />} />
                 </Route>
               </Route>
             </Routes>

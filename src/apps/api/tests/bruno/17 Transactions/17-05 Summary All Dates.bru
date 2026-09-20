@@ -1,0 +1,26 @@
+meta {
+  name: 17-05 Summary All Dates
+  type: http
+  seq: 5
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/accounts/:accountId/transactions/summary` (no `from` / `to`)
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/accounts/{{ledgerAccountId}}/transactions/summary
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.from: isDefined
+  res.body.data.to: isDefined
+  res.body.data.txnCount: gte 0
+}

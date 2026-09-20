@@ -1,0 +1,31 @@
+meta {
+  name: 05-09 Delete Recovery Codes
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{BASE_URL}}/api/v1/users/me/codes
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{recoverySessionToken}}
+}
+
+body:json {
+  {
+    "recoveryCode": "{{recoveryCodeForDelete}}"
+  }
+}
+
+assert {
+  res.status: eq 204
+}
+
+docs {
+  **Endpoint:** `DELETE /api/v1/users/me/codes`
+
+  **This test verifies:** AAL2 user can clear generated recovery codes with MFA proof (unused recovery code; avoids TOTP replay in the same window as 05-06).
+}

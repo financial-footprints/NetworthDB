@@ -1,14 +1,16 @@
 import { createAuthCrypto } from "@ndb/auth";
 import type { PasswordLockout, WebAuthnRpConfig } from "@ndb/core";
 import { AuthService, VaultService } from "@ndb/core";
-import { InMemoryMultifactorChallengeRepository } from "@tests/auth/fakes/in-memory-multifactor-challenge-repository";
-import { InMemoryRecoveryChallengeRepository } from "@tests/auth/fakes/in-memory-recovery-challenge-repository";
-import { InMemoryRecoveryCodeRepository } from "@tests/auth/fakes/in-memory-recovery-code-repository";
-import { InMemorySessionRepository } from "@tests/auth/fakes/in-memory-session-repository";
-import { InMemoryUserRepository } from "@tests/auth/fakes/in-memory-user-repository";
-import { InMemoryVaultSlotRepository } from "@tests/auth/fakes/in-memory-vault-slot-repository";
-import { InMemoryWebAuthnCredentialRepository } from "@tests/auth/fakes/in-memory-webauthn-credential-repository";
-import { InMemoryWebAuthnSessionRepository } from "@tests/auth/fakes/in-memory-webauthn-session-repository";
+import {
+  InMemoryMultifactorChallengeRepository,
+  InMemoryRecoveryChallengeRepository,
+  InMemoryRecoveryCodeRepository,
+  InMemorySessionRepository,
+  InMemoryUserRepository,
+  InMemoryVaultSlotRepository,
+  InMemoryWebAuthnCredentialRepository,
+  InMemoryWebAuthnSessionRepository,
+} from "@ndb/core/tests";
 import {
   TEST_AUTH_SERVICE_CONFIG,
   TEST_MFA_SECRET,

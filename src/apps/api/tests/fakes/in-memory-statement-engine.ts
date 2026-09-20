@@ -1,11 +1,10 @@
 import { existsSync } from "node:fs";
-import type { PipelineContext } from "@core/domains/account/modules/statements/embedded/pipeline-context";
+import type { PipelineRun } from "@core/domains/account/statements/entities/pipeline";
 import type {
   Bank,
   StatementList,
   StatementPipelineResult,
-  StatementTransactions,
-} from "@core/domains/account/modules/statements/types";
+} from "@core/domains/account/statements/types";
 import type {
   StatementEngine,
   StatementFileInput,
@@ -47,12 +46,23 @@ function fileKey(input: {
   return `${input.userId}:${input.accountType}:${input.accountId}:${input.statementDate ?? ""}:${input.format}`;
 }
 
-function pipelineFailure(reason: string): StatementPipelineResult {
-  return { ok: false, reason, warnings: [] };
+function pipelineSuccess(
+  warnings: StatementPipelineResult["warnings"] = []
+): StatementPipelineResult {
+  return { ok: true, warnings };
 }
 
-function pipelineSuccess(): StatementPipelineResult {
-  return { ok: true, warnings: [] };
+function extractFailedWarning(
+  message: string,
+  accountId: string
+): StatementPipelineResult["warnings"][number] {
+  return {
+    kind: "extract.failed",
+    message,
+    account: accountId,
+    sourceFile: "",
+    textContains: [],
+  };
 }
 
 export function createInMemoryStatementEngine(): StatementEngine {
@@ -63,10 +73,11 @@ export function createInMemoryStatementEngine(): StatementEngine {
       return [ONECARD_BANK];
     },
 
-    async processPipeline(context: PipelineContext, _dataKey, _options) {
-      for (const source of context.sources) {
+    async processPipeline(pipeline: PipelineRun, _shouldCancel) {
+      for (const source of pipeline.sources) {
         if (source.type === "thunderbird" && !existsSync(source.profile)) {
-          return pipelineFailure(`profile directory not found: ${source.profile}`);
+          const message = `profile directory not found: ${source.profile}`;
+          return pipelineSuccess([extractFailedWarning(message, pipeline.account.id)]);
         }
       }
 
@@ -81,10 +92,6 @@ export function createInMemoryStatementEngine(): StatementEngine {
       return emptyStatementList();
     },
 
-    readStatementTransactions() {
-      return [] as StatementTransactions[];
-    },
-
     readStatementFile(input: StatementFileInput) {
       const key = fileKey(input);
       return files.get(key) ?? null;
@@ -95,7 +102,7 @@ export function createInMemoryStatementEngine(): StatementEngine {
       return files.has(key);
     },
 
-    writeUpload(input: WriteUploadInput) {
+    async writeUpload(input: WriteUploadInput) {
       const key = fileKey({
         userId: input.userId,
         accountType: input.accountType,
@@ -109,6 +116,10 @@ export function createInMemoryStatementEngine(): StatementEngine {
 
     async deleteAccountStatements() {
       return pipelineSuccess();
+    },
+
+    setTransactionsSync() {
+      // no-op for API unit tests
     },
   };
 }

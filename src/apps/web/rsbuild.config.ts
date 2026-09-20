@@ -8,7 +8,7 @@ export default defineConfig({
   source: {
     alias: {
       "@web": path.join(import.meta.dirname, "src"),
-      "@platform": path.join(import.meta.dirname, "../../packages/platform/src"),
+      "@core": path.join(import.meta.dirname, "../../packages/core/src"),
     },
   },
   html: {

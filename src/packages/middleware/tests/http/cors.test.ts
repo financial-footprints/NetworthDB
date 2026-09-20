@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { cors } from "@middleware/http/cors";
+import { corsMiddleware } from "@middleware/http/cors";
 import { Hono } from "hono";
 
-function createApp(options: Parameters<typeof cors>[0] = {}) {
+function createApp(options: Parameters<typeof corsMiddleware>[0] = {}) {
   const app = new Hono();
-  app.use("*", cors(options));
+  app.use("*", corsMiddleware(options));
   app.get("/ping", (c) => c.json({ ok: true }));
   return app;
 }
@@ -14,7 +14,7 @@ async function originHeader(app: Hono, origin: string): Promise<string | null> {
   return res.headers.get("Access-Control-Allow-Origin");
 }
 
-describe("cors", () => {
+describe("corsMiddleware", () => {
   test("allows an exact listed origin", async () => {
     const app = createApp({ allowedOrigins: ["https://app.example.com"] });
 

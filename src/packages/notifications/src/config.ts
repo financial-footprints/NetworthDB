@@ -1,5 +1,4 @@
-import type { AppEnv, EmailSender } from "@ndb/core";
-import type { Logger } from "@ndb/logger";
+import type { EmailSender, Logger } from "@ndb/core";
 import { createConsoleEmailSender } from "@notifications/email/console";
 import { createSmtpEmailSender } from "@notifications/email/smtp";
 
@@ -17,7 +16,6 @@ export type EmailDeliveryConfig = {
 };
 
 export type EmailSenderEnv = {
-  environment: AppEnv;
   email: EmailDeliveryConfig;
   logger: Logger;
 };

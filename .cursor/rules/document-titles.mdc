@@ -1,0 +1,40 @@
+---
+description: Browser tab titles use "NetworthDB | <Action>" in apps/web
+globs: src/apps/web/**/*.{ts,tsx}
+alwaysApply: false
+---
+# Document Titles (Web)
+
+Browser tab titles use **`NetworthDB | <Action>`**. This rule applies to the web app document title — not Markdown headings (see the `markdown-title-case` rule).
+
+## Component
+
+Use [`PageTitle`](../../src/apps/web/src/components/Layout/PageTitle.tsx) from `@web/components/Layout/PageTitle`:
+
+```tsx
+import { PageTitle } from "@web/components/Layout/PageTitle";
+
+export default function CategoriesPage() {
+  return (
+    <>
+      <PageTitle page="Categories" />
+      {/* ... */}
+    </>
+  );
+}
+```
+
+- **Home / default** — `<PageTitle />` or omit `page` for plain `NetworthDB` (match `html.title` in Rsbuild config when set).
+- **Action** — short page label in **title case** (`Sign In`, `Page Not Found`, `Account Details`).
+
+```tsx
+// BAD
+<PageTitle page="sign in" />
+<PageTitle page="account recovery" />
+
+// GOOD
+<PageTitle page="Sign In" />
+<PageTitle page="Account Recovery" />
+```
+
+For routes that cannot use React Helmet-style components, set `document.title` to the same pattern: `NetworthDB | Sign In`.

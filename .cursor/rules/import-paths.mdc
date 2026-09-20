@@ -3,18 +3,59 @@ description: Alias-based imports; no relative ./ or ../ paths in source
 globs: **/*.{ts,tsx,js,mjs}
 alwaysApply: false
 ---
-# Import paths
+# Import Paths
 
-No `./` or `../` in TypeScript imports or re-exports.
+Never use `./` or `../` in imports or re-exports.
 
-| Scope | Pattern |
-| ----- | ------- |
-| Cross-package | `@ndb/<package>` |
-| Within-package | `@<short-name>/<path-from-src>` — e.g. `@core/`, `@api/`, `@bootstrap/` |
-| API test helpers | `@tests/api/<path>` |
+**Cross-package** — use the published name: `@ndb/<package>` (e.g. `@ndb/core`, `@ndb/database/env`, `@ndb/database/readonly`).
 
-New packages: add within-package alias to root `tsconfig.json` `paths` only; child tsconfigs `extends` root. Cross-package imports use workspace `dependencies` and `package.json` `exports`, not tsconfig paths.
+**Within-package** — use `@<short-name>/<path-from-src>`:
 
-## No inline import type queries
+`@api/`, `@web/`, `@core/`, `@database/`, `@platform/`, `@middleware/`, `@logger/`, `@bootstrap/`, `@auth/`, `@mcp/`, `@copilot/`, `@statements/`, `@encryption/`, `@notifications/`
 
-Import types at the top — not `import("module").Type` in type positions. For Bun partial mocks, use a top-level namespace import and `importOriginal`.
+**API test helpers** — `@tests/api/<path>` as defined in root `tsconfig.json`. Core fakes: `@ndb/core/tests` (or `@core/tests` inside `@ndb/core`).
+
+```typescript
+// BAD
+import { createApp } from "./index";
+import { Account } from "../../packages/core/src/domains/account";
+
+// GOOD
+import { createApp } from "@api/index";
+import { Account } from "@ndb/core";
+import { fetchAccounts } from "@web/utils/api/routes/accounts";
+```
+
+New packages: add `"@<short-name>/*": ["src/packages/<name>/src/*"]` or `"src/apps/<name>/src/*"` to **root** `tsconfig.json` `paths`, plus a bundler alias for `src/apps/web` when the web app needs it. Cross-package imports use workspace `dependencies` and `package.json` `exports`, not tsconfig paths alone.
+
+## No Inline Import Type Queries
+
+Do not use TypeScript import type queries (`import("module").Type` or `typeof import("module")`) in type positions. Import types at the top of the file instead.
+
+Indexed access on imported types (e.g. `AccountListItem["label"]`) is fine.
+
+```typescript
+// BAD
+type Context = {
+  account: import("@ndb/platform").AccountApi;
+};
+
+// GOOD
+import type { AccountApi } from "@ndb/platform";
+
+type Context = {
+  account: AccountApi;
+};
+```
+
+For Bun partial mocks, use a top-level type namespace import:
+
+```typescript
+// BAD
+const actual = await importOriginal<typeof import("@ndb/database")>();
+
+// GOOD
+import type * as Database from "@ndb/database";
+
+const actual = await importOriginal<Database>();
+```

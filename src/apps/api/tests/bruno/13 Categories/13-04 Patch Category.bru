@@ -1,0 +1,26 @@
+meta {
+  name: 13-04 Patch Category
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{BASE_URL}}/api/v1/categories/{{categoryId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+body:json {
+  {
+    "name": "Bruno Category Renamed"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.name: eq Bruno Category Renamed
+}

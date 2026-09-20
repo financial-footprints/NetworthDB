@@ -1,13 +1,13 @@
-import { asBufferSource } from "@web/utils/crypto/helpers";
+import { asBufferSource } from "@web/utils/crypto/aes";
 import { argon2id } from "hash-wasm";
 
 /** KiB; aligned with NetworthDB login Argon2id memory. */
-export const ARGON2_MEMORY_KIB = 65_536;
+const ARGON2_MEMORY_KIB = 65_536;
 /** Time cost; aligned with NetworthDB login Argon2id. */
-export const ARGON2_ITERATIONS = 2;
+const ARGON2_ITERATIONS = 2;
 /** Single lane — better for browser main-thread unlock. */
-export const ARGON2_PARALLELISM = 1;
-export const ARGON2_HASH_LENGTH = 32;
+const ARGON2_PARALLELISM = 1;
+const ARGON2_HASH_LENGTH = 32;
 
 /**
  * Derive a vault Key Encryption Key from the login password and per-user salt.

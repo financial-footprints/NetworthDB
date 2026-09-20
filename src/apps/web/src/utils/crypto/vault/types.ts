@@ -1,8 +1,9 @@
-import type { VaultSlot } from "@web/utils/api/endpoints/auth/types";
+import type { VaultSlot } from "@web/utils/api/routes/auth/types";
 
 export type { VaultSlot };
-export type VaultSlotMaterial = Pick<VaultSlot, "slot_type" | "salt" | "wrap_blob">;
-export type VaultSlotType = VaultSlot["slot_type"];
+
+export type VaultSlotMaterial = Pick<VaultSlot, "slotType" | "salt" | "wrapBlob">;
+export type VaultSlotType = VaultSlot["slotType"];
 
 export type UnlockMethod = "password" | "recovery_phrase" | "webauthn";
 

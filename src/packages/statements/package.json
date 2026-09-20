@@ -4,35 +4,28 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./exports.d.ts",
-      "default": "./index.ts"
-    }
-  },
-  "files": [
-    "index.ts",
-    "native.d.ts",
-    "exports.d.ts",
-    "src/**/*.ts",
-    "*.node"
-  ],
-  "napi": {
-    "binaryName": "statements",
-    "constEnum": false
+    ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "napi build --release --no-js --dts native.d.ts --manifest-path ../../../Cargo.toml --package statements",
-    "build:debug": "napi build --no-js --dts native.d.ts --manifest-path ../../../Cargo.toml --package statements",
-    "dev": "bash ../../scripts/napi.sh",
     "test": "bun test ./tests",
-    "type-check": "tsc --noEmit -p tsconfig.json"
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "validate:card-catalog": "bun ./src/cards/validate.ts"
   },
   "dependencies": {
-    "@ndb/core": "workspace:*"
+    "@ndb/core": "workspace:*",
+    "@ndb/encryption": "workspace:*",
+    "@ndb/logger": "workspace:*",
+    "@ndb/platform": "workspace:*",
+    "@zip.js/zip.js": "^2.7.70",
+    "date-fns": "^4.1.0",
+    "imapflow": "^1.0.193",
+    "mailparser": "^3.7.2",
+    "pdfjs-dist": "^4.10.38"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.4.1",
+    "@types/mailparser": "^3.4.5",
     "@types/node": "^26.4.1",
+    "pdf-lib": "^1.17.1",
     "typescript": "~7.0.2"
   }
 }

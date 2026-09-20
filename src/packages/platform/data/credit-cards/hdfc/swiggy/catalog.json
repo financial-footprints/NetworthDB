@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "registry_key": "hdfc/swiggy",
+  "bank": "hdfc",
+  "variant": "swiggy",
+  "display_name": "Swiggy",
+  "default_kind": "named",
+  "cobrand": "Swiggy",
+  "networks": [],
+  "reward_kind": "cashback",
+  "official_product_url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/swiggy-hdfc-bank-credit-card",
+  "mitc_url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/personal-mitc",
+  "researched_at": "2026-10-04",
+  "updated_at": "2026-10-04",
+  "sources": [
+    {
+      "url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/swiggy-hdfc-bank-credit-card",
+      "retrieved_at": "2026-10-04",
+      "label": "Product page"
+    },
+    {
+      "url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/personal-mitc",
+      "retrieved_at": "2026-10-04",
+      "label": "HDFC MITC"
+    }
+  ],
+  "tags": ["swiggy", "cashback", "dining"],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. HDFC is moving holders to Swiggy Ornge or Swiggy BLCK. Current card benefits continue until migrated.",
+  "fees": {
+    "joining": {
+      "status": "yes",
+      "summary": "The joining fee is \u20b9500 plus tax. Prefer the product page figure if a MITC OCR table shows a different number.",
+      "confidence": "verified_product_page"
+    },
+    "annual": {
+      "status": "yes",
+      "summary": "The renewal fee is \u20b9500 plus tax.",
+      "confidence": "verified_product_page"
+    },
+    "annual_waiver": {
+      "status": "conditional",
+      "summary": "The fee is waived on \u20b92 lakh of anniversary spends, excluding cash-on-call, balance transfer, and cash withdrawal.",
+      "confidence": "verified_product_page"
+    },
+    "forex": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "fuel_surcharge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "conditional",
+      "summary": "Other categories earn 1 percent cashback, up to \u20b9500 per billing cycle, except fuel, rent, EMI, wallet, jewellery, and government spends. Transactions below \u20b9100 earn no cashback.",
+      "confidence": "verified_product_page"
+    },
+    "accelerated": {
+      "status": "conditional",
+      "summary": "Swiggy app Food, Instamart, Dineout, and Genie earn 10 percent cashback, up to \u20b91,500 per billing cycle. There is no cashback on Swiggy Money wallet, liquor, or Minis. Selected online categories earn 5 percent cashback, up to \u20b91,500 per billing cycle, subject to the MCC list in the T&Cs.",
+      "confidence": "verified_product_page"
+    },
+    "upi": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "redemption": {
+      "status": "yes",
+      "summary": "Cashback posts as statement credit for statements after 21 June 2024. Older statements used Swiggy Money on the app. The MITC \u20b950 cashback-redemption fee does not apply to Swiggy.",
+      "confidence": "verified_mitc"
+    },
+    "expiry": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page"
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "domestic": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "international": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "railway": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "conditional",
+      "summary": "Dining value is the Swiggy app 10 percent cashback tier on Food and Dineout, not a separate restaurant programme.",
+      "confidence": "verified_product_page"
+    },
+    "movies": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "golf": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "The HDFC Swiggy co-brand product page does not describe golf benefits."
+    },
+    "concierge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "accident": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "card_protect": {
+      "status": "yes",
+      "summary": "Zero liability applies if fraud is reported immediately, as on other HDFC cards.",
+      "confidence": "verified_product_page"
+    }
+  },
+  "milestones": {
+    "status": "conditional",
+    "summary": "The annual fee waiver is \u20b92 lakh of anniversary spend. Cashback is capped at \u20b91,500, \u20b91,500, and \u20b9500 per cycle across the 10 percent, 5 percent, and 1 percent tiers.",
+    "confidence": "verified_product_page"
+  },
+  "welcome": {
+    "status": "conditional",
+    "summary": "The card includes 3 months of Swiggy One if it is activated within 30 days. Claim the offer in the Swiggy app 2 to 3 days after activation. Existing One members receive 3 extra months.",
+    "confidence": "verified_product_page"
+  }
+}

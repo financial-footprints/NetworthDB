@@ -1,19 +1,26 @@
-import type { AuthUser, MeResponse } from "@web/utils/api/endpoints/auth/types";
-import { hasE2EEVault, openField } from "@web/utils/crypto/vault";
+import type { AuthUser, MeResponse } from "@web/utils/api/routes/auth/types";
+import { looksLikeE2eeBlob, openField } from "@web/utils/crypto/vault/fields";
 
 /**
- * Decrypt display name when the vault DEK is already available.
+ * Decrypt display name when the vault DEK is available; otherwise show plaintext only.
  */
-export async function decryptDisplayName(me: MeResponse, dek: CryptoKey): Promise<string | null> {
-  if (!hasE2EEVault(me.vault_initialized) || !me.display_name) {
+export async function decryptDisplayName(
+  me: MeResponse,
+  dek: CryptoKey | null
+): Promise<string | null> {
+  if (!me.displayName) {
     return null;
   }
 
-  try {
-    return await openField(dek, me.display_name);
-  } catch {
-    return null;
+  if (dek) {
+    try {
+      return await openField(dek, me.displayName);
+    } catch {
+      return null;
+    }
   }
+
+  return looksLikeE2eeBlob(me.displayName) ? null : me.displayName.trim();
 }
 
 export function meToAuthUser(me: MeResponse, name: string | null): AuthUser {
@@ -21,10 +28,10 @@ export function meToAuthUser(me: MeResponse, name: string | null): AuthUser {
     id: me.id,
     username: me.username,
     role: me.role,
-    multifactor_enabled: me.multifactor_enabled,
-    multifactor_methods: me.multifactor_methods,
-    recovery_codes_enabled: me.recovery_codes_enabled,
-    recovery_email_enabled: me.recovery_email_enabled,
+    multifactorEnabled: me.multifactorEnabled,
+    multifactorMethods: me.multifactorMethods,
+    recoveryCodesEnabled: me.recoveryCodesEnabled,
+    recoveryEmailEnabled: me.recoveryEmailEnabled,
     displayName: name,
   };
 }

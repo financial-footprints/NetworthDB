@@ -1,9 +1,13 @@
-import { DB_CONNECTION_TIMEOUT_MS, DB_POOL_MAX, parseDbEnv } from "@database/env/db";
 import { APP_ENVS, type AppEnv } from "@ndb/core";
-import { decodeKey } from "@ndb/encryption";
+import { decodeSecretKey } from "@ndb/encryption";
 import { z } from "zod";
 
-export { DB_CONNECTION_TIMEOUT_MS, DB_POOL_MAX, parseDbEnv };
+export {
+  DB_POOL_MAX,
+  parseDbEnv,
+  parseReadonlyDbEnv,
+} from "@database/env/db";
+export type { DbConfig } from "@database/types";
 
 function emptyToUndefined(value: unknown): unknown {
   if (value === undefined || value === null) {
@@ -22,7 +26,7 @@ const storageEnvSchema = z.object({
   FILESTORE_SECRET: z.preprocess(emptyToUndefined, z.string().optional()),
 });
 
-export type StorageEnvConfig = {
+type StorageEnvConfig = {
   environment: AppEnv;
   encryption: {
     enabled: boolean;
@@ -42,9 +46,9 @@ export function parseStorageEnv(): StorageEnvConfig {
 
   let masterKey: Buffer | null = null;
   if (FILESTORE_SECRET !== undefined) {
-    masterKey = decodeKey(FILESTORE_SECRET);
+    masterKey = decodeSecretKey(FILESTORE_SECRET);
   } else if (ENVIRONMENT === "production") {
-    throw new Error("bootstrap.config.env.production-required.not-found.FILESTORE_SECRET");
+    throw new Error("database.config.env.production-required.not-found.FILESTORE_SECRET");
   }
 
   return {

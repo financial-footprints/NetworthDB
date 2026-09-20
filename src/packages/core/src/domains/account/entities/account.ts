@@ -1,6 +1,6 @@
 import type { AccountType } from "@core/domains/account/constants";
-import { parseIsoDate } from "@core/shared/date";
 import { ValidationError } from "@core/shared/errors/domain-error";
+import { Time } from "@core/shared/time";
 
 const MAX_ACCOUNT_NUMBER_LEN = 2100;
 
@@ -50,7 +50,7 @@ export class Account {
     bank(bank: string): string {
       const trimmed = bank.trim();
       if (!trimmed) {
-        throw new ValidationError("core.account.bank.invalid.required", { field: "bank" });
+        throw new ValidationError("Bank is required.", { field: "bank" });
       }
 
       return trimmed;
@@ -59,14 +59,14 @@ export class Account {
     accountNumber(value: string): string {
       const trimmed = value.trim();
       if (trimmed.length === 0) {
-        throw new ValidationError("core.account.account-number.invalid.required", {
-          field: "account_number",
+        throw new ValidationError("Account number is required.", {
+          field: "accountNumber",
         });
       }
 
       if (trimmed.length > MAX_ACCOUNT_NUMBER_LEN) {
-        throw new ValidationError("core.account.account-number.invalid.too-long", {
-          field: "account_number",
+        throw new ValidationError("Account number is too long.", {
+          field: "accountNumber",
         });
       }
 
@@ -95,16 +95,17 @@ export class Account {
     passwords: string[];
     mail?: MailRules | null;
     statement?: StatementRules | null;
+    label?: string;
     createdAt?: string;
     updatedAt?: string;
   }): Account {
     const bank = Account.normalize.bank(props.bank);
     const variant = Account.normalize.variant(props.variant);
-    const openingDate = parseIsoDate(props.openingDate, "opening_date");
+    const openingDate = Time.parseIsoDate(props.openingDate, "openingDate");
     const closingDate =
       props.closingDate === undefined || props.closingDate === null
         ? null
-        : parseIsoDate(props.closingDate, "closing_date");
+        : Time.parseIsoDate(props.closingDate, "closingDate");
     Account.validateClosingDate(openingDate, closingDate);
 
     const accountNumber = Account.normalize.accountNumber(props.accountNumber);
@@ -116,7 +117,7 @@ export class Account {
       props.accountType,
       bank,
       variant,
-      Account.generateLabel(bank, variant),
+      props.label?.trim() || Account.generateLabel(bank, variant),
       openingDate,
       closingDate,
       accountNumber,
@@ -138,6 +139,7 @@ export class Account {
     passwords?: string[];
     mail?: MailRules | null;
     statement?: StatementRules | null;
+    label?: string;
     updatedAt: string;
   }): Account {
     const bank = input.bank !== undefined ? Account.normalize.bank(input.bank) : this.bank;
@@ -145,13 +147,13 @@ export class Account {
       input.variant !== undefined ? Account.normalize.variant(input.variant) : this.variant;
     const openingDate =
       input.openingDate !== undefined
-        ? parseIsoDate(input.openingDate, "opening_date")
+        ? Time.parseIsoDate(input.openingDate, "openingDate")
         : this.openingDate;
     const closingDate =
       input.closingDate !== undefined
         ? input.closingDate === null
           ? null
-          : parseIsoDate(input.closingDate, "closing_date")
+          : Time.parseIsoDate(input.closingDate, "closingDate")
         : this.closingDate;
     Account.validateClosingDate(openingDate, closingDate);
 
@@ -166,7 +168,7 @@ export class Account {
       input.accountType ?? this.accountType,
       bank,
       variant,
-      Account.generateLabel(bank, variant),
+      input.label?.trim() || Account.generateLabel(bank, variant),
       openingDate,
       closingDate,
       accountNumber,
@@ -204,8 +206,8 @@ export class Account {
     closingDate: string | null | undefined
   ): void {
     if (closingDate !== undefined && closingDate !== null && closingDate < openingDate) {
-      throw new ValidationError("core.account.date.invalid.closing-before-opening", {
-        field: "closing_date",
+      throw new ValidationError("Closing date must be after opening date.", {
+        field: "closingDate",
       });
     }
   }

@@ -6,15 +6,15 @@ Crypto and infrastructure adapters for authentication. Application services (`Au
 
 | Path | Contents |
 | --- | --- |
-| `src/password.ts` | Argon2 `PasswordHasher` + `seedHashPassword` for database seed |
-| `src/totp.ts` | `otpauth` `TotpEngine` |
-| `src/tokens.ts` | `node:crypto` `TokenDigest` |
-| `src/secrets.ts` | `@ndb/encryption` `SecretBox` (MFA secret at-rest) |
-| `src/webauthn.ts` | `@simplewebauthn/server` `WebAuthnRelyingParty` |
-| `src/crypto.ts` | `createAuthCrypto()` — bundles all crypto ports |
+| `src/crypto/password.ts` | Argon2 `PasswordHasher` + `seedHashPassword` for database seed |
+| `src/crypto/totp.ts` | `otpauth` `TotpEngine` |
+| `src/crypto/tokens.ts` | `node:crypto` `TokenDigest` |
+| `src/crypto/secrets.ts` | `@ndb/encryption` `SecretBox` (MFA secret at-rest) |
+| `src/crypto/webauthn.ts` | `@simplewebauthn/server` `WebAuthnRelyingParty` |
+| `src/crypto/index.ts` | `createAuthCrypto()` — bundles all crypto ports |
 | `src/ratelimit.ts` | Redis-backed `RateLimiter` + `PasswordLockout` |
 
-`domains/`, `entities/`, `embedded/`, and `modules/` are reserved for `@ndb/core`.
+`domains/`, `entities/`, `embedded/`, and capability folders (for example `account/transactions/`) are reserved for `@ndb/core`.
 
 ## Dependencies
 

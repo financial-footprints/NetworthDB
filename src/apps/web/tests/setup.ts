@@ -1,10 +1,3 @@
-import { beforeEach } from "bun:test";
-import { clearSessionTokenCache } from "@web/utils/api/endpoints/auth/sessionTokens";
-
-beforeEach(() => {
-  clearSessionTokenCache();
-});
-
 const sessionStore = new Map<string, string>();
 
 const sessionStorageMock: Storage = {

@@ -24,7 +24,7 @@ body:json {
 }
 
 script:post-response {
-  bru.setVar("mfaSessionToken", res.body.data.session_token);
+  bru.setVar("mfaSessionToken", res.body.data.sessionToken);
 }
 
 assert {

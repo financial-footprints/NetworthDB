@@ -1,0 +1,27 @@
+---
+description: Parallel independent DB reads; never Promise.all inside transactions
+globs: src/packages/database/**/*.ts,src/packages/core/**/services/**/*.ts
+alwaysApply: false
+---
+# Parallel Database Reads
+
+Independent `SELECT` queries outside a transaction may run concurrently via `Promise.all` on `this.db`. Follow the paginated-list pattern: `Promise.all([rowsQuery, countQuery])`.
+
+**Do not** use `Promise.all` inside `db.transaction(async (tx) => …)` — one connection, no parallel benefit.
+
+**Do not** parallelize writes without a transaction.
+
+Cap fan-out to a reasonable number of concurrent queries (respect the connection pool size configured in `@ndb/database`). Batch large fan-outs instead of unbounded `Promise.all`.
+
+## Reads Before Transactions
+
+```text
+Good:  parallel reads on this.db  →  db.transaction(tx => writes only)
+Bad:   db.transaction(tx => parallel reads + writes)
+```
+
+Prefetch independent reads outside the transaction. Run a read inside `tx` only when it must share the same snapshot as the writes.
+
+## Pool Size
+
+Default `DB_POOL_MAX` is **10** in `@ndb/database/env` (Docker-sized). For fan-out above that, use `parallelize` in `src/packages/database/src/repositories/helpers.ts` with `DB_READ_CONCURRENCY` (also 10). Do not assume Lambda-style pool caps for this product.

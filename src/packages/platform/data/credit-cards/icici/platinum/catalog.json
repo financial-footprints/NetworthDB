@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "registry_key": "icici/platinum",
+  "bank": "icici",
+  "variant": "platinum",
+  "display_name": "Platinum Chip",
+  "default_kind": "named",
+  "networks": [],
+  "reward_kind": "points",
+  "official_product_url": "https://www.icicibank.com/personal-banking/cards/credit-card/platinum-credit-key-privileges",
+  "mitc_url": "https://www.icicibank.com/content/dam/managed-assets/docs/personal/cards/MITC_cc.pdf",
+  "researched_at": "2026-10-04",
+  "updated_at": "2026-10-04",
+  "sources": [
+    {
+      "url": "https://www.icicibank.com/personal-banking/cards/credit-card/platinum-credit-key-privileges",
+      "retrieved_at": "2026-10-04",
+      "label": "Key privileges"
+    },
+    {
+      "url": "https://www.icicibank.com/content/dam/managed-assets/docs/personal/cards/MITC_cc.pdf",
+      "retrieved_at": "2026-10-04",
+      "label": "ICICI MITC"
+    }
+  ],
+  "tags": ["rewards", "lifetime_free"],
+  "conflicts": [
+    "The MITC lounge spend rule groups Platinum Chip with Coral. The Platinum Chip product page does not advertise airport or railway lounge."
+  ],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. This is not HPCL Platinum, MakeMyTrip Platinum, or Adani Platinum.",
+  "fees": {
+    "joining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page"
+    },
+    "annual": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page"
+    },
+    "annual_waiver": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page"
+    },
+    "forex": {
+      "status": "yes",
+      "summary": "Forex markup is 3.5 percent.",
+      "confidence": "verified_mitc"
+    },
+    "fuel_surcharge": {
+      "status": "conditional",
+      "summary": "A 1 percent fuel surcharge waiver applies on transactions from \u20b9400 to \u20b94,000 at HPCL.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "merchant",
+          "summary": "The waiver applies at HPCL."
+        },
+        {
+          "type": "txn_range",
+          "summary": "The eligible transaction range is \u20b9400 to \u20b94,000."
+        }
+      ]
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "yes",
+      "summary": "The card earns 2 reward points per \u20b9100 of retail spend and 1 reward point per \u20b9100 of utility and insurance spend. Fuel typically earns no points.",
+      "confidence": "verified_product_page"
+    },
+    "accelerated": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "The ICICI Platinum Chip product page does not publish milestone or category accelerated earn beyond base utility splits."
+    },
+    "upi": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "redemption": {
+      "status": "yes",
+      "summary": "Redemption uses the same catalogue families as Coral. The conversion rate is not stated on the product page.",
+      "confidence": "verified_product_page"
+    },
+    "expiry": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "domestic": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "international": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "railway": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "movies": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "golf": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "concierge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "accident": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "card_protect": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "milestones": {
+    "status": "NA",
+    "summary": "NA",
+    "confidence": "verified_mitc",
+    "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+  },
+  "welcome": {
+    "status": "NA",
+    "summary": "NA",
+    "confidence": "verified_mitc"
+  }
+}

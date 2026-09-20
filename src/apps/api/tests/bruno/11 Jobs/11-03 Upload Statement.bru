@@ -22,7 +22,7 @@ body:multipart-form {
 }
 
 script:post-response {
-  bru.setVar("uploadJobId", res.body.data.id);
+  bru.setVar("uploadJobId", res.body.data.jobId);
 }
 
 assert {

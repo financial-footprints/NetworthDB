@@ -25,10 +25,10 @@ import type {
 import type { User } from "@core/domains/user/entities/user/index";
 import { Username } from "@core/domains/user/entities/user/index";
 import { Password } from "@core/domains/user/entities/user/password";
-import type { VaultSlot } from "@core/domains/user/modules/vault/entities/vault-slot";
-import { VaultService } from "@core/domains/user/modules/vault/services/vault-service";
-import type { VaultSlotPublic } from "@core/domains/user/modules/vault/types";
 import type { UserRepository } from "@core/domains/user/repositories/user-repository";
+import type { VaultSlot } from "@core/domains/user/vault/entities/vault-slot";
+import { VaultService } from "@core/domains/user/vault/services/vault-service";
+import type { VaultSlotPublic } from "@core/domains/user/vault/types";
 import type { PasswordHasher, TokenDigest } from "@core/ports/auth";
 import type { EmailSender } from "@core/ports/email";
 import { UnauthorizedError, ValidationError } from "@core/shared/errors/domain-error";
@@ -142,7 +142,7 @@ export class RecoveryService {
     const newPassword = input.newPassword;
 
     if (token.length === 0 || newPassword.length === 0) {
-      throw new ValidationError("core.auth.recovery.complete.invalid.missing-fields");
+      throw new ValidationError("Required fields are missing.");
     }
 
     const parsedPassword = Password.parse(newPassword, this.config.appEnv);
@@ -150,7 +150,7 @@ export class RecoveryService {
     const { user, challenge } = await this._resolveResetToken(token);
 
     if (user.totp.isLocked()) {
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
 
     try {
@@ -165,7 +165,7 @@ export class RecoveryService {
 
     const refreshed = await this.users.findById(user.id);
     if (!refreshed) {
-      throw new ValidationError("core.auth.recovery.invalid.expired-token");
+      throw new ValidationError("Recovery token has expired.");
     }
 
     const passwordHash = await this.password.hash(parsedPassword.toString());
@@ -183,7 +183,7 @@ export class RecoveryService {
     const newPassword = input.newPassword;
 
     if (token.length === 0 || newPassword.length === 0) {
-      throw new ValidationError("core.auth.recovery.complete.invalid.missing-fields");
+      throw new ValidationError("Required fields are missing.");
     }
 
     const parsedPassword = Password.parse(newPassword, this.config.appEnv);
@@ -214,7 +214,7 @@ export class RecoveryService {
     if (this.multifactorService.requiresEnrollment(updated.role)) {
       const refreshed = await this.users.findById(updated.id);
       if (!refreshed) {
-        throw new ValidationError("core.auth.recovery.invalid.expired-token");
+        throw new ValidationError("Recovery token has expired.");
       }
 
       return this.multifactorService.createChallenge(refreshed);
@@ -234,7 +234,7 @@ export class RecoveryService {
     const salt = input.passwordSlot?.salt?.trim() ?? "";
     const wrapBlob = input.passwordSlot?.wrapBlob?.trim() ?? "";
     if (salt.length === 0 || wrapBlob.length === 0) {
-      throw new ValidationError("core.auth.recovery.advanced.invalid.password-slot-required");
+      throw new ValidationError("Password vault slot is required.");
     }
 
     return { salt, wrapBlob };
@@ -257,7 +257,7 @@ export class RecoveryService {
       webauthnResponse
     );
     if (!this.vaultService.matchesPrfCredential(slots, credentialId)) {
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
   }
 
@@ -274,7 +274,7 @@ export class RecoveryService {
     const normalizedEmail = email.trim().toLowerCase();
 
     if (normalizedEmail.length === 0) {
-      throw new ValidationError("core.auth.recovery.email.invalid.missing-fields");
+      throw new ValidationError("Required fields are missing.");
     }
 
     const user = await findFirst(this.users.findByFilters.bind(this.users), {
@@ -355,7 +355,7 @@ export class RecoveryService {
   ): Promise<{ user: User; challenge: RecoveryChallenge }> {
     const token = tokenPlain.trim();
     if (token.length === 0) {
-      throw new ValidationError("core.auth.recovery.invalid.expired-token");
+      throw new ValidationError("Recovery token has expired.");
     }
 
     const challenge = await findFirst(this.challenges.findByFilters.bind(this.challenges), {
@@ -364,12 +364,12 @@ export class RecoveryService {
       active: true,
     });
     if (!challenge) {
-      throw new ValidationError("core.auth.recovery.invalid.expired-token");
+      throw new ValidationError("Recovery token has expired.");
     }
 
     const user = await this.users.findById(challenge.userId);
     if (!user) {
-      throw new ValidationError("core.auth.recovery.invalid.expired-token");
+      throw new ValidationError("Recovery token has expired.");
     }
 
     return { user, challenge };
@@ -479,21 +479,21 @@ export class RecoveryService {
 
   private async _requireCurrentPassword(user: User, password: string): Promise<void> {
     if (password.length === 0) {
-      throw new ValidationError("core.auth.recovery.invalid.password-required", {
+      throw new ValidationError("Password is required.", {
         field: "password",
       });
     }
 
     const valid = await this.password.verify(password, user.passwordHash);
     if (!valid) {
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
   }
 
   private async _get(userId: string): Promise<User> {
     const user = await this.users.findById(userId);
     if (!user) {
-      throw new UnauthorizedError("core.auth.session.unauthorized.invalid-or-expired");
+      throw new UnauthorizedError("Session is invalid or expired.");
     }
 
     return user;

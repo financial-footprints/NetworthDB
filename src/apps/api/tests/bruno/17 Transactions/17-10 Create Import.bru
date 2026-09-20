@@ -1,0 +1,24 @@
+meta {
+  name: 17-10 Create Import
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/accounts/{{ledgerAccountId}}/transaction-imports
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+script:post-response {
+  bru.setVar("ledgerImportId", res.body.data.id);
+}
+
+assert {
+  res.status: eq 201
+  res.body.data.id: isDefined
+}

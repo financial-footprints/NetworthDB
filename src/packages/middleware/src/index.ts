@@ -7,5 +7,5 @@ export {
   requireSession,
   sessionPrincipal,
 } from "@middleware/auth";
-export { cors, onError, security } from "@middleware/http";
-export { requestLog } from "@middleware/logging";
+export { corsMiddleware, errorHandler, security } from "@middleware/http";
+export { logMiddleware } from "@middleware/logging";

@@ -1,4 +1,7 @@
-import { asBufferSource } from "@web/utils/crypto/helpers";
+/** Web Crypto expects ArrayBuffer-backed views, not generic ArrayBufferLike. */
+export function asBufferSource(bytes: Uint8Array): Uint8Array<ArrayBuffer> {
+  return new Uint8Array(bytes);
+}
 
 export function randomBytes(length: number): Uint8Array {
   const bytes = new Uint8Array(length);
@@ -30,6 +33,14 @@ export async function encryptAESGCM(
   plaintext: Uint8Array
 ): Promise<{ ciphertext: Uint8Array; nonce: Uint8Array }> {
   const nonce = randomBytes(12);
+  return encryptAESGCMWithNonce(key, plaintext, nonce);
+}
+
+async function encryptAESGCMWithNonce(
+  key: CryptoKey,
+  plaintext: Uint8Array,
+  nonce: Uint8Array
+): Promise<{ ciphertext: Uint8Array; nonce: Uint8Array }> {
   const ciphertext = await crypto.subtle.encrypt(
     { name: "AES-GCM", iv: asBufferSource(nonce) },
     key,

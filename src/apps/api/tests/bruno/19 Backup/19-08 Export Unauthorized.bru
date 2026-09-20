@@ -1,0 +1,21 @@
+meta {
+  name: 19-08 Export Unauthorized
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/backup/export
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "password": "password1"
+  }
+}
+
+assert {
+  res.status: eq 401
+}

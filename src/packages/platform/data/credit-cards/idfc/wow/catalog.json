@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "registry_key": "idfc/wow",
+  "bank": "idfc",
+  "variant": "wow",
+  "display_name": "IDFC Wow!",
+  "default_kind": "named",
+  "networks": ["Visa"],
+  "reward_kind": "points",
+  "official_product_url": "https://www.idfcfirstbank.com/credit-card/wow",
+  "mitc_url": "https://www.idfcfirstbank.com/content/dam/idfcfirstbank/pdf/credit-card/MITC-Document-Customer.pdf",
+  "researched_at": "2026-10-04",
+  "updated_at": "2026-10-04",
+  "sources": [
+    {
+      "url": "https://www.idfcfirstbank.com/credit-card/wow",
+      "retrieved_at": "2026-10-04",
+      "label": "Product page"
+    },
+    {
+      "url": "https://www.idfcfirstbank.com/wow-pdp",
+      "retrieved_at": "2026-10-04",
+      "label": "WOW PDP FAQ"
+    },
+    {
+      "url": "https://www.idfcfirstbank.com/content/dam/idfcfirstbank/pdf/credit-card/MITC-Document-Customer.pdf",
+      "retrieved_at": "2026-10-04",
+      "label": "MITC"
+    }
+  ],
+  "tags": ["upi", "rewards", "lifetime_free", "forex"],
+  "conflicts": [
+    "The product FAQ still describes reward points as evergreen. The MITC states that WOW! points lapse 24 months after they are credited.",
+    "The product page shows both 4 reward points per \u20b9150 and 4 reward points per \u20b9200. Treat earn as up to 4X until the live table is confirmed.",
+    "The wow-pdp FAQ and the MITC disagree on the cash advance fee."
+  ],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails.",
+  "fees": {
+    "joining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc"
+    },
+    "annual_waiver": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc"
+    },
+    "forex": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc"
+    },
+    "fuel_surcharge": {
+      "status": "conditional",
+      "summary": "A 1% fuel surcharge waiver applies on transactions from \u20b9200 to \u20b95,000.",
+      "confidence": "verified_mitc",
+      "conditions": [
+        {
+          "type": "cap",
+          "summary": "The waiver is capped at \u20b9100 per statement cycle."
+        }
+      ]
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "conditional",
+      "summary": "The product page advertises up to 4X earn, including 4X on travel. Insurance, utility, FASTag, and railway spends earn 1X. Fuel, EMI, and cash advances earn no reward points.",
+      "confidence": "conflict",
+      "notes": "The same page also shows 4 reward points per \u20b9150 and 4 reward points per \u20b9200."
+    },
+    "accelerated": {
+      "status": "conditional",
+      "summary": "Travel, online, offline, and international spends are marketed at 4X. App bonuses of 50 reward points on hotels and 30 reward points on flights are described; the monthly cap for vanilla WOW! is not restated on the base product page.",
+      "confidence": "verified_product_page"
+    },
+    "upi": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "redemption": {
+      "status": "conditional",
+      "summary": "One reward point equals \u20b90.50 on travel through the IDFC FIRST Rewards Gallery. Pay with points is available in store and online. The MITC lists a \u20b999 redemption fee.",
+      "confidence": "verified_mitc"
+    },
+    "expiry": {
+      "status": "conditional",
+      "summary": "The MITC states that reward points expire 24 months after they are credited. For the June 2026 cycle that means validity through June 2028.",
+      "confidence": "conflict",
+      "notes": "The product FAQ still describes points as evergreen. The MITC takes precedence."
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "conditional",
+      "summary": "Domestic lounge access is provided through the issuer lounge programme, not Priority Pass. Access depends on meeting spend requirements in the calendar month of the visit.",
+      "confidence": "verified_product_page"
+    },
+    "domestic": {
+      "status": "conditional",
+      "summary": "The card includes one complimentary domestic lounge visit per quarter.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "spend",
+          "summary": "Spend at least \u20b920,000 in the current calendar month."
+        }
+      ]
+    },
+    "international": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "railway": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "movies": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "golf": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "concierge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "IDFC FIRST WOW! MITC and product T&C checked do not list travel insurance for vanilla WOW."
+    },
+    "accident": {
+      "status": "conditional",
+      "summary": "Forex-cards listing copy for WOW! cites personal accident cover of \u20b92 lakh. Confirm against the WOW! product T&C before relying on this figure.",
+      "confidence": "unknown"
+    },
+    "card_protect": {
+      "status": "conditional",
+      "summary": "Forex-cards listing copy for WOW! cites card liability cover of \u20b925,000 and purchase protection of \u20b925,000. Confirm against the WOW! product T&C before relying on these figures.",
+      "confidence": "unknown"
+    }
+  },
+  "milestones": {
+    "status": "conditional",
+    "summary": "Lounge access is gated on \u20b920,000 spend in the current calendar month. The card is FD-backed, with eligibility minima that differ by customer type on the product FAQ.",
+    "confidence": "verified_product_page"
+  },
+  "welcome": {
+    "status": "NA",
+    "summary": "NA",
+    "confidence": "verified_product_page",
+    "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+  }
+}

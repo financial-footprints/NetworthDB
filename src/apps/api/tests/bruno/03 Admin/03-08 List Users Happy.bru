@@ -22,6 +22,6 @@ auth:bearer {
 
 assert {
   res.status: eq 200
-  res.body.data.total: gte 1
-  res.body.data.items: isArray
+  res.body.total: gte 1
+  res.body.items: isArray
 }

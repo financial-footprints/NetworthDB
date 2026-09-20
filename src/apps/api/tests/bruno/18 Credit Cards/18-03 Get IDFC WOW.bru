@@ -1,0 +1,26 @@
+meta {
+  name: 18-03 Get IDFC WOW
+  type: http
+  seq: 3
+}
+
+docs {
+  **Endpoint:** `GET /api/v1/credit-cards/catalog/idfc/wow`
+  **This test verifies:** Full catalog payload for a named variant.
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/credit-cards/catalog/idfc/wow
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.registry_key: eq idfc/wow
+  res.body.data.bank: eq idfc
+  res.body.data.variant: eq wow
+}

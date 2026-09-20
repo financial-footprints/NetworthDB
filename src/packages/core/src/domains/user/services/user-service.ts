@@ -1,4 +1,6 @@
 import { assertAal2 } from "@core/domains/auth/helpers";
+import { ClientSettings } from "@core/domains/user/entities/user/client-settings";
+import { DisplayName } from "@core/domains/user/entities/user/display-name";
 import { type User, Username } from "@core/domains/user/entities/user/index";
 import {
   assertAdministrator,
@@ -33,10 +35,7 @@ export class UserService {
   private async _get(userId: string): Promise<User> {
     const user = await this.users.findById(userId);
     if (!user) {
-      throw new EntityNotFoundError("core.user.find.not-found", {
-        entityName: "User",
-        id: userId,
-      });
+      throw new EntityNotFoundError("User", userId);
     }
 
     return user;
@@ -63,7 +62,7 @@ export class UserService {
 
   private _applyRole(caller: User, user: User, userId: string, role: Role, updated: User): User {
     if (caller.id === userId) {
-      throw new ValidationError("core.user.role.invalid.self-change");
+      throw new ValidationError("You cannot change your own role.");
     }
 
     return role === user.role ? updated : updated.withRole(role);
@@ -84,7 +83,7 @@ export class UserService {
       username: parsedUsername,
     });
     if (taken && taken.id !== userId) {
-      throw new ConflictError("core.user.username.conflict.taken", {
+      throw new ConflictError("Username is already taken.", {
         username: parsedUsername.toString(),
       });
     }
@@ -101,12 +100,14 @@ export class UserService {
       multifactorEnabled: query.multifactorEnabled,
       search: query.search,
     };
-    const total = await this.users.aggregate(filters);
-    const items = await this.users.findByFilters(
-      filters,
-      { column: "username", direction: "asc" },
-      { limit: query.limit, offset: query.offset }
-    );
+    const [total, items] = await Promise.all([
+      this.users.aggregate(filters),
+      this.users.findByFilters(
+        filters,
+        { column: "username", direction: "asc" },
+        { limit: query.limit, offset: query.offset }
+      ),
+    ]);
     return { items, total };
   }
 
@@ -120,7 +121,7 @@ export class UserService {
     assertAal2(caller.multifactorEnabled, authAcr);
 
     if (input.username === undefined && input.role === undefined) {
-      throw new ValidationError("core.user.patch.invalid.no-fields");
+      throw new ValidationError("No fields to update.");
     }
 
     const user = await this._get(userId);
@@ -140,11 +141,50 @@ export class UserService {
     assertAal2(user.multifactorEnabled, authAcr);
 
     if (user.id === userId) {
-      throw new ValidationError("core.user.delete.invalid.self-delete");
+      throw new ValidationError("You cannot delete your own account.");
     }
 
     await this._get(userId);
     await this.auth.revoke(userId);
     await this.users.delete({ id: userId });
+  }
+
+  async updateDisplayName(userId: string, raw: string): Promise<void> {
+    const user = await this._get(userId);
+    const displayName = DisplayName.parse(raw);
+    await this.users.save(user.withDisplayName(displayName));
+  }
+
+  async getClientSettings(userId: string): Promise<Record<string, unknown> | null> {
+    await this._get(userId);
+    return this.users.getClientSettings(userId);
+  }
+
+  async saveClientSettings(userId: string, raw: unknown): Promise<Record<string, unknown> | null> {
+    await this._get(userId);
+    if (raw === null) {
+      return this.users.saveClientSettings(userId, null);
+    }
+    const parsed = ClientSettings.parse(raw);
+    return this.users.saveClientSettings(userId, parsed.toJson());
+  }
+
+  async restoreBackupProfile(
+    userId: string,
+    displayName: string | null,
+    clientSettings: unknown
+  ): Promise<void> {
+    const user = await this._get(userId);
+    if (displayName === null || displayName === "") {
+      await this.users.save(user.withDisplayName(null));
+    } else if (displayName.length > 2100) {
+      throw new ValidationError("Display name is too long.", {
+        field: "displayName",
+      });
+    } else {
+      await this.users.save(user.withDisplayName(DisplayName.fromPersisted(displayName)));
+    }
+
+    await this.saveClientSettings(userId, clientSettings);
   }
 }

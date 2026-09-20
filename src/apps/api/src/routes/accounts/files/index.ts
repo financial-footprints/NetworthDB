@@ -1,19 +1,18 @@
+import { jsonMedia } from "@api/config/http";
 import { createSessionRouter, errorResponses } from "@api/config/router";
 import {
   readFileField,
   readOptionalStringField,
   readStringField,
 } from "@api/routes/accounts/helpers";
-import { jsonMedia } from "@api/routes/auth/helpers";
+import { serializeJobCreated } from "@api/routes/jobs/serializer";
 import { sessionPrincipal } from "@ndb/middleware";
 import {
   API,
-  accountFileDownloadParamsSchema,
   accountFileDownloadQuerySchema,
+  accountIdParamsSchema,
   jobCreatedSchema,
 } from "@ndb/platform";
-
-const UPLOAD_ERROR_PREFIX = "api.accounts.upload.invalid";
 
 const filesRoutes = createSessionRouter()
   .endpoint(
@@ -32,15 +31,15 @@ const filesRoutes = createSessionRouter()
       const body = await c.req.parseBody();
       const { user, auth } = sessionPrincipal(c.get("principal"));
 
-      const accountId = readStringField(body, "account_id", UPLOAD_ERROR_PREFIX);
-      const format = readStringField(body, "format", UPLOAD_ERROR_PREFIX);
-      const file = readFileField(body, "file", `${UPLOAD_ERROR_PREFIX}.file-required`);
-      const statementKind = readOptionalStringField(body, "statement_kind", UPLOAD_ERROR_PREFIX);
-      const coveredMonth = readOptionalStringField(body, "covered_month", UPLOAD_ERROR_PREFIX);
-      const yearKey = readOptionalStringField(body, "year_key", UPLOAD_ERROR_PREFIX);
+      const accountId = readStringField(body, "account_id");
+      const format = readStringField(body, "format");
+      const file = readFileField(body, "file");
+      const statementKind = readOptionalStringField(body, "statement_kind");
+      const coveredMonth = readOptionalStringField(body, "covered_month");
+      const yearKey = readOptionalStringField(body, "year_key");
 
       const content = Buffer.from(await file.arrayBuffer());
-      const result = await c.get("services").account.uploadStatement(user, auth.acr, {
+      const result = await c.get("services").accountService.statements.upload(user, auth.acr, {
         accountId,
         format,
         filename: file.name,
@@ -50,13 +49,7 @@ const filesRoutes = createSessionRouter()
         yearKey,
       });
 
-      return c.json(
-        jobCreatedSchema.parse({
-          data: { id: result.jobId },
-          errors: [],
-        }),
-        202
-      );
+      return c.json(serializeJobCreated(result.jobId), 202);
     }
   )
   .endpoint(
@@ -64,7 +57,7 @@ const filesRoutes = createSessionRouter()
       method: "get",
       path: API.accounts.files.download,
       request: {
-        params: accountFileDownloadParamsSchema,
+        params: accountIdParamsSchema,
         query: accountFileDownloadQuerySchema,
       },
       responses: {
@@ -75,11 +68,11 @@ const filesRoutes = createSessionRouter()
       },
     },
     async (c) => {
-      const { id } = c.req.valid("param");
+      const { accountId } = c.req.valid("param");
       const query = c.req.valid("query");
       const { user, auth } = sessionPrincipal(c.get("principal"));
-      const result = await c.get("services").account.downloadStatement(user, auth.acr, {
-        accountId: id,
+      const result = await c.get("services").accountService.statements.download(user, auth.acr, {
+        accountId,
         statementDate: query.statementDate,
         format: query.format,
       });

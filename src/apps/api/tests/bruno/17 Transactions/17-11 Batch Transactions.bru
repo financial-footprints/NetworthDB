@@ -1,0 +1,48 @@
+meta {
+  name: 17-11 Batch Transactions
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/accounts/{{ledgerAccountId}}/transactions/batch
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+body:json {
+  {
+    "importId": "{{ledgerImportId}}",
+    "items": [
+      {
+        "date": "2024-06-20",
+        "amount": 1000,
+        "sourceAccountId": "{{ledgerAccountId}}",
+        "destinationAccountId": "{{expenseAccountId}}",
+        "description": "Batch one"
+      },
+      {
+        "date": "2024-06-21",
+        "amount": 2000,
+        "sourceAccountId": "{{ledgerAccountId}}",
+        "destinationAccountId": "{{expenseAccountId}}",
+        "description": "Batch two"
+      }
+    ]
+  }
+}
+
+script:post-response {
+  const items = res.body.items ?? [];
+  bru.setVar("batchTxnId1", items[0]?.id ?? "");
+  bru.setVar("batchTxnId2", items[1]?.id ?? "");
+}
+
+assert {
+  res.status: eq 201
+  res.body.total: eq 2
+}

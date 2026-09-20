@@ -31,7 +31,7 @@ bun --cwd "$DATABASE_PACKAGE_DIR" --env-file "$ENV_TESTS" scripts/seed.ts
 
 bash "$KILL_SCRIPT" --tests
 
-bun --cwd "$API_DIR" --env-file "$ENV_TESTS" src/index.ts >"$LOG_FILE" 2>&1 &
+bun --cwd "$API_DIR" --env-file "$ENV_TESTS" src/server.ts >"$LOG_FILE" 2>&1 &
 echo $! >"$PID_FILE"
 
 for _ in $(seq 1 30); do
@@ -49,7 +49,7 @@ fi
 
 if ! curl -sf -X POST "http://127.0.0.1:8001/api/v1/auth/login" \
 	-H "Content-Type: application/json" \
-	-d '{"username":"admin","password":"admin"}' | rg -q '"session_token"'; then
+	-d '{"username":"admin","password":"admin"}' | rg -q '"sessionToken"'; then
 	echo "Seed/admin login preflight failed. Check Postgres users table and seed.ts output." >&2
 	tail -n 30 "$LOG_FILE" >&2 || true
 	exit 1

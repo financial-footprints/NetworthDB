@@ -1,0 +1,21 @@
+meta {
+  name: 15-05 Get Rule Group
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/rule-groups/{{RULE_GROUP_ID}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.id: eq {{RULE_GROUP_ID}}
+  res.body.data.title: eq Bruno Group
+}

@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "registry_key": "hdfc/regalia-gold",
+  "bank": "hdfc",
+  "variant": "regalia-gold",
+  "display_name": "Regalia Gold",
+  "default_kind": "named",
+  "networks": [],
+  "reward_kind": "points",
+  "official_product_url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/regalia-gold-credit-card",
+  "mitc_url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/personal-mitc",
+  "researched_at": "2026-10-04",
+  "updated_at": "2026-10-04",
+  "sources": [
+    {
+      "url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/regalia-gold-credit-card",
+      "retrieved_at": "2026-10-04",
+      "label": "Product page"
+    },
+    {
+      "url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/regalia-gold-credit-card/fees-and-charges",
+      "retrieved_at": "2026-10-04",
+      "label": "Fees and charges"
+    }
+  ],
+  "tags": ["lounge", "rewards", "travel"],
+  "conflicts": [
+    "Statement cashback redemption is shown as \u20b90.20 in one table and \u20b90.15 in a later table on the product page."
+  ],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. Product-page changes are flagged from 15 May 2026.",
+  "fees": {
+    "joining": {
+      "status": "yes",
+      "summary": "The joining fee is \u20b92,500 plus tax.",
+      "confidence": "verified_product_page"
+    },
+    "annual": {
+      "status": "yes",
+      "summary": "The renewal fee is \u20b92,500 plus tax.",
+      "confidence": "verified_product_page"
+    },
+    "annual_waiver": {
+      "status": "conditional",
+      "summary": "The renewal fee is waived on \u20b94 lakh spend in the 12 billing cycles of the anniversary year.",
+      "confidence": "verified_product_page"
+    },
+    "forex": {
+      "status": "yes",
+      "summary": "Forex markup is 2 percent on foreign-currency spends.",
+      "confidence": "verified_product_page"
+    },
+    "fuel_surcharge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "yes",
+      "summary": "The Reward Benefits section states 5 reward points per \u20b9200 of retail spend. The statement cycle cap is 50,000 reward points.",
+      "confidence": "verified_product_page",
+      "notes": "A calculator on the page also mentions 4 reward points on daily and retail spend. Prefer the Reward Benefits figure."
+    },
+    "accelerated": {
+      "status": "conditional",
+      "summary": "The card advertises 5X on Myntra, Nykaa, Reliance Digital, and more. SmartBuy advertises up to 10X on hotels and flights and 5X on instant vouchers.",
+      "confidence": "verified_product_page"
+    },
+    "upi": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "redemption": {
+      "status": "conditional",
+      "summary": "The Gold catalogue value is \u20b90.65 per point. Flights and hotels are \u20b90.50. Airmiles are up to 0.5. Products and vouchers are up to \u20b90.35. Statement credit is listed as \u20b90.20 in one table and \u20b90.15 in another. Travel redemption is limited to 70 percent of the booking. Statement cashback and SmartBuy flights and hotels are capped at 50,000 reward points per month. Redemption fee is \u20b999 plus tax.",
+      "confidence": "conflict"
+    },
+    "expiry": {
+      "status": "conditional",
+      "summary": "HDFC reward points typically remain valid for two years. Unused accounts for more than 365 days nullify points.",
+      "confidence": "verified_mitc"
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "conditional",
+      "summary": "Domestic lounge is spend-gated on the preceding calendar quarter and tracked on SmartBuy. International visits are delivered through Priority Pass. Priority Pass visits inside India are charged.",
+      "confidence": "verified_product_page"
+    },
+    "domestic": {
+      "status": "conditional",
+      "summary": "The card includes 3 domestic lounge visits per calendar quarter. Marketing copy also says 12 complimentary domestic visits as an annual value figure.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "spend",
+          "summary": "Spend at least \u20b960,000 in the preceding calendar quarter."
+        }
+      ]
+    },
+    "international": {
+      "status": "conditional",
+      "summary": "The card includes 6 complimentary international visits per calendar year through Priority Pass.",
+      "confidence": "verified_product_page",
+      "conditions": [
+        {
+          "type": "other",
+          "summary": "Priority Pass visits inside India are charged."
+        }
+      ]
+    },
+    "railway": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "conditional",
+      "summary": "Swiggy Dineout Good Food Trail advertises up to 10 percent off.",
+      "confidence": "verified_product_page"
+    },
+    "movies": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "golf": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_product_page",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    },
+    "concierge": {
+      "status": "yes",
+      "summary": "Concierge and SmartBuy helpdesk numbers are listed on the product page. Boarding Edge offers spa, buffet, hotel upgrade, or airport transfer, any 2 per calendar quarter, via a boarding pass on SmartBuy through DreamFolks.",
+      "confidence": "verified_product_page"
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "yes",
+      "summary": "Emergency overseas hospitalisation cover is \u20b915 lakh.",
+      "confidence": "verified_product_page"
+    },
+    "accident": {
+      "status": "yes",
+      "summary": "Air accidental death cover is \u20b91 crore.",
+      "confidence": "verified_product_page"
+    },
+    "card_protect": {
+      "status": "yes",
+      "summary": "Credit liability cover is \u20b99 lakh.",
+      "confidence": "verified_product_page"
+    }
+  },
+  "milestones": {
+    "status": "conditional",
+    "summary": "Spending \u20b91 lakh in the first 90 days unlocks Swiggy One and MMT Black Gold. Spending \u20b91.5 lakh in a quarter unlocks \u20b91,500 Myntra or Nykaa vouchers. Annual spends of \u20b95 lakh and \u20b97.5 lakh each unlock \u20b95,000 flight vouchers. Unlocked milestones must be availed within 60 days.",
+    "confidence": "verified_product_page"
+  },
+  "welcome": {
+    "status": "conditional",
+    "summary": "Welcome memberships are Swiggy One and MMT Black Gold after \u20b91 lakh spend in the first 90 days.",
+    "confidence": "verified_product_page"
+  }
+}

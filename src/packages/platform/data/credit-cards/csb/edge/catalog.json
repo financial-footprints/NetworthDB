@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "registry_key": "csb/edge",
+  "bank": "csb",
+  "variant": "edge",
+  "display_name": "Jupiter Edge+",
+  "default_kind": "named",
+  "cobrand": "Jupiter",
+  "networks": ["RuPay"],
+  "reward_kind": "points",
+  "official_product_url": "https://www.csb.co.in/",
+  "mitc_url": "https://www.csb.co.in/pdf/edge-csb-bank-ruPay-credit-card-mitc_2025.pdf",
+  "researched_at": "2026-10-04",
+  "updated_at": "2026-10-04",
+  "sources": [
+    {
+      "url": "https://www.csb.co.in/pdf/edge-csb-bank-ruPay-credit-card-mitc_2025.pdf",
+      "retrieved_at": "2026-10-04",
+      "label": "Edge MITC"
+    },
+    {
+      "url": "https://www.csb.co.in/pdf/Edge_CSB_Bank_RuPay_Credit_Card-TnC.pdf",
+      "retrieved_at": "2026-10-04",
+      "label": "Jupiter / ENMPL T&C"
+    }
+  ],
+  "tags": ["rewards", "jupiter", "rupay"],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. Edge+ is in the same MITC with a \u20b9999 joining fee and is not this registry key. MITC charges from 6 December 2025 are exclusive of GST.",
+  "fees": {
+    "joining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "unknown",
+      "summary": "The MITC table wording for annual membership is awkward and lists nil on completion of one year. Treat the rupee annual fee as not clearly stated and confirm the live MITC.",
+      "confidence": "unknown"
+    },
+    "annual_waiver": {
+      "status": "unknown",
+      "summary": "A spend-based annual waiver is not clearly stated in the MITC extract.",
+      "confidence": "unknown"
+    },
+    "forex": {
+      "status": "yes",
+      "summary": "Forex markup is 3.5 percent. Dynamic currency conversion is 1.0 percent.",
+      "confidence": "verified_mitc"
+    },
+    "fuel_surcharge": {
+      "status": "conditional",
+      "summary": "Fuel surcharge is \u20b910 up to \u20b9400 and 1 percent above \u20b9400. A 1 percent waiver, max \u20b9100, applies on fuel spends from \u20b9400 to \u20b93,000 excluding GST. A further 1 percent fuel transaction fee applies above \u20b910,000 or when monthly spends exceed \u20b950,000.",
+      "confidence": "verified_mitc",
+      "conditions": [
+        {
+          "type": "txn_range",
+          "summary": "The waiver band is \u20b9400 to \u20b93,000 excluding GST."
+        },
+        {
+          "type": "cap",
+          "summary": "The waiver is capped at \u20b9100."
+        }
+      ]
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "unknown",
+      "summary": "The MITC describes rewards as Jewels, milestone incentives, and cashback. Accrual rates are not in the MITC schedule and may change without prior notice.",
+      "confidence": "unknown"
+    },
+    "accelerated": {
+      "status": "unknown",
+      "summary": "There is no Jewel earn table in the MITC. Branch marketing that says shopping, travel, and dining is not a rate table.",
+      "confidence": "unknown"
+    },
+    "upi": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Edge CSB RuPay MITC does not describe a separate UPI earn rate."
+    },
+    "redemption": {
+      "status": "unknown",
+      "summary": "Redemption is described only as Jewels or cashback. Accrual and redemption are at the bank's discretion, with clawback on closure, default, or fraud.",
+      "confidence": "verified_mitc"
+    },
+    "expiry": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC and product materials on 2026-10-04; this benefit is not offered for this SKU."
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "domestic": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "international": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "railway": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "movies": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "golf": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "concierge": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "accident": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    },
+    "card_protect": {
+      "status": "NA",
+      "summary": "NA",
+      "confidence": "verified_mitc",
+      "notes": "Checked issuer MITC on 2026-10-04; this benefit is not listed for this card variant."
+    }
+  },
+  "milestones": {
+    "status": "conditional",
+    "summary": "Fuel waiver uses a \u20b9400 to \u20b93,000 band. Extra fees apply on high-value utility, education, and fuel thresholds described in the MITC.",
+    "confidence": "verified_mitc"
+  },
+  "welcome": {
+    "status": "NA",
+    "summary": "NA",
+    "confidence": "verified_mitc"
+  }
+}

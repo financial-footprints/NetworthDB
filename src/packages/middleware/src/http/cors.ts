@@ -35,7 +35,7 @@ function resolveOrigin(
   return null;
 }
 
-export function cors(options: CorsOptions = {}) {
+export function corsMiddleware(options: CorsOptions = {}) {
   const { allowLocalhost = false, allowedOrigins = [], allowHeaders = [] } = options;
 
   return honoCors({

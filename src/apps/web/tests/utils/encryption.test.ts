@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, spyOn, test } from "bun:test";
-import * as authSession from "@web/context/Auth/session";
+import * as authSession from "@web/contexts/Auth/user";
 import { visibleEncryptionModules } from "@web/utils/crypto/types";
 
 afterEach(() => {
@@ -11,8 +11,14 @@ function enabledModuleIds(): string[] {
 }
 
 describe("encryption modules", () => {
-  test("exposes profile, accounts, and statements modules", () => {
-    expect(enabledModuleIds()).toEqual(["profile", "accounts", "statements"]);
+  test("exposes profile, accounts, transactions, and statements modules", () => {
+    expect(enabledModuleIds()).toEqual([
+      "profile",
+      "accounts",
+      "transactions",
+      "rules",
+      "statements",
+    ]);
   });
 
   test("hides TOTP-only fields when not enrolled", () => {
@@ -45,7 +51,7 @@ describe("encryption modules", () => {
       "Account Secrets",
     ]);
     expect(accountsModule?.fields[0]?.kind).toBe("server_encrypted");
-    expect(accountsModule?.fields[1]?.kind).toBe("e2ee");
+    expect(accountsModule?.fields[1]?.e2eeFieldId).toBe("account_number");
     expect(accountsModule?.fields[2]?.kind).toBe("server_encrypted");
   });
 

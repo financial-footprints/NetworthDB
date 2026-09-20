@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./cards/server": "./src/cards/server.ts"
   },
   "scripts": {
     "test": "bun test ./tests",
@@ -12,6 +13,7 @@
   },
   "dependencies": {
     "@ndb/core": "workspace:*",
-    "zod": "^3.24.2"
+    "date-fns": "^4.1.0",
+    "zod": "^4.6.5"
   }
 }

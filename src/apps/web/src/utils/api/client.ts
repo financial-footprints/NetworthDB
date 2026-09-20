@@ -1,25 +1,47 @@
-import { apiOrigin } from "@web/utils/api/baseUrl";
-import {
-  applyRequestAuthHeaders,
-  jsonRequestInit,
-  type RequestAuthHeadersOptions,
-  requestJson,
-  toRequestUrl,
-} from "@web/utils/api/helpers";
-import type { ApiSuccess } from "@web/utils/api/types";
+import { apiErrorResponseSchema, REQUEST_ID_HEADER } from "@ndb/platform";
+import { log } from "@web/logging";
+import { applyRequestAuthHeaders, toRequestUrl } from "@web/utils/api/helpers";
+import { ApiError } from "@web/utils/api/types";
 
-type RequestOptions = RequestAuthHeadersOptions & {
-  params?: Record<string, string | undefined>;
-  body?: unknown;
-  signal?: AbortSignal;
+export function apiOrigin(): string {
+  return (import.meta.env.PUBLIC_API_ORIGIN ?? "").trim().replace(/\/$/, "");
+}
+
+type ResponseSchema<T> = {
+  parse: (data: unknown) => T;
 };
 
-type ApiGetOptions = Omit<RequestOptions, "body">;
-type ApiMutationOptions = Omit<RequestOptions, "body">;
-type ApiDeleteOptions = Omit<RequestOptions, "params" | "signal">;
+type QueryParamValue = string | number | boolean;
 
-function createUrl(path: string, params?: Record<string, string | undefined>): URL {
-  const url = toRequestUrl(apiOrigin(), path);
+export type ApiRequestOptions<T = unknown> = {
+  method?: string;
+  body?: unknown;
+  schema?: ResponseSchema<T>;
+  sessionToken?: string;
+  signal?: AbortSignal;
+  timeoutMs?: number;
+  params?: Record<string, QueryParamValue | undefined | null>;
+};
+
+function buildQueryString(
+  params?: Record<string, QueryParamValue | undefined | null> | null
+): string {
+  if (!params) {
+    return "";
+  }
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null) {
+      searchParams.set(key, String(value));
+    }
+  }
+  const query = searchParams.toString();
+  return query ? `?${query}` : "";
+}
+
+export function buildUrl(path: string, params?: Record<string, string | undefined>): string {
+  const base = apiOrigin();
+  const url = toRequestUrl(base, path);
   if (params) {
     for (const [key, value] of Object.entries(params)) {
       if (value !== undefined) {
@@ -27,67 +49,121 @@ function createUrl(path: string, params?: Record<string, string | undefined>): U
       }
     }
   }
-  return url;
+  return url.toString();
 }
 
-async function request<T>(
-  method: string,
+function resolveResponseRayId(res: Response): string {
+  return res.headers.get(REQUEST_ID_HEADER) ?? crypto.randomUUID();
+}
+
+async function readResponseBody(res: Response): Promise<unknown> {
+  try {
+    return await res.json();
+  } catch {
+    return undefined;
+  }
+}
+
+async function readHttpError(res: Response): Promise<ApiError> {
+  const body = await readResponseBody(res);
+  const parsed = apiErrorResponseSchema.safeParse(body);
+  if (parsed.success) {
+    return new ApiError(
+      res.status,
+      parsed.data.error,
+      parsed.data.code,
+      parsed.data.field,
+      undefined
+    );
+  }
+  const message =
+    typeof body === "object" &&
+    body !== null &&
+    typeof (body as { details?: unknown }).details === "string"
+      ? (body as { details: string }).details
+      : res.statusText || `Request failed with status ${res.status}`;
+  return new ApiError(res.status, message);
+}
+
+function parseResponseData<T>(data: unknown, schema: ResponseSchema<T> | undefined): T {
+  if (!schema) {
+    return data as T;
+  }
+  return schema.parse(data) as T;
+}
+
+function buildApiRequestInit<T>(
   path: string,
-  options?: RequestOptions
-): Promise<ApiSuccess<T>> {
-  return requestJson<T>(
-    createUrl(path, options?.params),
-    jsonRequestInit(method, {
-      body: options?.body,
-      sessionToken: options?.sessionToken,
-      signal: options?.signal,
-    })
-  );
-}
+  options: ApiRequestOptions<T>
+): { url: string; init: RequestInit } {
+  const timeoutMs = options.timeoutMs ?? 10_000;
+  const method = options.method ?? "GET";
+  const base = apiOrigin();
+  const url = `${toRequestUrl(base, path)}${buildQueryString(options.params)}`;
 
-export function buildUrl(path: string, params?: Record<string, string | undefined>): string {
-  return createUrl(path, params).toString();
-}
+  const headers = new Headers();
+  applyRequestAuthHeaders(headers, options);
+  headers.set(REQUEST_ID_HEADER, crypto.randomUUID());
 
-export function get<T>(path: string, options?: ApiGetOptions): Promise<ApiSuccess<T>> {
-  return request("GET", path, options);
-}
+  let body: BodyInit | undefined;
+  if (options.body !== undefined) {
+    if (options.body instanceof FormData) {
+      body = options.body;
+    } else {
+      headers.set("Content-Type", "application/json");
+      body = JSON.stringify(options.body);
+    }
+  }
 
-export function post<T>(
-  path: string,
-  body?: unknown,
-  options?: ApiMutationOptions
-): Promise<ApiSuccess<T>> {
-  if (body instanceof FormData) {
-    const headers = new Headers();
-    applyRequestAuthHeaders(headers, options);
-    headers.set("X-Request-Id", crypto.randomUUID());
-    return requestJson<T>(buildUrl(path), {
-      method: "POST",
+  return {
+    url,
+    init: {
+      method,
       headers,
       body,
-      signal: options?.signal,
+      signal: options.signal ?? AbortSignal.timeout(timeoutMs),
+    },
+  };
+}
+
+async function throwIfApiFailed(res: Response, url: string): Promise<void> {
+  if (res.ok) {
+    return;
+  }
+  const pathname = new URL(url).pathname;
+  const skipWarn = res.status === 409 || (res.status === 401 && /\/login(?:\/|$)/.test(pathname));
+  if (!skipWarn) {
+    log("warn", "@ndb/web.api.request.failed", {
+      status: res.status,
+      path: pathname,
+      request_id: resolveResponseRayId(res),
     });
   }
-  return request("POST", path, { body, ...options });
+  throw await readHttpError(res);
 }
 
-export function put<T>(
+async function readApiResponseBody<T>(res: Response, schema?: ResponseSchema<T>): Promise<T> {
+  if (res.status === 204) {
+    return undefined as T;
+  }
+  const data: unknown = await res.json();
+  return parseResponseData(data, schema);
+}
+
+export async function apiRequest<T = unknown>(
   path: string,
-  body?: unknown,
-  options?: ApiMutationOptions
-): Promise<ApiSuccess<T>> {
-  return request("PUT", path, { body, ...options });
-}
+  options: ApiRequestOptions<T> = {}
+): Promise<T> {
+  const { url, init } = buildApiRequestInit(path, options);
 
-export function patch<T>(
-  path: string,
-  body?: unknown,
-  options?: ApiMutationOptions
-): Promise<ApiSuccess<T>> {
-  return request("PATCH", path, { body, ...options });
-}
-
-export function del<T>(path: string, options?: ApiDeleteOptions): Promise<ApiSuccess<T>> {
-  return request("DELETE", path, options);
+  try {
+    const res = await fetch(url, init);
+    await throwIfApiFailed(res, url);
+    return await readApiResponseBody(res, options.schema);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(0, "Unable to reach the server");
+  }
 }

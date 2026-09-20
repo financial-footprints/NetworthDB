@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "registry_key": "idfc/default",
+  "bank": "idfc",
+  "variant": "default",
+  "display_name": "IDFC FIRST Credit Card",
+  "default_kind": "parser_fallback",
+  "networks": [],
+  "reward_kind": "unknown",
+  "official_product_url": "https://www.idfcfirstbank.com/credit-card",
+  "mitc_url": "https://www.idfcfirstbank.com/content/dam/idfcfirstbank/pdf/credit-card/MITC-Document-Customer.pdf",
+  "researched_at": "2026-09-20",
+  "updated_at": "2026-09-20",
+  "sources": [
+    {
+      "url": "https://www.idfcfirstbank.com/content/dam/idfcfirstbank/pdf/credit-card/MITC-Document-Customer.pdf",
+      "retrieved_at": "2026-09-20",
+      "label": "Bank MITC"
+    },
+    {
+      "url": "https://www.idfcfirstbank.com/credit-card/mitc",
+      "retrieved_at": "2026-09-20",
+      "label": "MITC index"
+    }
+  ],
+  "tags": [],
+  "conflicts": [
+    "Product FAQs for some IDFC cards still describe evergreen points. The MITC states 24-month validity from credit for several unsecured SKUs including WOW!."
+  ],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. Do not attribute a named SKU to this parser fallback.",
+  "fees": {
+    "joining": {
+      "status": "depends",
+      "summary": "Joining fees in the bank MITC range from nil on several unsecured cards to large amounts on premium SKUs. Do not apply WOW! or another named fee to this fallback.",
+      "confidence": "verified_mitc"
+    },
+    "annual": {
+      "status": "depends",
+      "summary": "Annual fees are listed per product in the bank MITC. Many unsecured cards are nil. Others such as Power, SWYP, Hello Cashback, Ashva, Mayura, WOW! Black, Gaj, and Private have rupee fees.",
+      "confidence": "verified_mitc"
+    },
+    "annual_waiver": {
+      "status": "depends",
+      "summary": "Waiver rules, if any, are product-specific in the bank MITC.",
+      "confidence": "unknown"
+    },
+    "forex": {
+      "status": "depends",
+      "summary": "Forex markup in the MITC is 0% on some premium and WOW! SKUs, 1.99% on Select, 1.50% on Wealth, and 3.50% as the default for cards not listed as exceptions.",
+      "confidence": "verified_mitc"
+    },
+    "fuel_surcharge": {
+      "status": "depends",
+      "summary": "A 1% fuel surcharge waiver on ₹200 to ₹5,000 appears in the MITC, but cycle caps vary by product. The WOW! group cap is ₹100 per cycle and must not be assumed here.",
+      "confidence": "verified_mitc"
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "depends",
+      "summary": "Earn rates are product-specific. WOW! 4X travel earn must not be shown for an unspecified IDFC card.",
+      "confidence": "unknown"
+    },
+    "accelerated": {
+      "status": "depends",
+      "summary": "Accelerated categories are product-specific.",
+      "confidence": "unknown"
+    },
+    "upi": {
+      "status": "depends",
+      "summary": "UPI earn is product-specific.",
+      "confidence": "unknown"
+    },
+    "redemption": {
+      "status": "conditional",
+      "summary": "The bank MITC lists a ₹99 reward redemption fee. Catalogue options still depend on the product.",
+      "confidence": "verified_mitc"
+    },
+    "expiry": {
+      "status": "conditional",
+      "summary": "For Classic, Millennia, Select, Wealth, Family, and WOW!, the MITC states that reward points are valid 24 months from credit. Existing balances as of the June 2026 cycle remain valid through June 2028.",
+      "confidence": "verified_mitc",
+      "notes": "Confirm the row that applies to the user's actual SKU before treating this as definitive."
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "depends",
+      "summary": "Lounge access, including whether it is delivered through an issuer programme or Priority Pass, depends on the specific card. Spend milestones often apply. Do not copy WOW! lounge rules onto this fallback.",
+      "confidence": "unknown"
+    },
+    "domestic": {
+      "status": "depends",
+      "summary": "Domestic lounge entitlements are product-specific.",
+      "confidence": "unknown"
+    },
+    "international": {
+      "status": "depends",
+      "summary": "International lounge entitlements are product-specific.",
+      "confidence": "unknown"
+    },
+    "railway": {
+      "status": "depends",
+      "summary": "Railway lounge entitlements are product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "depends",
+      "summary": "Dining benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "movies": {
+      "status": "depends",
+      "summary": "Movie benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "golf": {
+      "status": "depends",
+      "summary": "Golf benefits are product-specific.",
+      "confidence": "unknown"
+    },
+    "concierge": {
+      "status": "depends",
+      "summary": "Concierge benefits are product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "depends",
+      "summary": "Travel insurance is product-specific.",
+      "confidence": "unknown"
+    },
+    "accident": {
+      "status": "depends",
+      "summary": "Accident cover is product-specific.",
+      "confidence": "unknown"
+    },
+    "card_protect": {
+      "status": "depends",
+      "summary": "Card protection cover is product-specific.",
+      "confidence": "unknown"
+    }
+  },
+  "milestones": {
+    "status": "depends",
+    "summary": "Spend milestones are product-specific.",
+    "confidence": "unknown"
+  },
+  "welcome": {
+    "status": "depends",
+    "summary": "Welcome benefits are product-specific.",
+    "confidence": "unknown"
+  }
+}

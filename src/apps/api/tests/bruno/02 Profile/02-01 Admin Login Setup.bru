@@ -1,0 +1,39 @@
+meta {
+  name: 02-01 Admin Login Setup
+  type: http
+  seq: 1
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/auth/login`
+
+  **This test verifies:** Administrator session for registering a disposable account user.
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "admin",
+    "password": "admin"
+  }
+}
+
+script:pre-request {
+  const suffix = Date.now().toString(36);
+  bru.setVar("accountUsername", `bruno_acct_${suffix}`);
+  bru.setVar("accountPassword", "password123");
+}
+
+script:post-response {
+  bru.setVar("adminSessionToken", res.body.data.sessionToken);
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.sessionToken: isDefined
+}

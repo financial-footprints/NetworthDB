@@ -4,30 +4,13 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./exports.d.ts",
-      "default": "./index.ts"
-    }
-  },
-  "files": [
-    "index.ts",
-    "native.d.ts",
-    "exports.d.ts",
-    "*.node"
-  ],
-  "napi": {
-    "binaryName": "encryption",
-    "constEnum": false
+    ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "napi build --release --no-js --dts native.d.ts --manifest-path ../../../Cargo.toml --package encryption",
-    "build:debug": "napi build --no-js --dts native.d.ts --manifest-path ../../../Cargo.toml --package encryption",
-    "dev": "bash ../../scripts/napi.sh",
-    "test": "bun test --env-file ../../apps/api/.env.tests ./tests",
+    "test": "bun test ./tests",
     "type-check": "tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.4.1",
     "@types/bun": "^1.4.1",
     "@types/node": "^26.4.1",
     "typescript": "~7.0.2"

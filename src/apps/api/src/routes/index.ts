@@ -1,0 +1,16 @@
+export { default as accountRoutes } from "@api/routes/accounts/index";
+export { default as authRoutes } from "@api/routes/auth/index";
+export { default as sessionRoutes } from "@api/routes/auth/sessions";
+export { default as backupRoutes } from "@api/routes/backup/index";
+export { default as categoryRoutes } from "@api/routes/categories/index";
+export { default as configRoutes } from "@api/routes/config/index";
+export { default as creditCardRoutes } from "@api/routes/credit-cards/index";
+export { default as dashboardRoutes } from "@api/routes/dashboard/index";
+export { default as healthRoutes } from "@api/routes/health/index";
+export { default as jobRoutes } from "@api/routes/jobs/index";
+export { default as ruleGroupRoutes } from "@api/routes/rule-groups/index";
+export { default as ruleRoutes } from "@api/routes/rules/index";
+export { default as sourcesRoutes } from "@api/routes/sources/index";
+export { default as tagRoutes } from "@api/routes/tags/index";
+export { default as enrollmentRoutes } from "@api/routes/users/enrollment";
+export { default as userRoutes } from "@api/routes/users/index";

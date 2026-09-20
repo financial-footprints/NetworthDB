@@ -1,18 +1,13 @@
-export type ApiEnvelope<T> = {
-  data: T;
-  errors: unknown[];
-};
-
 export type SessionTokenPair = {
-  session_token: string;
-  refresh_token: string;
-  expires_in: number;
+  sessionToken: string;
+  refreshToken: string;
+  expiresIn: number;
 };
 
 export type MultifactorChallengeResponse = {
   status: string;
-  multifactor_token: string;
-  expires_in: number;
+  multifactorToken: string;
+  expiresIn: number;
   methods: string[];
 };
 
@@ -21,48 +16,78 @@ export type TotpBeginResponse = {
 };
 
 export type RecoveryCodesResponse = {
-  recovery_codes: string[];
+  recoveryCodes: string[];
 };
 
 export type AdvancedRecoveryContextResponse = {
-  vault_initialized: boolean;
-  vault_recovery_methods: string[];
+  vaultInitialized: boolean;
+  vaultRecoveryMethods: string[];
 };
 
 export type VaultSlotResponse = {
-  id: string;
-  slot_type: string;
+  id?: string;
+  slotType: string;
   salt: string;
-  wrap_blob: string;
-  credential_id: string | null;
+  wrapBlob: string;
+  credentialId: string | null;
   label?: string;
 };
 
 export type VaultInitializeResponse = {
-  vault_slots: VaultSlotResponse[];
+  vaultSlots: VaultSlotResponse[];
 };
 
 export type UserResponse = {
   id: string;
   username: string;
   role: string;
-  created_at?: string;
-  multifactor_enabled: boolean;
-  multifactor_methods: string[];
-  recovery_codes_enabled: boolean;
-  recovery_email_enabled: boolean;
-  recovery_email_set_at: string | null;
-  vault_initialized: boolean;
-  vault_slots: Array<{
+  createdAt?: string;
+  multifactorEnabled: boolean;
+  multifactorMethods: string[];
+  recoveryCodesEnabled: boolean;
+  recoveryEmailEnabled: boolean;
+  recoveryEmailSetAt: string | null;
+  vaultInitialized: boolean;
+  vaultSlots: Array<{
     id?: string;
-    slot_type: string;
+    slotType: string;
     salt?: string;
-    wrap_blob?: string;
+    wrapBlob?: string;
     label?: string;
   }>;
-  display_name: string | null;
+  displayName: string | null;
+  clientSettings: Record<string, unknown> | null;
 };
 
-export async function readApiJson<T>(response: Response): Promise<ApiEnvelope<T>> {
-  return response.json() as Promise<ApiEnvelope<T>>;
+export type ApiDataEnvelope<T> = { data: T };
+
+export async function readApiJson<T>(response: Response): Promise<T> {
+  return response.json() as Promise<T>;
+}
+
+export async function readApiData<T>(response: Response): Promise<T> {
+  const body = await readApiJson<ApiDataEnvelope<T>>(response);
+  return body.data;
+}
+
+export type SystemAccountListItem = {
+  id: string;
+  accountType: string;
+  label?: string;
+};
+
+export type SystemAccountsData = {
+  items: SystemAccountListItem[];
+};
+
+export async function readSystemAccountsData(response: Response): Promise<SystemAccountsData> {
+  return readApiData<SystemAccountsData>(response);
+}
+
+export function systemAccountId(items: SystemAccountListItem[], accountType: string): string {
+  const id = items.find((item) => item.accountType === accountType)?.id;
+  if (!id) {
+    throw new Error(`system account missing: ${accountType}`);
+  }
+  return id;
 }

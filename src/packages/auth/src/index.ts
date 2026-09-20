@@ -1,4 +1,3 @@
-export { type CreateAuthCryptoConfig, createAuthCrypto } from "@auth/crypto";
-export { createPasswordHasher, seedHashPassword } from "@auth/password";
-export { KvstoreAuthLimits, type KvstoreAuthLimitsConfig } from "@auth/ratelimit";
-export type { WebAuthnRpConfig } from "@ndb/core";
+export { createAuthCrypto } from "@auth/crypto";
+export { createPasswordHasher, seedHashPassword } from "@auth/crypto/password";
+export { KvstoreAuthLimits } from "@auth/ratelimit";

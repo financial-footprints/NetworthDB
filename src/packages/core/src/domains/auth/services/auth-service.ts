@@ -22,8 +22,8 @@ import { WebAuthnService } from "@core/domains/auth/services/webauthn-service";
 import { User, Username } from "@core/domains/user/entities/user/index";
 import { Password } from "@core/domains/user/entities/user/password";
 import { assertAdministrator, type Role } from "@core/domains/user/helpers";
-import type { VaultService } from "@core/domains/user/modules/vault/services/vault-service";
 import type { UserRepository } from "@core/domains/user/repositories/user-repository";
+import type { VaultService } from "@core/domains/user/vault/services/vault-service";
 import type { AuthCrypto } from "@core/ports/auth";
 import type { EmailSender } from "@core/ports/email";
 import type { RateLimiter } from "@core/ports/ratelimiter";
@@ -150,7 +150,7 @@ export class AuthService {
 
     const existing = await findFirst(this.users.findByFilters.bind(this.users), { username });
     if (existing) {
-      throw new ConflictError("core.user.username.conflict.taken", {
+      throw new ConflictError("Username is already taken.", {
         username: username.toString(),
       });
     }
@@ -181,7 +181,7 @@ export class AuthService {
     if (await this.passwordLockout.isLocked(usernameKey)) {
       const dummyHash = await dummyPasswordHash(this.crypto);
       await this.crypto.password.verify(password, dummyHash);
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
 
     const user = await findFirst(this.users.findByFilters.bind(this.users), {
@@ -192,13 +192,13 @@ export class AuthService {
 
     if (!user || !valid) {
       await this.passwordLockout.recordFailure(usernameKey);
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
 
     await this.passwordLockout.reset(usernameKey);
 
     if (user.totp.isLocked()) {
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
 
     if (this.multifactor.needsAfterLogin(user)) {
@@ -211,12 +211,12 @@ export class AuthService {
   async refresh(refreshToken: string): Promise<SessionTokenPair> {
     const session = await this.sessions.findByRefreshToken(refreshToken);
     if (!session?.isRefreshValid()) {
-      throw new UnauthorizedError("core.auth.refresh.unauthorized.invalid-token");
+      throw new UnauthorizedError("Refresh token is invalid.");
     }
 
     const user = await this.users.findById(session.userId);
     if (!user) {
-      throw new UnauthorizedError("core.auth.refresh.unauthorized.invalid-token");
+      throw new UnauthorizedError("Refresh token is invalid.");
     }
 
     return this.sessions.rotate(session);
@@ -229,12 +229,12 @@ export class AuthService {
   async get(sessionToken: string): Promise<ResolvedSession> {
     const session = await this.sessions.findValidSession(sessionToken);
     if (!session) {
-      throw new UnauthorizedError("core.auth.session.unauthorized.invalid-or-expired");
+      throw new UnauthorizedError("Session is invalid or expired.");
     }
 
     const user = await this.users.findById(session.userId);
     if (!user) {
-      throw new UnauthorizedError("core.auth.session.unauthorized.invalid-or-expired");
+      throw new UnauthorizedError("Session is invalid or expired.");
     }
 
     return {
@@ -277,14 +277,14 @@ export class AuthService {
 
     const nextUsername = Username.parse(username);
     if (nextUsername.toString() === stored.username.toString()) {
-      throw new ValidationError("core.auth.username.invalid.unchanged");
+      throw new ValidationError("Username is unchanged.");
     }
 
     const taken = await findFirst(this.users.findByFilters.bind(this.users), {
       username: nextUsername,
     });
     if (taken) {
-      throw new ConflictError("core.user.username.conflict.taken", {
+      throw new ConflictError("Username is already taken.", {
         username: nextUsername.toString(),
       });
     }
@@ -297,7 +297,7 @@ export class AuthService {
   private async _get(userId: string) {
     const user = await this.users.findById(userId);
     if (!user) {
-      throw new UnauthorizedError("core.auth.session.unauthorized.invalid-or-expired");
+      throw new UnauthorizedError("Session is invalid or expired.");
     }
 
     return user;
@@ -309,7 +309,7 @@ export class AuthService {
   ): Promise<void> {
     const valid = await this.crypto.password.verify(currentPassword, user.passwordHash);
     if (!valid) {
-      throw new UnauthorizedError("core.auth.unauthorized.invalid-credentials");
+      throw new UnauthorizedError("Invalid username or password.");
     }
   }
 }

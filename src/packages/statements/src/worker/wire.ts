@@ -1,29 +1,21 @@
-import type { StatementsRuntimeConfig } from "@statements/api.ts";
-import type { ProcessResult, StatementsRun } from "../../native.d.ts";
+import type { StatementPipelineResult } from "@ndb/core";
+import type { StatementsEngineConfig } from "@statements/config/runtime";
+import type { PipelineSnapshot } from "@statements/pipeline/jobs/serde";
 
-export type RuntimeData = StatementsRuntimeConfig;
+export type RuntimeData = StatementsEngineConfig;
 
 export type Payload =
   | {
       method: "processPipeline";
-      run: StatementsRun;
-      dataKey: Buffer | null;
-      debugTrace?: boolean;
+      pipeline: PipelineSnapshot;
     }
   | {
       method: "processUpload";
-      run: StatementsRun;
-      accountId: string;
-      format: string;
-      statementDate: string | null | undefined;
-      dataKey: Buffer | null;
-      debugTrace?: boolean;
+      pipeline: PipelineSnapshot;
     }
   | {
       method: "deleteAccountStatements";
-      run: StatementsRun;
-      accountId: string;
-      dataKey: Buffer | null;
+      pipeline: PipelineSnapshot;
     };
 
 export type Request =
@@ -40,5 +32,6 @@ export type Request =
 
 export type Reply =
   | { type: "ready" }
-  | { type: "done"; taskId: string; result: ProcessResult }
+  | { type: "progress"; taskId: string; line: string }
+  | { type: "done"; taskId: string; result: StatementPipelineResult }
   | { type: "error"; taskId: string; message: string };

@@ -1,11 +1,13 @@
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { createDbClient } from "@database/client";
 import { parseDbEnv } from "@database/env";
-import { accounts, jobs, sources, usersVault } from "@database/schema/index";
+import { accounts, backupExports, jobs, sources, usersVault } from "@database/schema/index";
 import { users } from "@database/schema/users/index";
 import type { DbClient } from "@database/types";
 import { seedHashPassword } from "@ndb/auth";
 import type { Role } from "@ndb/core";
-import { inArray } from "drizzle-orm";
+import { inArray, sql } from "drizzle-orm";
 
 const SEED_USERS = [
   { id: "00000000-0000-4000-8000-000000000001", username: "admin", role: "administrator" },
@@ -36,46 +38,67 @@ async function resetSeedUserData(client: DbClient, userIds: string[]): Promise<v
   }
 
   await client.delete(jobs).where(inArray(jobs.userId, userIds));
+  await client.delete(backupExports).where(inArray(backupExports.userId, userIds));
   await client.delete(accounts).where(inArray(accounts.userId, userIds));
   await client.delete(sources).where(inArray(sources.userId, userIds));
   await client.delete(usersVault).where(inArray(usersVault.userId, userIds));
 }
 
-async function seedLocalUsers(): Promise<void> {
-  const passwordHash = await seedHashPassword("admin");
-  const dbHandle = createDbClient({ config: parseDbEnv() });
-  const createdAt = new Date();
-  const seedUserIds = SEED_USERS.map((seed) => seed.id);
+function sqlStatements(source: string): string[] {
+  return source
+    .split(";\n")
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0)
+    .filter((part) => !part.split("\n").every((line) => line.trim().startsWith("--")));
+}
 
-  try {
-    await resetSeedUserData(dbHandle.client, seedUserIds);
+async function runCommonSql(client: DbClient): Promise<void> {
+  const commonPath = join(import.meta.dir, "../drizzle/seed/common.sql");
+  if (!existsSync(commonPath)) {
+    return;
+  }
 
-    for (const seed of SEED_USERS) {
-      const reset = resetUserState(passwordHash, seed.role);
-      await dbHandle.client
-        .insert(users)
-        .values({
-          id: seed.id,
-          username: seed.username,
-          createdAt,
-          ...reset,
-        })
-        .onConflictDoUpdate({
-          target: users.id,
-          set: {
-            username: seed.username,
-            ...reset,
-          },
-        });
-    }
-  } finally {
-    await dbHandle.close();
+  const source = readFileSync(commonPath, "utf8");
+  for (const statement of sqlStatements(source)) {
+    await client.execute(sql.raw(statement));
   }
 }
 
-if (process.env.ENVIRONMENT === "production") {
-  console.error("Refusing to seed local users when ENVIRONMENT=production");
-  process.exit(1);
+async function seedLocalUsers(client: DbClient): Promise<void> {
+  const passwordHash = await seedHashPassword("admin");
+  const createdAt = new Date();
+  const seedUserIds = SEED_USERS.map((seed) => seed.id);
+
+  await resetSeedUserData(client, seedUserIds);
+
+  for (const seed of SEED_USERS) {
+    const reset = resetUserState(passwordHash, seed.role);
+    await client
+      .insert(users)
+      .values({
+        id: seed.id,
+        username: seed.username,
+        createdAt,
+        ...reset,
+      })
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          username: seed.username,
+          ...reset,
+        },
+      });
+  }
 }
 
-await seedLocalUsers();
+const dbHandle = createDbClient({ config: parseDbEnv() });
+
+try {
+  await runCommonSql(dbHandle.client);
+  if (process.env.ENVIRONMENT !== "production") {
+    await seedLocalUsers(dbHandle.client);
+    await runCommonSql(dbHandle.client);
+  }
+} finally {
+  await dbHandle.close();
+}

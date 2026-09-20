@@ -3,9 +3,9 @@ import type {
   AccountUpdatePayload,
   AccountWritePayload,
   BankVariant,
-} from "@web/utils/api/endpoints/accounts/types";
+} from "@web/utils/api/routes/accounts/types";
 import { isDefaultVariant } from "@web/utils/banks";
-import { sealField } from "@web/utils/crypto/vault";
+import { resolveStoredField } from "@web/utils/crypto/client-settings";
 import { toIsoAccountDate } from "@web/utils/time";
 
 export function emptyForm(accountType: AccountType): AccountWritePayload {
@@ -58,18 +58,19 @@ function buildMailPayload(form: AccountWritePayload | AccountUpdatePayload) {
 }
 
 export async function formToAccountBody(
-  dek: CryptoKey,
-  form: AccountWritePayload | AccountUpdatePayload
+  dek: CryptoKey | null,
+  form: AccountWritePayload | AccountUpdatePayload,
+  encryptAccountNumber: boolean
 ): Promise<Record<string, unknown>> {
   const accountNumber = form.account_number.trim();
   const passwords = (form.passwords ?? []).filter(Boolean);
   const body: Record<string, unknown> = {
     bank: form.bank,
     variant: normalizeVariantForPayload(form.variant),
-    account_type: form.type ?? "credit_card",
-    opening_date: toIsoAccountDate(form.opening_date),
-    closing_date: form.closing_date?.trim() ? toIsoAccountDate(form.closing_date) : null,
-    account_number: await sealField(dek, accountNumber),
+    accountType: form.type,
+    openingDate: toIsoAccountDate(form.opening_date),
+    closingDate: form.closing_date?.trim() ? toIsoAccountDate(form.closing_date) : null,
+    accountNumber: await resolveStoredField(dek, accountNumber, encryptAccountNumber),
   };
 
   if (passwords.length > 0) {
@@ -78,19 +79,22 @@ export async function formToAccountBody(
 
   const statement = buildStatementPayload(form);
   if (statement) {
-    body.statement_rules = statement;
+    body.statement = {
+      textContains: statement.text_contains,
+      textNotContains: statement.text_not_contains,
+    };
   }
 
   const mail = buildMailPayload(form);
   if (mail) {
-    body.mail_rules = mail;
+    body.mail = {
+      subjects: mail.subjects,
+      bodyContains: mail.body_contains,
+      fromAddresses: mail.from,
+    };
   }
 
   return body;
-}
-
-export function toAccountUpdatePayload(form: AccountWritePayload): AccountUpdatePayload {
-  return { ...form };
 }
 
 export function normalizeVariantForPayload(variant: string | null | undefined): string | null {
@@ -123,4 +127,28 @@ export function hasAdvancedOptions(form: AccountWritePayload): boolean {
     (form.mail?.body_contains ?? []).some(Boolean) ||
     (form.mail?.from ?? []).some(Boolean)
   );
+}
+
+export type BackupImportStats = {
+  accountsCreated?: number;
+  accountsUpdated?: number;
+  transactionsInserted?: number;
+  transactionsSkipped?: number;
+};
+
+export function formatBackupImportMessage(backup: BackupImportStats | undefined): string {
+  const created = backup?.accountsCreated ?? 0;
+  const updated = backup?.accountsUpdated ?? 0;
+  const inserted = backup?.transactionsInserted ?? 0;
+  const skipped = backup?.transactionsSkipped ?? 0;
+  return `Restored backup: ${created} account(s) created, ${updated} updated, ${inserted} transaction(s) inserted, ${skipped} skipped.`;
+}
+
+export function downloadBackupBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
 }

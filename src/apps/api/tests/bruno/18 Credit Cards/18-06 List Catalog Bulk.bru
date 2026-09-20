@@ -1,0 +1,19 @@
+meta {
+  name: 18-06 List Catalog Bulk
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/credit-cards/catalog/bulk
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.items: isArray
+}

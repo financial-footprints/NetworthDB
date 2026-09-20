@@ -1,5 +1,4 @@
-import type { EmailSender, SendEmailRequest } from "@ndb/core";
-import type { Logger } from "@ndb/logger";
+import type { EmailSender, Logger, SendEmailRequest } from "@ndb/core";
 
 export interface ConsoleEmailSenderOptions {
   logger: Logger;

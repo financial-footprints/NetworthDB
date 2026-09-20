@@ -24,7 +24,7 @@ body:json {
 }
 
 script:post-response {
-  bru.setVar("mfaChallengeToken", res.body.data.multifactor_token);
+  bru.setVar("mfaChallengeToken", res.body.data.multifactorToken);
   const { generateNextTotpCode } = require("./lib/bruno-totp/index.cjs");
   bru.setVar("totpCode", generateNextTotpCode(bru.getVar("totpSecret")));
 }
@@ -32,5 +32,5 @@ script:post-response {
 assert {
   res.status: eq 200
   res.body.data.status: eq multifactor_required
-  res.body.data.multifactor_token: isDefined
+  res.body.data.multifactorToken: isDefined
 }

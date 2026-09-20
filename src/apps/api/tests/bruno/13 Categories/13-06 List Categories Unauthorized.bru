@@ -1,0 +1,15 @@
+meta {
+  name: 13-06 List Categories Unauthorized
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/categories
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}

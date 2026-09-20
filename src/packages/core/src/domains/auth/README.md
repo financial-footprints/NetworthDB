@@ -1,4 +1,4 @@
-# Auth domain
+# Auth Domain
 
 Authentication bounded context: sessions, MFA, recovery, and WebAuthn.
 
@@ -20,13 +20,11 @@ Crypto adapters (`createAuthCrypto`, Argon2, TOTP, WebAuthn RP) live in [`@ndb/a
 
 - Other domains import `assertAal2` from [`helpers.ts`](helpers.ts) for MFA step-up.
 - `UserService` accepts a narrow `SessionRevoker` hook (implemented by `AuthService`) after admin edits.
-- `VaultService` lives under [`user/modules/vault/`](../user/modules/vault/README.md).
+- `VaultService` lives under [`user/vault/`](../user/vault/README.md).
 - Repository ports are implemented by `@ndb/database` Drizzle adapters.
 - Services depend on `AuthCrypto` ports (`PasswordHasher`, `TotpEngine`, `SecretBox`, `TokenDigest`, `WebAuthnRelyingParty`) implemented by `@ndb/auth`.
 
-## Import rules
+## Import Rules
 
 - Auth **types, entities, and services** — `@ndb/core`
 - Auth **crypto adapters** (`createAuthCrypto`, `KvstoreAuthLimits`, `seedHashPassword`) — `@ndb/auth`
-
-See [ADR-006](../../../../../docs/adr/006-type-ownership.md) for the full type-ownership model.

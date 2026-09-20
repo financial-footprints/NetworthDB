@@ -1,0 +1,26 @@
+meta {
+  name: 14-04 Patch Tag
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{BASE_URL}}/api/v1/tags/{{tagId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+body:json {
+  {
+    "name": "Bruno Tag Renamed"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.name: eq Bruno Tag Renamed
+}

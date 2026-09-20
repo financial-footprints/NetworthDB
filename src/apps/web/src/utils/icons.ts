@@ -15,6 +15,6 @@ for (const [path, url] of Object.entries(iconModules)) {
   ICONS[name] = url;
 }
 
-export function IconFI(bank: string): string {
+export function bankIcon(bank: string): string {
   return ICONS[bank.toLowerCase()] ?? otherIcon;
 }

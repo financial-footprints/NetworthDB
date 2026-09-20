@@ -1,0 +1,20 @@
+meta {
+  name: 16-02 Get Dashboard
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/dashboard?from=2024-04-01&to=2025-03-31
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: isDefined
+}

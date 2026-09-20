@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "registry_key": "csb/default",
+  "bank": "csb",
+  "variant": "default",
+  "display_name": "CSB Credit Card",
+  "default_kind": "parser_fallback",
+  "networks": [],
+  "reward_kind": "unknown",
+  "official_product_url": "https://www.csb.co.in/",
+  "mitc_url": "https://www.csb.co.in/pdf/edge-csb-bank-ruPay-credit-card-mitc_2025.pdf",
+  "researched_at": "2026-09-20",
+  "updated_at": "2026-09-20",
+  "sources": [
+    {
+      "url": "https://www.csb.co.in/pdf/edge-csb-bank-ruPay-credit-card-mitc_2025.pdf",
+      "retrieved_at": "2026-09-20",
+      "label": "Edge MITC"
+    },
+    {
+      "url": "https://www.csb.co.in/pdf/Edge_CSB_Bank_RuPay_Credit_Card-TnC.pdf",
+      "retrieved_at": "2026-09-20",
+      "label": "Edge T&C"
+    }
+  ],
+  "tags": [],
+  "conflicts": [],
+  "disclaimer": "This summary is for convenience. The issuer MITC prevails. The only CSB retail credit-card MITC located in this pass is Edge and Edge+. Do not copy those rules onto this fallback.",
+  "fees": {
+    "joining": {
+      "status": "unknown",
+      "summary": "No bank-generic joining fee schedule was found. Edge joining is nil and Edge+ joining is ₹999. Do not apply either figure here.",
+      "confidence": "unknown"
+    },
+    "annual": {
+      "status": "unknown",
+      "summary": "No bank-generic annual fee schedule was found.",
+      "confidence": "unknown"
+    },
+    "annual_waiver": {
+      "status": "unknown",
+      "summary": "No bank-generic waiver schedule was found.",
+      "confidence": "unknown"
+    },
+    "forex": {
+      "status": "unknown",
+      "summary": "No bank-generic forex schedule was found. Edge forex is 3.5 percent and must not be assumed here.",
+      "confidence": "unknown"
+    },
+    "fuel_surcharge": {
+      "status": "unknown",
+      "summary": "No bank-generic fuel waiver was found.",
+      "confidence": "unknown"
+    }
+  },
+  "rewards": {
+    "base_earn": {
+      "status": "unknown",
+      "summary": "Rewards, including Jupiter Jewels, are documented only for Edge in this pass.",
+      "confidence": "unknown"
+    },
+    "accelerated": {
+      "status": "unknown",
+      "summary": "Accelerated earn is not documented at bank-generic level.",
+      "confidence": "unknown"
+    },
+    "upi": {
+      "status": "unknown",
+      "summary": "UPI earn is not documented at bank-generic level.",
+      "confidence": "unknown"
+    },
+    "redemption": {
+      "status": "unknown",
+      "summary": "Redemption is not documented at bank-generic level.",
+      "confidence": "unknown"
+    },
+    "expiry": {
+      "status": "unknown",
+      "summary": "Point expiry is not documented at bank-generic level.",
+      "confidence": "unknown"
+    }
+  },
+  "lounge": {
+    "summary": {
+      "status": "unknown",
+      "summary": "Lounge access is not documented at bank-generic level. Do not copy Edge or invent Priority Pass.",
+      "confidence": "unknown"
+    },
+    "domestic": {
+      "status": "unknown",
+      "summary": "Domestic lounge is not documented at bank-generic level.",
+      "confidence": "unknown"
+    },
+    "international": {
+      "status": "unknown",
+      "summary": "International lounge is not documented at bank-generic level.",
+      "confidence": "unknown"
+    },
+    "railway": {
+      "status": "unknown",
+      "summary": "Railway lounge is not documented at bank-generic level.",
+      "confidence": "unknown"
+    }
+  },
+  "lifestyle": {
+    "dining": {
+      "status": "unknown",
+      "summary": "Dining benefits are not documented at bank-generic level.",
+      "confidence": "unknown"
+    },
+    "movies": {
+      "status": "unknown",
+      "summary": "Movie benefits are not documented at bank-generic level.",
+      "confidence": "unknown"
+    },
+    "golf": {
+      "status": "unknown",
+      "summary": "Golf benefits are not documented at bank-generic level.",
+      "confidence": "unknown"
+    },
+    "concierge": {
+      "status": "unknown",
+      "summary": "Concierge benefits are not documented at bank-generic level.",
+      "confidence": "unknown"
+    }
+  },
+  "insurance": {
+    "travel": {
+      "status": "unknown",
+      "summary": "Travel insurance is not documented at bank-generic level.",
+      "confidence": "unknown"
+    },
+    "accident": {
+      "status": "unknown",
+      "summary": "Accident cover is not documented at bank-generic level.",
+      "confidence": "unknown"
+    },
+    "card_protect": {
+      "status": "unknown",
+      "summary": "Card protection cover is not documented at bank-generic level.",
+      "confidence": "unknown"
+    }
+  },
+  "milestones": {
+    "status": "unknown",
+    "summary": "Spend milestones are not documented at bank-generic level.",
+    "confidence": "unknown"
+  },
+  "welcome": {
+    "status": "unknown",
+    "summary": "Welcome benefits are not documented at bank-generic level.",
+    "confidence": "unknown"
+  }
+}

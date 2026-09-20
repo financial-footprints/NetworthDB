@@ -1,85 +1,23 @@
 import { describe, expect, test } from "bun:test";
-import {
-  backupEntryToWritePayload,
-  buildBackupFiles,
-  findExistingAccountId,
-  parseBackupAccountsJson,
-  sourcesToWritePayload,
-} from "@web/utils/accounts/backup";
-import type { Account } from "@web/utils/api/endpoints/accounts/types";
+import { formatBackupImportMessage } from "@web/utils/accounts";
 
-const existingAccount: Account = {
-  id: "11111111-1111-4111-8111-111111111111",
-  label: "OneCard",
-  bank: "onecard",
-  variant: null,
-  account_type: "credit_card",
-  opening_date: "2020-01-15",
-  closing_date: null,
-  account_number: "5678",
-  has_passwords: true,
-};
-
-describe("backup", () => {
-  test("backupEntryToWritePayload maps API account shape", () => {
-    const payload = backupEntryToWritePayload({
-      ...existingAccount,
-      passwords: ["secret"],
-    });
-
-    expect(payload.bank).toBe("onecard");
-    expect(payload.account_number).toBe("5678");
-    expect(payload.passwords).toEqual(["secret"]);
-    expect(payload.type).toBe("credit_card");
-  });
-
-  test("buildBackupFiles writes accounts.json from API data", () => {
-    const files = buildBackupFiles([existingAccount], []);
-    const parsed = JSON.parse(files["accounts.json"]) as Array<Record<string, unknown>>;
-    expect(parsed).toHaveLength(1);
-    expect(parsed[0]?.account_number).toBe("5678");
-  });
-
-  test("parseBackupAccountsJson validates exported accounts", () => {
-    const files = buildBackupFiles([existingAccount], []);
-    const accounts = parseBackupAccountsJson(files["accounts.json"]);
-    expect(accounts[0]?.bank).toBe("onecard");
-  });
-
-  test("findExistingAccountId matches by account number", () => {
-    const usedIds = new Set<string>();
-    const id = findExistingAccountId(
-      {
-        bank: "onecard",
-        account_type: "credit_card",
-        opening_date: "2020-01-15",
-        account_number: "5678",
-      },
-      [existingAccount],
-      usedIds
+describe("backup helpers", () => {
+  test("formatBackupImportMessage uses zero for missing counts", () => {
+    expect(formatBackupImportMessage(undefined)).toBe(
+      "Restored backup: 0 account(s) created, 0 updated, 0 transaction(s) inserted, 0 skipped."
     );
-    expect(id).toBe(existingAccount.id);
   });
 
-  test("sourcesToWritePayload maps email password", () => {
-    const writes = sourcesToWritePayload([
-      {
-        id: "email-1",
-        type: "email",
-        label: "Work",
-        host: "imap.example.test",
-        port: 993,
-        username: "user@example.test",
-        folder: "INBOX",
-        use_ssl: true,
-        has_password: true,
-        password: "imap-secret",
-      },
-    ]);
-
-    expect(writes[0]).toMatchObject({
-      password: "imap-secret",
-      host: "imap.example.test",
-    });
+  test("formatBackupImportMessage formats job output counts", () => {
+    expect(
+      formatBackupImportMessage({
+        accountsCreated: 2,
+        accountsUpdated: 1,
+        transactionsInserted: 100,
+        transactionsSkipped: 5,
+      })
+    ).toBe(
+      "Restored backup: 2 account(s) created, 1 updated, 100 transaction(s) inserted, 5 skipped."
+    );
   });
 });

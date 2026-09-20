@@ -1,13 +1,15 @@
 import { Worker } from "node:worker_threads";
 import type { StatementPipelineResult } from "@ndb/core";
-import type { StatementsRuntimeConfig } from "@statements/api.ts";
-import { statementPipelineResult } from "@statements/convert/statement-pipeline-result.ts";
-import type { Payload, Reply, Request, RuntimeData } from "@statements/worker/wire.ts";
+import type { StatementsEngineConfig } from "@statements/config/runtime";
+import { assertQpdfAvailable } from "@statements/ingest/pdf/helpers";
+import { cancelledResult } from "@statements/pipeline/jobs/result";
+import type { Payload, Reply, Request, RuntimeData } from "@statements/worker/wire";
 
 type Task = {
   taskId: string;
   jobId?: string;
   payload: Payload;
+  onProgress?: (line: string) => void;
   resolve: (result: StatementPipelineResult) => void;
   reject: (error: Error) => void;
 };
@@ -18,9 +20,9 @@ type Slot = {
   taskId?: string;
 };
 
-export type Config = {
+export type StatementsPoolConfig = {
   threads: number;
-  runtime?: StatementsRuntimeConfig;
+  runtime?: StatementsEngineConfig;
 };
 
 export class Pool {
@@ -32,9 +34,14 @@ export class Pool {
   private nextId = 0;
   private closing = false;
 
-  constructor(config: Config) {
+  constructor(config: StatementsPoolConfig) {
     const count = Math.max(1, config.threads);
-    const runtime: RuntimeData = config.runtime ?? {};
+    const runtime: RuntimeData = config.runtime ?? {
+      filestorePath: "/tmp/networthdb",
+      encryptAtRest: false,
+      logLevel: "info",
+      environment: "local",
+    };
 
     for (let index = 0; index < count; index += 1) {
       const worker = new Worker(new URL("./worker.ts", import.meta.url), {
@@ -60,13 +67,17 @@ export class Pool {
     }
   }
 
-  run(payload: Payload, jobId?: string): Promise<StatementPipelineResult> {
+  run(
+    payload: Payload,
+    jobId?: string,
+    onProgress?: (line: string) => void
+  ): Promise<StatementPipelineResult> {
     if (this.closing) {
       return Promise.reject(new Error("statements.pool.shutting-down"));
     }
 
     if (jobId && this.cancelled.has(jobId)) {
-      return Promise.resolve(cancelled());
+      return Promise.resolve(cancelledResult());
     }
 
     return new Promise((resolve, reject) => {
@@ -75,6 +86,7 @@ export class Pool {
         taskId,
         jobId,
         payload,
+        onProgress,
         resolve,
         reject,
       });
@@ -88,7 +100,7 @@ export class Pool {
     const pending: Task[] = [];
     for (const task of this.queue) {
       if (task.jobId === jobId) {
-        task.resolve(cancelled());
+        task.resolve(cancelledResult());
       } else {
         pending.push(task);
       }
@@ -134,7 +146,7 @@ export class Pool {
       }
 
       if (task.jobId && this.cancelled.has(task.jobId)) {
-        task.resolve(cancelled());
+        task.resolve(cancelledResult());
         continue;
       }
 
@@ -159,13 +171,19 @@ export class Pool {
       return;
     }
 
+    if (message.type === "progress") {
+      const task = this.active.get(message.taskId);
+      task?.onProgress?.(message.line);
+      return;
+    }
+
     if (message.type === "error") {
       this.finish(slot, message.taskId, undefined, new Error(message.message));
       return;
     }
 
     if (message.type === "done") {
-      this.finish(slot, message.taskId, statementPipelineResult.toDomain(message.result));
+      this.finish(slot, message.taskId, message.result);
     }
   }
 
@@ -210,14 +228,7 @@ function toError(error: unknown): Error {
   return error instanceof Error ? error : new Error(String(error));
 }
 
-function cancelled(): StatementPipelineResult {
-  return {
-    ok: false,
-    reason: "cancelled by user",
-    warnings: [],
-  };
-}
-
-export function createPool(config: Config): Pool {
+export function createPool(config: StatementsPoolConfig): Pool {
+  assertQpdfAvailable();
   return new Pool(config);
 }

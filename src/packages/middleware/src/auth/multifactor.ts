@@ -23,12 +23,14 @@ function bearerPrincipal(token: string, bearer: ResolvedMultifactorBearer): Prin
 
 export function requireMultifactor<
   E extends Env & {
-    Variables: MultifactorContext & { services: { auth: { multifactor: MultifactorService } } };
+    Variables: MultifactorContext & {
+      services: { authService: { multifactor: MultifactorService } };
+    };
   },
 >(): MiddlewareHandler<E> {
   return createMiddleware<E>(async (c, next) => {
     const token = readBearerToken(c.req.header("Authorization"));
-    const bearer = await c.get("services").auth.multifactor.resolve(token);
+    const bearer = await c.get("services").authService.multifactor.resolve(token);
     c.set("principal", bearerPrincipal(token, bearer));
     setRequestActorId(bearer.user.id);
     await next();
@@ -37,14 +39,16 @@ export function requireMultifactor<
 
 export function requireMultifactorChallenge<
   E extends Env & {
-    Variables: MultifactorContext & { services: { auth: { multifactor: MultifactorService } } };
+    Variables: MultifactorContext & {
+      services: { authService: { multifactor: MultifactorService } };
+    };
   },
 >(): MiddlewareHandler<E> {
   return createMiddleware<E>(async (c, next) => {
     const token = readBearerToken(c.req.header("Authorization"));
-    const bearer = await c.get("services").auth.multifactor.resolve(token);
+    const bearer = await c.get("services").authService.multifactor.resolve(token);
     if (bearer.kind !== "challenge") {
-      throw new UnauthorizedError("middleware.auth.multifactor.bearer-not-challenge");
+      throw new UnauthorizedError("Bearer token is not a multifactor challenge.");
     }
 
     c.set("principal", bearerPrincipal(token, bearer));

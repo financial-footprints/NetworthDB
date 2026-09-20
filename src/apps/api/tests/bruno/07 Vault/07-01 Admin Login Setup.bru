@@ -17,7 +17,7 @@ script:pre-request {
 }
 
 script:post-response {
-  bru.setVar("adminSessionToken", res.body.data.session_token);
+  bru.setVar("adminSessionToken", res.body.data.sessionToken);
 }
 
 body:json {

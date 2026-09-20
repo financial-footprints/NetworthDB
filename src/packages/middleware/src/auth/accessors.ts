@@ -3,7 +3,7 @@ import { UnauthorizedError } from "@ndb/core";
 
 export function sessionPrincipal(principal: Principal): SessionPrincipal {
   if (!principal.session || !principal.auth) {
-    throw new UnauthorizedError("middleware.auth.session.unauthorized.missing");
+    throw new UnauthorizedError("Session is missing.");
   }
 
   return {
@@ -15,7 +15,7 @@ export function sessionPrincipal(principal: Principal): SessionPrincipal {
 
 export function mfaPrincipal(principal: Principal): MultifactorPrincipal {
   if (!principal.multifactor) {
-    throw new UnauthorizedError("middleware.auth.multifactor.unauthorized.missing");
+    throw new UnauthorizedError("Multifactor session is missing.");
   }
 
   return {

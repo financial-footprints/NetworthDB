@@ -1,13 +1,11 @@
 export {
   APP_ENVS,
   type AppEnv,
-  RECOVERY_KIND_ADVANCED,
   RECOVERY_KIND_PASSWORD_RESET,
 } from "@core/domains/auth/constants";
 export { MultifactorChallenge } from "@core/domains/auth/entities/multifactor-challenge";
 export { RecoveryChallenge } from "@core/domains/auth/entities/recovery-challenge";
 export { RecoveryCode } from "@core/domains/auth/entities/recovery-code";
-export { RecoveryEmail } from "@core/domains/auth/entities/recovery-email";
 export { Session } from "@core/domains/auth/entities/session";
 export { WebAuthnCredential } from "@core/domains/auth/entities/webauthn-credential";
 export { WebAuthnSession } from "@core/domains/auth/entities/webauthn-session";
@@ -50,11 +48,7 @@ export type {
   WebAuthnSessionRepository,
   WebAuthnSessionSortColumn,
 } from "@core/domains/auth/repositories/webauthn-session-repository";
-export type {
-  AuthServiceConfig,
-  AuthServiceDeps,
-  RegisterUserInput,
-} from "@core/domains/auth/services/auth-service";
+export type { AuthServiceConfig } from "@core/domains/auth/services/auth-service";
 export { AuthService } from "@core/domains/auth/services/auth-service";
 export type {
   MultifactorServiceConfig,
@@ -65,11 +59,8 @@ export type {
   AdvancedRecoveryContext,
   RecoveryServiceConfig,
 } from "@core/domains/auth/services/recovery-service";
-export { RECOVERY_GENERIC_OK, RecoveryService } from "@core/domains/auth/services/recovery-service";
-export { SessionLifecycle } from "@core/domains/auth/services/session-lifecycle";
 export type {
   WebAuthnBeginResponse,
   WebAuthnCredentialSummary,
   WebAuthnServiceConfig,
 } from "@core/domains/auth/services/webauthn-service";
-export { WebAuthnService } from "@core/domains/auth/services/webauthn-service";

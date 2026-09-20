@@ -37,10 +37,7 @@ export class JobService {
     assertAal2(user.multifactorEnabled, authAcr);
     const job = await this.jobs.findById(user.id, jobId);
     if (!job) {
-      throw new EntityNotFoundError("core.jobs.find.not-found", {
-        entityName: "Job",
-        id: jobId,
-      });
+      throw new EntityNotFoundError("Job", jobId);
     }
 
     return job;
@@ -51,10 +48,7 @@ export class JobService {
     if (jobId !== undefined) {
       const existing = await this.jobs.findById(user.id, jobId);
       if (!existing) {
-        throw new EntityNotFoundError("core.jobs.find.not-found", {
-          entityName: "Job",
-          id: jobId,
-        });
+        throw new EntityNotFoundError("Job", jobId);
       }
 
       const job = await this.runner.requestCancel(user.id, jobId);

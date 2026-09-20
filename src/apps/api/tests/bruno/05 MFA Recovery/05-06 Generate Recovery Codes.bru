@@ -26,12 +26,13 @@ body:json {
 }
 
 script:post-response {
-  bru.setVar("recoveryCode", res.body.data.recovery_codes[0]);
+  bru.setVar("recoveryCode", res.body.data.recoveryCodes[0]);
+  bru.setVar("recoveryCodeForDelete", res.body.data.recoveryCodes[1]);
 }
 
 assert {
   res.status: eq 200
-  res.body.data.recovery_codes: isArray
+  res.body.data.recoveryCodes: isArray
 }
 
 docs {

@@ -1,0 +1,29 @@
+meta {
+  name: 08-09 Advanced Complete Invalid Token
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/auth/recovery/advanced/complete
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "token": "not-a-valid-advanced-token",
+    "newPassword": "newpassword456"
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.error: isDefined
+}
+
+docs {
+  **Endpoint:** `POST /api/v1/auth/recovery/advanced/complete`
+
+  **This test verifies:** Invalid advanced recovery token returns 400.
+}

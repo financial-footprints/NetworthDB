@@ -1,9 +1,4 @@
-export {
-  hasE2EEVault,
-  openField,
-  sealField,
-} from "@web/utils/crypto/vault/fields";
-export { ensureVaultAtLogin } from "@web/utils/crypto/vault/init";
+export { openField, sealField } from "@web/utils/crypto/vault/fields";
 export {
   createPasswordSlot,
   createRecoveryPhraseSlot,
@@ -21,6 +16,7 @@ export type {
   WebAuthnUnlockContext,
 } from "@web/utils/crypto/vault/types";
 export {
+  ensureVaultAtLogin,
   listUnlockMethods,
   tryAutoUnlock,
   unlockVault,

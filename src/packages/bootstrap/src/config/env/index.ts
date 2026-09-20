@@ -15,10 +15,10 @@ export { type BootstrapEnv, durationMs, envCommaSeparatedList, envPort, envUrl }
 
 function buildGetEnvSchema<T>(
   fieldName: string,
-  valueSchema: z.ZodType<T, z.ZodTypeDef, unknown>,
+  valueSchema: z.ZodType<T>,
   presence: EnvPresence,
   isProduction: boolean
-): z.ZodType<T | null, z.ZodTypeDef, unknown> {
+) {
   switch (presence) {
     case "optional":
       return z
@@ -78,7 +78,7 @@ type GetEnvResult<P extends EnvPresence, T> = P extends "required" ? T : T | nul
 export function getEnv<P extends EnvPresence, T>(
   env: BootstrapEnv,
   fieldName: keyof BootstrapEnv,
-  valueSchema: z.ZodType<T, z.ZodTypeDef, unknown>,
+  valueSchema: z.ZodType<T>,
   presence: P,
   isProduction = false
 ): GetEnvResult<P, T> {

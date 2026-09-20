@@ -1,0 +1,19 @@
+meta {
+  name: 15-13 Delete Rule
+  type: http
+  seq: 13
+}
+
+delete {
+  url: {{BASE_URL}}/api/v1/rules/{{ruleId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+assert {
+  res.status: eq 204
+}

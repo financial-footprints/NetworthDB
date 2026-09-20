@@ -17,6 +17,7 @@ flowchart TB
   subgraph apps [Apps]
     API[HTTP API]
     Web[Web UI]
+    Copilot[MCP Copilot]
   end
 
   subgraph composition [Composition]
@@ -32,18 +33,26 @@ flowchart TB
     DB[@ndb/database]
     Stmt[@ndb/statements]
     Auth[@ndb/auth]
+    Enc[@ndb/encryption]
     MW[@ndb/middleware]
+    Log[@ndb/logger]
+    Mail[@ndb/notifications]
   end
 
   API --> Bootstrap
   Web --> Platform
+  Copilot --> Platform
   Bootstrap --> Core
   Bootstrap --> DB
   Bootstrap --> Stmt
   Bootstrap --> Auth
+  Bootstrap --> Enc
   DB --> Core
   Stmt --> Core
   Auth --> Core
+  Auth --> Enc
+  DB --> Enc
+  Stmt --> Enc
   API --> MW
 ```
 
@@ -59,6 +68,11 @@ flowchart LR
   Jobs[Jobs]
 
   Account --> Stmt
+  Account --> Txn[Transactions ledger]
+  Account --> Tax[Taxonomy]
+  Account --> Rules[Transaction rules]
+  Tax --> Txn
+  Rules --> Txn
   Account --> Jobs
   Account --> Sources
   User --> Auth
@@ -69,10 +83,16 @@ flowchart LR
 | ------- | ----- |
 | User | Identity and profile |
 | Auth / Vault | Login, MFA, sessions, recovery, vault slots |
-| Account | Account metadata and statement orchestration |
+| Account | Account metadata, statement orchestration, SQL ledger (transactions submodule), taxonomy (categories/tags submodule), and transaction rules submodule |
 | Sources | Mail and statement source configuration |
 | Statements | Vault-backed statement artifacts (no SQL entity for individual statements) |
+| Transactions | Ledger rows, import batches, and monthly summaries (SQL; owned by Account) |
+| Transaction rules | User rule groups, triggers, and actions on ledger facts (owned by Account) |
 | Jobs | Background work tied to accounts and pipelines |
+
+### Web Information Architecture
+
+The web app uses a single **Accounts** navigation entry (`/accounts`) with statement files, coverage, and calendar on a child route (`/accounts/:accountId/statements`). **Statements** remains a bounded context for vault-backed artifacts; it is not a separate top-level sidebar area. HTTP statement and account APIs are unchanged—only client routing and layout were consolidated.
 
 ### Dependency Rules
 
@@ -100,4 +120,8 @@ flowchart LR
 
 - [ADR-002](002-authentication.md) — auth bounded context
 - [ADR-004](004-data-encryption-policy.md) — field classification
-- [ADR-005](005-statements-compute.md) — statement compute
+- [Statement compute](../../src/packages/statements/README.md)
+- [ADR-006](006-transactions-ledger.md) — transactions ledger
+- [ADR-007](007-transaction-taxonomy.md) — categories and tags
+- [ADR-009](009-transaction-rules-engine.md) — transaction rules engine
+- [ADR-010](010-mcp-copilot.md) — MCP copilot host

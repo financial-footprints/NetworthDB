@@ -1,0 +1,26 @@
+meta {
+  name: 15-06 Patch Rule Group
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{BASE_URL}}/api/v1/rule-groups/{{RULE_GROUP_ID}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{SESSION_TOKEN}}
+}
+
+body:json {
+  {
+    "title": "Bruno Group Renamed"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.data.title: eq Bruno Group Renamed
+}

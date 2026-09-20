@@ -1,0 +1,15 @@
+meta {
+  name: 17-17 List Transactions Unauthorized
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/accounts/{{ledgerAccountId}}/transactions
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}

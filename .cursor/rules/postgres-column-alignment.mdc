@@ -3,24 +3,43 @@ description: Drizzle pgTable column order — fixed-width then variable-length, 
 globs: src/packages/database/src/schema/**
 alwaysApply: false
 ---
-# PostgreSQL column alignment
+# PostgreSQL Column Alignment (Drizzle Schema)
 
-Edit column order in `src/packages/database/src/schema/` only. Migrations are generated from schema — do not hand-edit SQL for alignment.
+Edit column order in `src/packages/database/src/schema/` only. Migrations are generated from these files — do not hand-edit SQL under `src/packages/database/drizzle/migrations/` to fix alignment (see the `no-migration-edits` rule).
 
-Read `src/packages/database/src/schema/README.md` before adding or reordering columns.
+See [src/packages/database/src/schema/README.md](../../src/packages/database/src/schema/README.md) for the full guide; follow this rule and existing tables in that folder.
 
-## Order within each `pgTable`
+## Rule
 
-1. **8-byte** — `timestamp`, `bigint`, `doublePrecision`, …
-2. **4-byte** — `integer`, `real`, `date`, `pgEnum`, …
-3. **16-byte** — `uuid`
-4. **1-byte** — `boolean`
-5. **Variable-length last** — `text`, `varchar`, `bytea`, `json`, `jsonb`, …
+Within each `pgTable` object, list columns in this order:
 
-When changing columns, re-sort the **whole** list — do not append if it breaks alignment.
+1. **8-byte**: `timestamp`, `bigint`, `doublePrecision`, …
+2. **4-byte**: `integer`, `real`, `date`, `pgEnum`, …
+3. **16-byte**: `uuid`
+4. **1-byte**: `boolean`
+5. **Variable-length last**: `text`, `varchar`, `bytea`, `json`, `jsonb`, …
+
+When adding, removing, or reordering columns, **re-sort the whole column list** — do not append new columns at the end if that breaks alignment.
 
 ## Why
 
-PostgreSQL pads fixed-width types to alignment boundaries. Mixed column widths waste space in every row.
+Drizzle preserves column order in generated SQL. PostgreSQL pads fixed-width types to alignment boundaries — mixed widths waste row space.
 
-See [docs/DEV.md](../../docs/DEV.md) for migration workflow.
+## Example
+
+Reference: `src/packages/database/src/schema/accounts.ts` — timestamps and `date` first, then enum and uuid, then text and `bytea` last.
+
+```typescript
+export const accounts = pgTable("accounts", {
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+  openingDate: date("opening_date", { mode: "string" }).notNull(),
+  closingDate: date("closing_date", { mode: "string" }),
+  accountType: accountTypeEnum("account_type").notNull(),
+  id: uuid("id").primaryKey(),
+  userId: uuid("user_id").notNull(),
+  bank: text("bank").notNull(),
+  // ...
+  secrets: bytea("secrets"),
+});
+```

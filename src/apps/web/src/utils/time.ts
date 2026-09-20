@@ -44,6 +44,22 @@ function parseAccountDateParts(day: number, month: number, year: number): Date |
   return parsed;
 }
 
+function validateParsedAccountDate(
+  parsed: Date | "invalid",
+  now: Date
+): AccountDateValidationResult {
+  if (parsed === "invalid") {
+    return { ok: false, reason: "invalid" };
+  }
+  if (!isOnOrAfterMinAccountDate(parsed)) {
+    return { ok: false, reason: "too_early" };
+  }
+  if (!isWithinMaxAccountDateYear(parsed, now)) {
+    return { ok: false, reason: "too_late" };
+  }
+  return { ok: true, date: parsed };
+}
+
 export function validateAccountDateInput(
   value: string,
   now = new Date()
@@ -52,16 +68,17 @@ export function validateAccountDateInput(
   const match = ACCOUNT_DATE_PATTERN.exec(trimmed);
   if (match) {
     const parsed = parseAccountDateParts(Number(match[1]), Number(match[2]), Number(match[3]));
-    if (parsed === "invalid") {
-      return { ok: false, reason: "invalid" };
-    }
-    if (!isOnOrAfterMinAccountDate(parsed)) {
-      return { ok: false, reason: "too_early" };
-    }
-    if (!isWithinMaxAccountDateYear(parsed, now)) {
-      return { ok: false, reason: "too_late" };
-    }
-    return { ok: true, date: parsed };
+    return validateParsedAccountDate(parsed, now);
+  }
+
+  const isoMatch = ISO_ACCOUNT_DATE_PATTERN.exec(trimmed);
+  if (isoMatch) {
+    const parsed = parseAccountDateParts(
+      Number(isoMatch[3]),
+      Number(isoMatch[2]),
+      Number(isoMatch[1])
+    );
+    return validateParsedAccountDate(parsed, now);
   }
 
   return { ok: false, reason: "invalid" };
@@ -148,20 +165,87 @@ export function todayAccountDate(now = new Date()): string {
   return formatAccountDate(now);
 }
 
-export function formatAccountDateLabel(value: string): string {
-  const parsed = parseAccountDate(value);
-  if (!parsed) return value;
-  const month = parsed.getMonth() + 1;
-  const day = parsed.getDate();
-  const year = parsed.getFullYear();
-  return `${day} ${MONTH_LABELS[month - 1]} ${year}`;
+export const FULL_MONTH_LABELS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+] as const;
+
+export function ordinalSuffix(day: number): string {
+  const mod100 = day % 100;
+  if (mod100 >= 11 && mod100 <= 13) {
+    return `${day}th`;
+  }
+  switch (day % 10) {
+    case 1:
+      return `${day}st`;
+    case 2:
+      return `${day}nd`;
+    case 3:
+      return `${day}rd`;
+    default:
+      return `${day}th`;
+  }
 }
 
-export function formatAccountDateRangeLabel(start: string, end: string): string {
-  if (start === end) {
-    return formatAccountDateLabel(start);
+export function formatDisplayDateLong(value: string): string {
+  const normalized = normalizeAccountDateInput(value.trim());
+  if (!normalized) {
+    return value;
   }
-  return `${formatAccountDateLabel(start)} – ${formatAccountDateLabel(end)}`;
+  const parsed = parseAccountDate(normalized);
+  if (!parsed) {
+    return value;
+  }
+  const day = parsed.getDate();
+  const month = parsed.getMonth();
+  const year = parsed.getFullYear();
+  return `${ordinalSuffix(day)} ${FULL_MONTH_LABELS[month]} ${year}`;
+}
+
+export function formatDisplayDateCompact(value: string): string {
+  const normalized = normalizeAccountDateInput(value.trim());
+  if (!normalized) {
+    return value;
+  }
+  const parsed = parseAccountDate(normalized);
+  if (!parsed) {
+    return value;
+  }
+  return formatAccountDate(parsed);
+}
+
+export function formatAccountDateLabel(value: string): string {
+  return formatDisplayDateLong(value);
+}
+
+type AccountDateRangeLabelOptions = {
+  compact?: boolean;
+};
+
+function formatAccountDateRangePart(value: string, compact: boolean): string {
+  return compact ? formatDisplayDateCompact(value) : formatAccountDateLabel(value);
+}
+
+export function formatAccountDateRangeLabel(
+  start: string,
+  end: string,
+  options?: AccountDateRangeLabelOptions
+): string {
+  const compact = options?.compact === true;
+  if (start === end) {
+    return formatAccountDateRangePart(start, compact);
+  }
+  return `${formatAccountDateRangePart(start, compact)} – ${formatAccountDateRangePart(end, compact)}`;
 }
 
 const YEAR_MONTH_PATTERN = /^(\d{4})-(\d{2})$/;
@@ -307,16 +391,19 @@ export function formatRelativeTime(isoDate: string): string {
   return formatter.format(days, "day");
 }
 
+function formatClockTime(date: Date): string {
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
 export function formatTimestamp(isoDate: string): string {
   const date = new Date(isoDate);
   if (Number.isNaN(date.getTime())) {
     return isoDate;
   }
 
-  return date.toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+  return `${formatDisplayDateLong(formatAccountDate(date))}, ${formatClockTime(date)}`;
 }
 
 export function formatDateOnly(isoDate: string): string {
@@ -325,9 +412,5 @@ export function formatDateOnly(isoDate: string): string {
     return isoDate;
   }
 
-  return date.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  return formatDisplayDateLong(formatAccountDate(date));
 }

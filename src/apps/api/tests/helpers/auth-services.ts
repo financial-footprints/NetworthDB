@@ -8,7 +8,6 @@ import { createStatementsTestServices } from "@tests/api/helpers/statements-test
 import {
   CapturingEmailSender,
   createTestSecurityStores,
-  loginAsSession,
   TEST_WEBAUTHN_CONFIG,
 } from "@tests/auth/helpers";
 import { createInMemoryAuthRepos, wireInMemoryAuth } from "@tests/auth/helpers/wiring";
@@ -33,22 +32,26 @@ export async function createAuthTestServices(
   role: Role = "user",
   multifactorEnabled = false,
   webauthnEnabled = false,
-  securityStores = createTestSecurityStores()
+  securityStores = createTestSecurityStores(),
+  options?: { seedUser?: boolean }
 ): Promise<AuthTestServices> {
   const repos = createInMemoryAuthRepos();
   const emailSender = new CapturingEmailSender();
-  const passwordHash = await createPasswordHasher().hash(password);
+  const seedUser = options?.seedUser ?? true;
 
-  await repos.users.create(
-    new User(
-      crypto.randomUUID(),
-      Username.parse(username),
-      passwordHash,
-      role,
-      multifactorEnabled,
-      new Date()
-    )
-  );
+  if (seedUser) {
+    const passwordHash = await createPasswordHasher().hash(password);
+    await repos.users.create(
+      new User(
+        crypto.randomUUID(),
+        Username.parse(username),
+        passwordHash,
+        role,
+        multifactorEnabled,
+        new Date()
+      )
+    );
+  }
 
   const { auth, vault } = wireInMemoryAuth(
     repos,
@@ -57,19 +60,28 @@ export async function createAuthTestServices(
     webauthnEnabled ? WEBAUTHN_ENABLED_CONFIG : TEST_WEBAUTHN_CONFIG
   );
 
-  const pipeline = createStatementsTestServices();
+  const user = new UserService(repos.users, auth);
+  const pipeline = createStatementsTestServices(undefined, { vault, user });
 
   return {
-    health: {
+    healthService: {
       check: async () => ({ ok: true }),
     } as HealthService,
-    user: new UserService(repos.users, auth),
-    account: pipeline.account,
-    sources: pipeline.sources,
-    job: pipeline.job,
-    jobRunner: pipeline.jobRunner,
-    vault,
-    auth,
+    userService: user,
+    accountService: pipeline.account,
+    categoryService: pipeline.category,
+    tagService: pipeline.tag,
+    ruleGroupService: pipeline.ruleGroup,
+    ruleService: pipeline.rule,
+    ruleEngineService: pipeline.ruleEngine,
+    transactionService: pipeline.transaction,
+    dashboardService: pipeline.dashboard,
+    sourcesService: pipeline.sources,
+    jobService: pipeline.job,
+    jobRunnerService: pipeline.jobRunner,
+    vaultService: vault,
+    authService: auth,
+    backupService: pipeline.backup,
     users: repos.users,
     emailSender,
   };
@@ -91,14 +103,8 @@ export async function loginViaApp(
     throw new Error(`login failed with status ${response.status}: ${body}`);
   }
 
-  const body = await readApiJson<SessionTokenPair>(response);
-  return body.data.session_token;
+  const body = await readApiJson<{ data: SessionTokenPair }>(response);
+  return body.data.sessionToken;
 }
 
-export async function loginAs(
-  services: ApiServices,
-  username: string,
-  password: string
-): Promise<string> {
-  return loginAsSession(services, username, password);
-}
+export { loginAsSession } from "@tests/auth/helpers";

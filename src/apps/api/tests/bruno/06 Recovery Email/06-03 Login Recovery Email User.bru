@@ -18,7 +18,7 @@ body:json {
 }
 
 script:post-response {
-  bru.setVar("recoveryEmailSessionToken", res.body.data.session_token);
+  bru.setVar("recoveryEmailSessionToken", res.body.data.sessionToken);
 }
 
 assert {

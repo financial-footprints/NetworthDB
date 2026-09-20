@@ -1,5 +1,28 @@
 import type { Job, JobOutput } from "@ndb/core";
-import { jobListSchema, jobSchema, jobsCancelSchema } from "@ndb/platform";
+import { jobCreatedSchema, jobListSchema, jobSchema, jobsCancelSchema } from "@ndb/platform";
+
+type JobBackupOutput = NonNullable<JobOutput["backup"]>;
+
+function serializeBackupOutput(backup: JobBackupOutput) {
+  return {
+    ...(backup.filename !== undefined ? { filename: backup.filename } : {}),
+    ...(backup.bytes !== undefined ? { bytes: backup.bytes } : {}),
+    ...(backup.accountsCreated !== undefined ? { accountsCreated: backup.accountsCreated } : {}),
+    ...(backup.accountsUpdated !== undefined ? { accountsUpdated: backup.accountsUpdated } : {}),
+    ...(backup.transactionsInserted !== undefined
+      ? { transactionsInserted: backup.transactionsInserted }
+      : {}),
+    ...(backup.transactionsSkipped !== undefined
+      ? { transactionsSkipped: backup.transactionsSkipped }
+      : {}),
+    ...(backup.vaultSlotsImported !== undefined
+      ? { vaultSlotsImported: backup.vaultSlotsImported }
+      : {}),
+    ...(backup.vaultSlotsSkipped !== undefined
+      ? { vaultSlotsSkipped: backup.vaultSlotsSkipped }
+      : {}),
+  };
+}
 
 function serializeJobOutput(output: JobOutput) {
   return {
@@ -7,9 +30,21 @@ function serializeJobOutput(output: JobOutput) {
       kind: warning.kind,
       message: warning.message,
       account: warning.account,
-      source_file: warning.sourceFile,
-      text_contains: [...warning.textContains],
+      sourceFile: warning.sourceFile,
+      textContains: [...warning.textContains],
     })),
+    ...(output.backup ? { backup: serializeBackupOutput(output.backup) } : {}),
+    ...(output.rules
+      ? {
+          rules: {
+            matched: output.rules.matched,
+            mutated: output.rules.mutated,
+            deleted: output.rules.deleted,
+            skipped: output.rules.skipped,
+            dryRun: output.rules.dryRun,
+          },
+        }
+      : {}),
   };
 }
 
@@ -18,10 +53,12 @@ function serializeJobData(job: Job, includeLogs = false) {
     id: job.id,
     status: job.status,
     stage: job.stage,
-    account_id: job.scope.accountId,
-    financial_year: job.scope.financialYear,
-    created_at: job.createdAt.toISOString(),
-    completed_at: job.completedAt?.toISOString() ?? null,
+    accountId: job.scope.accountId,
+    financialYear: job.scope.financialYear,
+    ruleId: job.scope.ruleId,
+    groupId: job.scope.groupId,
+    createdAt: job.createdAt.toISOString(),
+    completedAt: job.completedAt?.toISOString() ?? null,
     output: serializeJobOutput(job.output),
     error: job.error,
     ...(includeLogs ? { logs: job.logs } : {}),
@@ -31,23 +68,24 @@ function serializeJobData(job: Job, includeLogs = false) {
 export function serializeJob(job: Job) {
   return jobSchema.parse({
     data: serializeJobData(job, true),
-    errors: [],
   });
 }
 
 export function serializeJobList(items: Job[], total: number) {
   return jobListSchema.parse({
-    data: {
-      items: items.map((job) => serializeJobData(job)),
-      total,
-    },
-    errors: [],
+    items: items.map((job) => serializeJobData(job)),
+    total,
   });
 }
 
 export function serializeJobsCancel(cancelledIds: string[]) {
   return jobsCancelSchema.parse({
-    data: { cancelled_ids: cancelledIds },
-    errors: [],
+    data: { cancelledIds },
+  });
+}
+
+export function serializeJobCreated(id: string) {
+  return jobCreatedSchema.parse({
+    data: { jobId: id },
   });
 }

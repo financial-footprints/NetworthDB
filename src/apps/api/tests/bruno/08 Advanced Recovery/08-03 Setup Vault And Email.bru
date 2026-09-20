@@ -18,7 +18,7 @@ body:json {
 }
 
 script:post-response {
-  bru.setVar("advancedSessionToken", res.body.data.session_token);
+  bru.setVar("advancedSessionToken", res.body.data.sessionToken);
 }
 
 assert {

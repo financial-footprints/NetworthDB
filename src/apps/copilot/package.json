@@ -1,0 +1,30 @@
+{
+  "name": "@ndb/copilot",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "start": "bun --env-file .env src/index.ts",
+    "dev": "MCP_TRANSPORT=http bun --env-file .env --watch src/index.ts",
+    "test": "bun test src",
+    "type-check": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
+    "@ndb/core": "workspace:*",
+    "@ndb/database": "workspace:*",
+    "@ndb/logger": "workspace:*",
+    "@ndb/mcp": "workspace:*",
+    "pg": "^8.16.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.1",
+    "@types/node": "^26.4.1",
+    "@types/pg": "^8.15.5",
+    "typescript": "~7.0.2"
+  }
+}

@@ -72,7 +72,7 @@ export class DrizzleVaultSlotRepository implements VaultSlotRepository {
       return created;
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictError("database.vault.slot.create.conflict.duplicate");
+        throw new ConflictError("That vault slot already exists.");
       }
 
       throw error;
